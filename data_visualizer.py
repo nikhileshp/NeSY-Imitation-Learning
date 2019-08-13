@@ -132,9 +132,9 @@ def visualize_csv(tar_fname, csv_fname):
 
     # init pygame and other stuffs
     origin_w = 160
-    x_scale = 2.0
+    x_scale = 8.0
     origin_h = 210
-    y_scale = 2.0
+    y_scale = 4.0
     w, h = int(origin_w*x_scale), int(origin_h*y_scale)
 
     global ds
@@ -195,20 +195,18 @@ def visualize_csv(tar_fname, csv_fname):
     print("Deleting PNG files in temporary directory.")
     shutil.rmtree(temp_extract_full_path_dir)
 
-
-def do_testing_visualize_csv():
-    testing_tar_fname = '/Users/lguan/Documents/Study/Research/UT Austin/Gaze-Dataset/data/raw-data/52_RZ_2394668_Aug-10-14-52-42.tar.bz2'
-    testing_csv_fname = '/Users/lguan/Documents/Study/Research/UT Austin/Gaze-Dataset/data/csv/52_RZ_2394668_Aug-10-14-52-42.txt'
-    visualize_csv(testing_tar_fname, testing_csv_fname)
-
-
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print('Usage: python data_visualizer.py tar_fname csv_fname')
         exit(1)
 
     tar_fname = sys.argv[1]
-    csv_fname = sys.argv[2]
+    
+    if len(sys.argv) == 2:
+        csv_fname = sys.argv[1].split(".tar")[0] + ".txt"
+    elif len(sys.argv) == 3:
+        csv_fname = sys.argv[2]
+
 
     visualize_csv(tar_fname, csv_fname)
 
