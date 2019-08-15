@@ -121,18 +121,6 @@ def save_asc_files_in_dir_to_csv(asc_dir, saved_dir, fname_regex='.', is_include
     return meta_data_dict
 
 
-def do_data_cleaning():
-    data_dir = '/Users/lguan/Documents/Study/Research/Gaze-Dataset/data'
-    csv_dir = '/Users/lguan/Documents/Study/Research/Gaze-Dataset/data_processing/csv'
-    save_asc_files_in_dir_to_csv(data_dir, csv_dir)
-
-
-def do_testing():
-    testing_csv_dir = '/Users/lguan/Documents/Study/Research/Gaze-Dataset/testing_csv_dir'
-    testing_data_dir = '/Users/lguan/Documents/Study/Research/Gaze-Dataset/testing_data_dir'
-    save_asc_files_in_dir_to_csv(testing_data_dir, testing_csv_dir)
-
-
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print('Usage: python data_cleaning.py source_dir dest_dir [whether to include titles in txt file]')

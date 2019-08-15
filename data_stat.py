@@ -170,6 +170,7 @@ def do_per_trial_stat(csv_dir, saved_dir=None, fname_regex='.*_.*_.*\.txt', is_i
                         trial_highest_score = max(trial_highest_score, episode_max_score)
                         cnt_episode += 1
 
+                    game_play_time += episode_time
                     # reset the stat variables for the new episode
                     episode_time = utils.set_value_by_int(0, duration)
                     episode_max_score = utils.set_value_by_int(0, score)
@@ -177,7 +178,6 @@ def do_per_trial_stat(csv_dir, saved_dir=None, fname_regex='.*_.*_.*\.txt', is_i
                     episode_cumulative_reward = unclipped_reward
                     current_episode = episode_id
 
-                    game_play_time += episode_time
                 # compute the stat data for the last frame of the last episode
                 elif i_frame == n_frame - 1:
                     game_play_time += episode_time
@@ -224,17 +224,6 @@ def do_per_trial_stat(csv_dir, saved_dir=None, fname_regex='.*_.*_.*\.txt', is_i
 def fname_condition(fname):
     trial_id = int(fname.split('_')[0])
     return trial_id > 0
-
-
-def do_testing():
-    testing_data_dir = '/Users/lguan/Documents/Study/Research/UT Austin/Gaze-Dataset/testing_csv_dir'
-    do_per_trial_stat(csv_dir=testing_data_dir, saved_dir=testing_data_dir, func_fname_condition=fname_condition)
-
-
-def do_stat():
-    data_dir = '/Users/lguan/Documents/Study/Research/Gaze-Dataset/data_processing/csv'
-    do_per_trial_stat(csv_dir=data_dir, saved_dir=data_dir, func_fname_condition=fname_condition)
-
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:

@@ -104,7 +104,7 @@ def event_handler_func():
             elif event.key == pygame.K_ESCAPE:
                 ds.terminated = True
                 print("\nStopping replay.")
-    ds.cur_frame_id = max(0, min(ds.cur_frame_id, ds.total_frame))
+    ds.cur_frame_id = max(0, min(ds.cur_frame_id, ds.total_frame - 1))
     ds.target_fps = max(1, ds.target_fps)
 
 
@@ -153,9 +153,9 @@ def visualize_csv(tar_fname, csv_fname):
     pygame.display.set_mode((w, h), pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.RLEACCEL, 32)
     screen = pygame.display.get_surface()
 
-    while ds.cur_frame_id < ds.total_frame:
+    while True: #ds.cur_frame_id < ds.total_frame:
         event_handler_func()
-
+        
         # Load PNG file and draw the frame and the gaze-contingent window
         frame_id = frameid_list[ds.cur_frame_id]
         png_fname = temp_extract_full_path_dir + '/' + frame_id + '.png'

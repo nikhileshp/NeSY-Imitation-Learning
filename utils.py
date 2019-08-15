@@ -27,7 +27,7 @@ def save_trials_data_to_excel(saved_dir, fname, data_dict):
 
     row = 0
     col = 0
-    for trial_id in data_dict.keys():
+    for trial_id in sorted(data_dict.keys()):
         # write column names (titles) first
         if row == 0:
             worksheet.write(0, 0, 'trial_id')
