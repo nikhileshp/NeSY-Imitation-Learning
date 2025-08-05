@@ -178,7 +178,7 @@ def visualize_csv(tar_fname, csv_fname):
                     if check_gaze_range(posX, posY, origin_w, origin_h):
                         dw.draw_gc(screen, (posX*x_scale, posY*y_scale))
 
-        pygame.display.flip()
+        # pygame.display.flip()
 
         if not ds.pause:
             ds.cur_frame_id = ds.cur_frame_id + 1

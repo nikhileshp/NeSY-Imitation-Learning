@@ -203,7 +203,8 @@ def read_gaze_data_csv_file(fname, separator=',', pos_separator=','):
             else:
                 pos_data_list = pos_data.split(pos_separator)
             pos_list = []
-            n_pos = len(pos_data_list) / 2
+            n_pos = len(pos_data_list) // 2
+            # print(pos_data_list)
             for j in range(0, n_pos):
                 posX = float(pos_data_list[2*j])
                 posY = float(pos_data_list[2*j+1])
