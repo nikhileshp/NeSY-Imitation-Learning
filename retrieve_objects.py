@@ -7,7 +7,7 @@ from models.OC_Atari.ocatari.vision.game_objects import GameObject, NoObject
 # Set the directory containing your images
 
 # objects_colors = {"player": [[187, 187, 53], [236, 236, 236]], "diver": [66, 72, 200], "background_water": [0, 28, 136],
-objects_colors = {"player": [[187, 187, 53], [236, 236, 236]], "diver": [66, 72, 200], "background_water": [0, 28, 136],
+objects_colors = {"player": [[187, 187, 53]], "diver": [66, 72, 200], "background_water": [0, 28, 136],
                   "player_score": [210, 210, 64], "oxygen_bar": [214, 214, 214], "lives": [210, 210, 64],
                   "logo": [66, 72, 200], "player_missile": [187, 187, 53], "oxygen_bar_depleted": [163, 57, 21],
                   "oxygen_logo": [0, 0, 0], "collected_diver": [24, 26, 167], "enemy_missile": [66, 72, 200],
@@ -23,7 +23,7 @@ class Player(GameObject):
 
 
 class Diver(GameObject):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):    
         super().__init__(*args, **kwargs)
         self.rgb = 66, 72, 200
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         exit(1)
     image_folder = sys.argv[1]
     output_video = "test_output.mp4" if len(sys.argv) < 3 else sys.argv[2]
-    fps =   1  # Default frames per second
+    fps =   30  # Default frames per second
     if len(sys.argv) == 4:
         fps = int(sys.argv[3])
 
@@ -105,7 +105,12 @@ if __name__ == '__main__':
     first_frame = cv2.imread(os.path.join(image_folder, images[0]))
     
     height, width, _ = first_frame.shape
-    
+
+    objects_colors = {"player": [[53, 187, 187]], "diver": [[72, 200, 66]], "background_water": [[0, 28, 136]],
+                  "player_score": [[210, 210, 64]], "oxygen_bar": [[214, 214, 214]], "lives": [[64, 210, 210]],
+                  "logo": [[66, 72, 200]], "player_missile": [[187, 53, 187]], "oxygen_bar_depleted": [[ 57, 21, 163]],
+                  "oxygen_logo": [[0, 0, 0]], "collected_diver": [[26, 167, 24]], "enemy_missile": [[ 72, 200,66]],
+                  "submarine": [[170, 170, 170]]}
 
     # Loop through images and process every 30th image
     for i, img_name in enumerate(images):
@@ -113,15 +118,26 @@ if __name__ == '__main__':
             continue
         img_array = cv2.imread(os.path.join(image_folder, img_name))
         obs = img_array.copy()
+        #Unable to find player reliably, so we look for both colors and combine results
+        #Still unable to find in some frames, need better method
         player = []
-        for color in objects_colors["player"]:
-                player.extend(find_objects(obs, color, min_distance=1))
-
+        enemy = []
+        enemy.extend(find_objects(obs, enemy_colors["green"]))
+        enemy.extend(find_objects(obs, enemy_colors["orange"]))
+        enemy.extend(find_objects(obs, enemy_colors["yellow"]))
+        enemy.extend(find_objects(obs, enemy_colors["lightgreen"]))
+        enemy.extend(find_objects(obs, enemy_colors["pink"]))
 
         # Print the image number and found objects
         print(f"Processing {img_name}:")
-        print("Found player objects:", player)
 
+        player.extend(find_objects(obs, objects_colors["player"]))
+
+
+
+
+        
+        print("Found player objects:", player)
         divers_and_missiles = find_objects(
             obs, objects_colors["diver"], closing_dist=1)
         divers = []
@@ -132,30 +148,20 @@ if __name__ == '__main__':
             elif dm[1] < 190 and dm[2] > 2:
                 missiles.append(dm)
 
-        submarine = find_objects(obs, objects_colors["submarine"], min_distance=1)
-
-        
-        print("Found submarines:", submarine)
+     
 
         print("Found divers:", divers)
         print("Found missiles:", missiles)    
 
-        lives = []
-        for enemyColor in enemy_colors.values():
-            lives.extend(find_objects(obs, enemyColor, min_distance=1))
-
+        lives = find_objects(obs, objects_colors["lives"], closing_dist=1, miny=20)
+        
         print("Found lives:", lives)
 
-        submarine = find_objects(obs, objects_colors["submarine"], min_distance=1)
-        print("Found submarines:", submarine)
-
+       
         # Unable to find any oxygen bar, it should be in a red rectangle
-
-
         oxygen_bar = find_objects(
             obs, objects_colors["oxygen_bar"], min_distance=1)
         print("Found oxygen bars:", oxygen_bar)
-        lives = find_objects(obs, objects_colors["lives"], min_distance=1)
         
         score = find_objects(obs, objects_colors["player_score"], min_distance=1)
         print("Found score:", score)
@@ -176,11 +182,11 @@ if __name__ == '__main__':
                                 (divers, (255, 0, 0)),
                                 (missiles, (0, 0, 255)),
                                 (lives, (255, 255, 0)),
-                                (submarine, (0, 255, 255)),
                                 (oxygen_bar, (255, 0, 255)),
                                 (lives, (0, 255, 0)),
                                 (score, (0, 200, 200)),
                                 (logo, (200, 0, 200)),
+                                (enemy, (256,0,0)),
                                 (oxygen_depleted, (100, 100, 100)),
                                 (oxygen_logo, (50, 50, 50)),
                                 (coll_diver, (150, 0, 150))]:
@@ -188,35 +194,16 @@ if __name__ == '__main__':
             for obj in obj_list:
                 # Create a bounding box around the object
                 mark_bb(obs, obj, color=color)
-                
+                # pass
         
   
-
+        # # Show a higher resolution window
+        # obs = cv2.resize(obs, (width*2, height*2), interpolation=cv2.INTER_NEAREST)
+        
+        # window_name = 'Frame'
         cv2.imshow('Frame', obs)
         key = cv2.waitKey(0)  # Wait for a key press to move
         if key == 27:
             break
     cv2.destroyAllWindows()
         
-
-    # for obj in objects_colors:
-        
-    #     x = find_objects(img_array,color=objects_colors[obj],min_distance=1, maxx=width, maxy=height )
-    #     if len(x) > 0:
-    #         print("Colors for", obj, ":", objects_colors[obj])
-    #         print(f"Found {obj}: {x} objects in {images[0]}")
-    #     quit()
-    # Read first image to get width and height
-    
-
-    # Define video codec and writer
-    # fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Or use 'XVID' or 'avc1'
-    # video = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
-
-    # # Write each frame
-    # for img in images:
-    #     frame = cv2.imread(os.path.join(image_folder, img))
-    #     video.write(frame)
-
-    # video.release()
-    # print(f"Video saved as {output_video}")
