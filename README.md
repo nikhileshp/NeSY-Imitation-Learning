@@ -33,3 +33,9 @@ The python program to clean and process the gaze data
     - dest_dir: the directory saving the csv/txt and results (Excel) files.
 - **Source Code**: do\_cleaning\_and\_stat.py
   
+
+## Object Recognition (Relational Representation)
+
+```
+python retrieve_objects.py data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18  
+```
