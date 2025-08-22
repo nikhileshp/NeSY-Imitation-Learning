@@ -10,8 +10,8 @@ from models.OC_Atari.ocatari.vision.game_objects import GameObject, NoObject
 # objects_colors = {"player": [[187, 187, 53], [236, 236, 236]], "diver": [66, 72, 200], "background_water": [0, 28, 136],
 
 
-enemy_colors = {"green": [92, 186, 92], "orange": [198, 108, 58],"yellow2": [79,171,160], "yellow": [111,111,111], "lightgreen": [72, 160, 72],
-                "pink": [198, 89, 179]}
+enemy_colors = {"green": [92, 186, 92], "orange": [[58, 108, 198], [111, 111, 111]],  "yellow": [[111,111,111],[79,171,160]], "lightgreen": [72, 160, 72],
+                "pink": [[179,89,198],[192,70,146]]}
 
 
 def above_water(obj):
@@ -135,8 +135,8 @@ if __name__ == '__main__':
 
     objects_colors = {"player": [[53, 187, 187]], "diver": [[200, 72, 66],[184, 50, 45]], "background_water": [[0, 28, 136]],
                   "player_score": [[210, 210, 64]], "oxygen_bar": [[214, 214, 214]], "lives": [[64, 210, 210]],
-                  "logo": [[66, 72, 200]], "player_missile": [[187, 53, 187]], "oxygen_bar_depleted": [[ 21, 57, 163]],
-                  "oxygen_logo": [[0, 0, 0]], "collected_diver": [[ 167, 26, 24]], "enemy_missile": [[ 72, 200,66]],
+                  "logo": [[66, 72, 200]], "player_missile": [[142, 142, 142], [53, 187, 187]], "oxygen_bar_depleted": [[ 21, 57, 163]],
+                  "oxygen_logo": [[0, 0, 0]], "collected_diver": [[ 167, 26, 24]], "enemy_missile": [[200, 72, 66]],
                   "submarine": [[170, 170, 170]]}
 
 
@@ -192,39 +192,45 @@ if __name__ == '__main__':
         obs = img_array.copy()
         #Unable to find player reliably, so we look for both colors and combine results
         #Still unable to find in some frames, need better method
-        player = []
+
         enemy = []
-        
-        enemy.extend(find_objects(obs, enemy_colors["green"]))
-        enemy.extend(find_objects(obs, enemy_colors["orange"]))
-        enemy.extend(find_objects(obs, enemy_colors["yellow"]))
-        enemy.extend(find_objects(obs, enemy_colors["yellow2"]))
-        enemy.extend(find_objects(obs, enemy_colors["lightgreen"]))
-        enemy.extend(find_objects(obs, enemy_colors["pink"]))
+
+        enemy.extend(find_objects(obs, enemy_colors["green"], maxy=150, miny=40))
+        enemy.extend(find_objects(obs, enemy_colors["orange"], maxy=150, miny=40))
+        enemy.extend(find_objects(obs, enemy_colors["yellow"], maxy=150, miny=40))
+        enemy.extend(find_objects(obs, enemy_colors["lightgreen"], maxy=150, miny=40))
+        enemy.extend(find_objects(obs, enemy_colors["pink"], maxy=150, miny=40)) 
 
         # Print the image number and found objects
         print(f"Processing {img_name}:")
 
-        player.extend(find_objects(obs, objects_colors["player"], closing_dist=10))
+        player = find_objects(obs, objects_colors["player"], size=(15,10), tol_s=(10,8))
 
 
 
 
-        
-        # print("Found player objects:", player)
-        for color in objects_colors["diver"]:
-            # Find divers with different colors
-            divers = find_objects(obs, color,miny=40, maxy=150)
-            if divers:
-                break
-            if not divers:
-                continue
-    
-        
-        
+
+        divers = find_objects(obs, objects_colors["diver"], size= (12,8), tol_s=6, miny=40, maxy=150)
+
+
         # print("Found enemy objects:", enemy)
-        missiles = find_objects(obs, objects_colors["player_missile"], minx=20, miny=90, maxy=310)
+        missiles = find_objects(obs, objects_colors["player_missile"], miny=40, maxy=150, size=(12,1), tol_s=(5,1))
+        enemy_missiles = find_objects(obs, objects_colors["enemy_missile"], size=(8,4), tol_s=1, minx=20, miny=90, maxy=310)
+        
+        for obj in enemy_missiles:
+            for diver in divers:
+                if obj[0] >= diver[0] and obj[0] <= diver[0] + diver[2] and obj[1] >= diver[1] and obj[1] <= diver[1] + diver[3]:
+                    # If the enemy missile is in the bounding box of the diver, then remove it
+                    enemy_missiles.remove(obj)
+                    break   
 
+        
+        for obj in missiles:
+            for p in player:
+                if obj[0] >= p[0] and obj[0] <= p[0] + p[2] and obj[1] >= p[1] and obj[1] <= p[1] + p[3]:
+                    # If the missile is in the bounding box of the player, then remove it
+                    missiles.remove(obj)
+                    break
         # print("Found divers:", divers)
         # print("Found missiles:", missiles)    
 
@@ -232,7 +238,7 @@ if __name__ == '__main__':
         
         # print("Found lives:", lives)
 
-        enemy_submarine = find_objects(obs, objects_colors["submarine"], maxy=150, min_distance=1)
+        enemy_submarine = find_objects(obs, objects_colors["submarine"], size=(8,10), tol_s=2, maxy=150, min_distance=1)
         # print("Found enemy submarines:", enemy_submarine)
         # Unable to find any oxygen bar, it should be in a red rectangle
         oxygen_bar = find_objects(
@@ -263,7 +269,6 @@ if __name__ == '__main__':
         enemy_dict = {}
 
 
-
         for i, obj in enumerate(player):
             if players_dict:
                 players_dict[f"player_{i}"] = obj
@@ -287,6 +292,12 @@ if __name__ == '__main__':
                 missiles_dict[f"missile_{i}"] = obj
             else:
                 missiles_dict = {f"missile_{i}": obj}
+
+        for i, obj in enumerate(enemy_missiles):
+            if enemy_missiles:
+                enemy_dict[f"enemy_missile_{i}"] = obj
+            else:
+                enemy_dict = {f"enemy_missile_{i}": obj}
 
         for i, obj in enumerate(lives):
             if lives_dict:
@@ -338,6 +349,11 @@ if __name__ == '__main__':
             pass
         else:
             print("Missile objects:", missiles_dict)
+
+        if not enemy_missiles:
+            pass
+        else:
+            print("Enemy Missile objects:", enemy_dict)
         if not lives:
             pass
         else:
@@ -405,14 +421,15 @@ if __name__ == '__main__':
         # Mark found objects on the image
         for obj_list, color in [(player, (0, 255, 0)),
                                 (divers, (255, 0, 0)),
-                                (missiles, (0, 0, 255)),
+                                (missiles, (0, 255, 0)),
                                 (lives, (255, 255, 0)),
                                 (oxygen_bar, (255, 0, 255)),
                                 (lives, (0, 255, 0)),
-                                (enemy_submarine, (0, 255, 255)),
+                                (enemy_submarine, (0, 0, 255)),
                                 # (score, (0, 200, 200)),
                                 # (logo, (200, 0, 200)),
-                                (enemy, (256,0,0)),
+                                (enemy_missiles, (0, 0, 255)),
+                                (enemy, (0,0,255)),
                                 (oxygen_depleted, (100, 100, 100)),
                                 # (oxygen_logo, (50, 50, 50)),
                                 (coll_diver, (150, 0, 150))]:
