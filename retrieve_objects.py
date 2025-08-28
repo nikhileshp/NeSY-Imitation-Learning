@@ -365,46 +365,46 @@ if __name__ == '__main__':
             
                 if left_of(player[0], coords):
                     relationships.append((player[0], coords, "leftOf", "player", diver))
-                    print("leftOf(player,", diver, ").")
+                    print("leftOfDiver(player,", diver, ").")
 
                 elif right_of(player[0], coords):
                     relationships.append((player[0], coords, "rightOf", "player", diver))
-                    print("rightOf(player,", diver, ").")
+                    print("rightOfDiver(player,", diver, ").")
 
                 if above_of(player[0], coords):
                     relationships.append((player[0], coords, "aboveOf", "player", diver))
-                    print("aboveOf(player,", diver, ").")
+                    print("aboveOfDiver(player,", diver, ").")
 
                 elif below_of(player[0], coords):
                     relationships.append((player[0], coords, "belowOf", "player", diver))
-                    print("belowOf(player,", diver, ").")
+                    print("belowOfDiver(player,", diver, ").")
                 
                 else:
                     relationships.append((player[0], coords, "sameLevelAs", "player", diver))
-                    print("sameLevelAs(player,", diver, ").")
+                    print("sameLevelAsDiver(player,", diver, ").")
             
         
 
             for enemy_obj, coords in enemy_dict.items():
                 if left_of(player[0], coords):
                     relationships.append((player[0], coords, "leftOf", "player", enemy_obj))
-                    print("leftOf(player,", enemy_obj, ").")
+                    print("leftOfEnemy(player,", enemy_obj, ").")
 
                 elif right_of(player[0], coords):
                     relationships.append((player[0], coords, "rightOf", "player", enemy_obj))
-                    print("rightOf(player,", enemy_obj, ").")
+                    print("rightOfEnemy(player,", enemy_obj, ").")
 
                 if above_of(player[0], coords):
                     relationships.append((player[0], coords, "aboveOf", "player", enemy_obj))
-                    print("aboveOf(player,", enemy_obj, ").")
+                    print("aboveOfEnemy(player,", enemy_obj, ").")
 
                 elif below_of(player[0], coords):
                     relationships.append((player[0], coords, "belowOf", "player", enemy_obj))
-                    print("belowOf(player,", enemy_obj, ").")
+                    print("belowOfEnemy(player,", enemy_obj, ").")
                 
                 else:
                     relationships.append((player[0], coords, "sameLevelAs", "player", enemy_obj))
-                    print("sameLevelAs(player,", enemy_obj, ").")
+                    print("sameLevelAsEnemy(player,", enemy_obj, ").")
 
         except Exception as e:
             print("Error in finding relationships:", e)
