@@ -4,7 +4,7 @@ Core object detection module - game-agnostic base classes.
 import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Any, Protocol
-from models.OC_Atari.ocatari.vision.utils import find_objects, facing_left
+from models.OC_Atari.ocatari.vision.utils import find_objects, facing_side
 from .game_object import GameObject
 
 
@@ -54,7 +54,7 @@ class BaseObjectDetector:
 
         objects = []
         for i, coords in enumerate(coords_list):
-            obj = GameObject(object_type, coords, f'{object_type}_{i}')
+            obj = GameObject(object_type, coords, facing_side, f'{object_type}_{i}')
             objects.append(obj)
         
         return objects
