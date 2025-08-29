@@ -44,6 +44,7 @@ class SeaquestRelationshipConfig:
             return f"{rel_type}({obj1_type}, {obj2_id})."
 
 
+
 class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
     """Seaquest-specific relationship analyzer."""
     
@@ -57,8 +58,9 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         - Player vs water surface
         - Player vs enemies 
         - Player vs enemy submarines
-        - Player vs player missiles (for cleanup/filtering)
-        
+        - Player vs enemy missiles (for cleanup/filtering)
+        - Player vs divers
+
         Args:
             detected_objects: Dictionary mapping object types to lists of GameObjects
             
@@ -78,10 +80,14 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         # Analyze water surface relationship
         if self.game_config:
             reference_levels = self.game_config.get_reference_levels()
+            print(reference_levels)
             for level_name, level_y in reference_levels.items():
+                
                 ref_relationship = self._analyze_reference_level_relationship(player, level_name, level_y)
                 if ref_relationship:
                     relationships.append(ref_relationship)
+
+        
         
         # Only analyze relationships with specific object types
         relevant_object_types = ['enemy', 'enemy_submarine', 'enemy_missile', 'diver']

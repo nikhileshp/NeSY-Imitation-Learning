@@ -8,7 +8,7 @@ from .config import MIN_COVERAGE_RATIO
 class GameObject:
     """Represents a game object with position, size, and type information."""
     
-    def __init__(self, object_type: str, bounding_box: Tuple[int, int, int, int], 
+    def __init__(self, object_type: str, bounding_box: Tuple[int, int, int, int], facing_side: Optional[str] = None,
                  object_id: Optional[str] = None):
         """
         Initialize a game object.
@@ -20,6 +20,7 @@ class GameObject:
         """
         self.object_type = object_type
         self.x, self.y, self.width, self.height = bounding_box
+        self.facing_side = facing_side
         self.object_id = object_id or f"{object_type}_{id(self)}"
     
     @property
