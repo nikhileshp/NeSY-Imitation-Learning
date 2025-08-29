@@ -518,14 +518,14 @@ if __name__ == '__main__':
         
         # Run all frames in a loop without expecting a key press
         cv2.imshow('Frame', obs)
-        cv2.waitKey(1)  # Display each frame for 1 ms
+        # cv2.waitKey(1)  # Display each frame for 1 ms
         
 
-        # window_name = 'Frame'
-        # cv2.imshow('Frame', obs)
-        # key = cv2.waitKey(0)  # Wait for a key press to move
-        # if key == 27:
-        #     break
+        window_name = 'Frame'
+        cv2.imshow('Frame', obs)
+        key = cv2.waitKey(0)  # Wait for a key press to move
+        if key == 27:
+            break
     
     cv2.destroyAllWindows()
 
