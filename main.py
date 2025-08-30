@@ -76,15 +76,17 @@ class GameAnalysisApp:
         for i, img_name in enumerate(images):
             if i % fps != 0:
                 continue
+            self._process_single_image(image_folder, img_name, width, height)
+
             
-            try:
-                self._process_single_image(image_folder, img_name, width, height)
-            except KeyboardInterrupt:
-                print("\\nProcessing interrupted by user")
-                break
-            except Exception as e:
-                print(f"Error processing {img_name}: {e}")
-                continue
+            # try:
+            #     self._process_single_image(image_folder, img_name, width, height)
+            # except KeyboardInterrupt:
+            #     print("\\nProcessing interrupted by user")
+            #     break
+            # except Exception as e:
+            #     print(f"Error processing {img_name}: {e}")
+            #     continue
         
         # Save updated gaze data if available
         if not self.gaze_df.empty:
@@ -238,15 +240,17 @@ def main():
     output_video = sys.argv[2] if len(sys.argv) > 2 else "test_output.mp4"
     fps = int(sys.argv[3]) if len(sys.argv) > 3 else 1
     game_type = sys.argv[4] if len(sys.argv) > 4 else "seaquest"
+    app = GameAnalysisApp(game_type)
+    app.run(image_folder, output_video, fps)
     
-    try:
-        # Create and run the application
-        app = GameAnalysisApp(game_type)
-        app.run(image_folder, output_video, fps)
+    # try:
+    #     # Create and run the application
+    #     app = GameAnalysisApp(game_type)
+    #     app.run(image_folder, output_video, fps)
         
-    except Exception as e:
-        print(f"Application error: {e}")
-        sys.exit(1)
+    # except Exception as e:
+    #     print(f"Application error: {e}")
+    #     sys.exit(1)
 
 
 if __name__ == '__main__':

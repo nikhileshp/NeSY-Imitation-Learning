@@ -50,11 +50,11 @@ class BaseObjectDetector:
         
         coords_list = find_objects(image, colors, **params)
         
-        facing_side = facing_side(image, colors, coords_list)
+        side = facing_side(image, colors, coords_list)
 
         objects = []
         for i, coords in enumerate(coords_list):
-            obj = GameObject(object_type, coords, facing_side, f'{object_type}_{i}')
+            obj = GameObject(object_type, coords, side, f'{object_type}_{i}')
             objects.append(obj)
         
         return objects
