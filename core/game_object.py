@@ -7,8 +7,8 @@ from .config import MIN_COVERAGE_RATIO
 
 class GameObject:
     """Represents a game object with position, size, and type information."""
-    
-    def __init__(self, object_type: str, bounding_box: Tuple[int, int, int, int], facing_side = None,
+
+    def __init__(self, object_type: str, bounding_box: Tuple[int, int, int, int], characteristics = {},
                  object_id: Optional[str] = None):
         """
         Initialize a game object.
@@ -20,8 +20,9 @@ class GameObject:
         """
         self.object_type = object_type
         self.x, self.y, self.width, self.height = bounding_box
-        self.facing_side = facing_side
         self.object_id = object_id or f"{object_type}_{id(self)}"
+        self.characteristics = characteristics
+
     
     @property
     def bounding_box(self) -> Tuple[int, int, int, int]:
@@ -121,8 +122,8 @@ def same_level_of(obj1: GameObject, obj2: GameObject, min_coverage: float = MIN_
     mid_y1 = obj1.y + obj1.height // 2
     coverage = max(0, min(obj1.bottom, obj2.bottom) - max(obj1.top, obj2.top))
     coverage_ratio = coverage / obj2.height if obj2.height > 0 else 0
-    return (obj2.top <= mid_y1 <= obj2.bottom) and (coverage_ratio >= min_coverage)
-
+    return coverage_ratio >= min_coverage
+    
 
 def overlaps(obj1: GameObject, obj2: GameObject) -> bool:
     """Check if two objects overlap."""

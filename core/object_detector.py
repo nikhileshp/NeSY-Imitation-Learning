@@ -4,7 +4,7 @@ Core object detection module - game-agnostic base classes.
 import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Any, Protocol
-from models.OC_Atari.ocatari.vision.utils import find_objects, facing_side
+from models.OC_Atari.ocatari.vision.utils import find_objects
 from .game_object import GameObject
 
 
@@ -50,11 +50,11 @@ class BaseObjectDetector:
         
         coords_list = find_objects(image, colors, **params)
         
-        side = facing_side(image, colors, coords_list)
+     
 
         objects = []
         for i, coords in enumerate(coords_list):
-            obj = GameObject(object_type, coords, side, f'{object_type}_{i}')
+            obj = GameObject(object_type, coords, f'{object_type}_{i}')
             objects.append(obj)
         
         return objects
@@ -88,9 +88,10 @@ class BaseObjectDetector:
         """
         all_objects = []
         for object_type, objects in detected_objects.items():
-            for obj in objects:
-                all_objects.append(obj.object_id)
-        
+            if objects:
+                for obj in objects:
+                    all_objects.append(obj.object_id)
+
         return all_objects
     
     def filter_overlapping_objects(self, objects1: List[GameObject], 

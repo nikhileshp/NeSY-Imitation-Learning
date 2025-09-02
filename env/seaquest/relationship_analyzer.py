@@ -32,7 +32,10 @@ class SeaquestRelationshipConfig:
                 return "aboveWater(player)."
             else:
                 return "belowWater(player)."
-        
+
+        if obj2_type == "facing_side":
+            return f"{rel_type}({obj1_type})."
+     
         # Special formatting for specific Seaquest object types
         if obj2_type == 'enemy':
             return f"{rel_type}Enemy({obj1_type}, {obj2_id})."
@@ -55,6 +58,7 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
     def analyze_all_relationships(self, detected_objects):
         """
         Analyze only specific relationships for Seaquest:
+        - Facing side of certain objects
         - Player vs water surface
         - Player vs enemies 
         - Player vs enemy submarines
@@ -71,6 +75,10 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         
         # Get player objects for relationship analysis
         players = detected_objects.get('player', [])
+
+
+        
+
         if not players:
             return relationships
         
@@ -88,7 +96,7 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
                     relationships.append(ref_relationship)
 
         
-        
+
         # Only analyze relationships with specific object types
         relevant_object_types = ['enemy', 'enemy_submarine', 'enemy_missile', 'diver']
         
@@ -97,5 +105,14 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
             for obj in objects:
                 obj_relationships = self._analyze_object_relationships(player, obj)
                 relationships.extend(obj_relationships)
-        
+
+
+        # Return facing side of objects that contain that characteristic
+        for obj in detected_objects.values():
+            for o in obj:
+                if 'facing_side' in o.characteristics:
+                    char_relationship = self._analyze_object_characteristics_relationship(o)
+                    if char_relationship:
+                        relationships.append(char_relationship)
+
         return relationships

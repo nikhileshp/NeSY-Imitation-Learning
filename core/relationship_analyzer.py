@@ -78,7 +78,19 @@ class BaseRelationshipAnalyzer:
                 relationships.extend(custom_relationships)
         
         return relationships
-    
+
+    def _analyze_object_characteristics_relationship(self, obj: GameObject) -> Optional[SpatialRelationship]:
+        """
+        Analyze the relationship between an object and a reference level based on characteristics.
+        Args:
+            obj: GameObject to analyze
+            level_name: Name of the reference level
+        """
+        for characteristic, value in obj.characteristics.items():
+            if characteristic == "facing_side":
+                ref_obj = GameObject("facing_side", (0, 0, 0, 0), object_id=value)
+                return SpatialRelationship(obj, ref_obj, f'facing{value.capitalize()}')
+
     def _analyze_reference_level_relationship(self, player: GameObject, level_name: str, level_y: int) -> Optional[SpatialRelationship]:
         """
         Analyze the relationship between player and a reference level.
