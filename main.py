@@ -77,12 +77,22 @@ class GameAnalysisApp:
             if i % fps != 0:
                 continue
             
+<<<<<<< HEAD
             try:
                 self._process_single_image(image_folder, img_name, width, height)
             # except KeyboardInterrupt:
                 # print("\\nProcessing interrupted by user")
             except Exception as e:
                 print(f"Error processing {img_name}: {e}")
+=======
+            # try:
+            self._process_single_image(image_folder, img_name, width, height)
+            # except KeyboardInterrupt:
+            print("\\nProcessing interrupted by user")
+            break
+            # except Exception as e:
+            print(f"Error processing {img_name}: {e}")
+>>>>>>> 190b91e726defbd5cece8eeda34d99cbe02eda79
             continue
         
         # Save updated gaze data if available

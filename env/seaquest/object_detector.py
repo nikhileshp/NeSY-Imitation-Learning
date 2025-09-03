@@ -42,7 +42,11 @@ class SeaquestObjectDetector(BaseObjectDetector):
             image: Input image as numpy array
             object_type: Type of object to detect
             
+<<<<<<< HEAD
         Returns:git 
+=======
+        Returns:
+>>>>>>> 190b91e726defbd5cece8eeda34d99cbe02eda79
             List of detected GameObjects
         """
         if object_type not in self.game_config.object_colors:
