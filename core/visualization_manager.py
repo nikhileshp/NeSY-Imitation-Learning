@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Optional
 from models.OC_Atari.ocatari.vision.utils import mark_bb
-from .game_object import GameObject, SpatialRelationship
+from core.game_object import GameObject, SpatialRelationship
 from .config import BASE_VISUALIZATION_COLORS, DEFAULT_OBJECT_COLORS
 
 
@@ -52,6 +52,9 @@ class VisualizationManager:
         for object_type, objects in detected_objects.items():
             color = self.object_color_mapping.get(object_type, (255, 255, 255))
             
+            print(objects)
+            if not objects:
+                continue
             for game_object in objects:
                 mark_bb(annotated_image, game_object.bounding_box, color=color)
         

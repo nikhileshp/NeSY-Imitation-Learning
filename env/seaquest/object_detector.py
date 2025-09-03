@@ -3,7 +3,7 @@ Seaquest-specific object detector implementation.
 """
 import numpy as np
 from typing import List, Dict
-from models.OC_Atari.ocatari.vision.utils import find_objects
+from models.OC_Atari.ocatari.vision.utils import find_objects, facing_side
 
 from core.object_detector import BaseObjectDetector, GameConfig
 from core.game_object import GameObject
@@ -34,7 +34,44 @@ class SeaquestObjectDetector(BaseObjectDetector):
         """Initialize with Seaquest configuration."""
         super().__init__(SeaquestGameConfig())
     
+    def detect_objects_by_type(self, image, object_type):
+        """
+        Detect objects of a specific type in the image.
+        
+        Args:
+            image: Input image as numpy array
+            object_type: Type of object to detect
+            
+        Returns:git 
+            List of detected GameObjects
+        """
+        if object_type not in self.game_config.object_colors:
+            return []
+        
+        colors = self.game_config.object_colors[object_type]
+        params = self.game_config.detection_params.get(object_type, {})
+        coords_list = find_objects(image, colors, **params)
+
+        side = facing_side(image, colors, coords_list)
+
+        objects = []
+        for i, coords in enumerate(coords_list):
+            if object_type in ['player', 'diver', 'enemy', 'enemy_submarine', 'enemy_missile']:
+                print(colors)
+                print(side)
+                print(coords_list)
+                obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}', characteristics={'facing_side': side})
+            else:
+                print(object_type)
+                obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}')
+            objects.append(obj)
+            print(objects)
+
+        return objects
+        
+    
     def detect_all_objects(self, image: np.ndarray) -> Dict[str, List[GameObject]]:
+        
         """
         Detect all Seaquest objects with custom logic.
         
@@ -44,6 +81,7 @@ class SeaquestObjectDetector(BaseObjectDetector):
         Returns:
             Dictionary mapping object types to lists of detected GameObjects
         """
+
         detected_objects = {}
         
         # Detect basic objects using base detector
@@ -66,7 +104,7 @@ class SeaquestObjectDetector(BaseObjectDetector):
         
         # Apply Seaquest-specific cleanup
         self._cleanup_detections(detected_objects)
-        
+       
         return detected_objects
     
     def _detect_submarines(self, image: np.ndarray) -> List[GameObject]:
@@ -117,11 +155,12 @@ class SeaquestObjectDetector(BaseObjectDetector):
                 enemy_missiles.remove(missile)
         
         # Add small divers that are actually enemy missiles (Seaquest-specific logic)
-        for diver in divers:
-            if (6 <= diver.width <= 8) and diver.height == 4:
-                missile = GameObject('enemy_missile', diver.bounding_box, 
-                                  f'enemy_missile_{len(enemy_missiles)}')
-                enemy_missiles.append(missile)
+        if (divers):
+            for diver in divers:
+                if (6 <= diver.width <= 8) and diver.height == 4:
+                    missile = GameObject('enemy_missile', diver.bounding_box, 
+                                      f'enemy_missile_{len(enemy_missiles)}')
+                    enemy_missiles.append(missile)
         
         return enemy_missiles
     
