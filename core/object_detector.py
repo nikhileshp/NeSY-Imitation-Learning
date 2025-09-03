@@ -91,11 +91,7 @@ class BaseObjectDetector:
             if objects:
                 for obj in objects:
                     all_objects.append(obj.object_id)
-<<<<<<< HEAD
     
-=======
-
->>>>>>> 190b91e726defbd5cece8eeda34d99cbe02eda79
         return all_objects
     
     def filter_overlapping_objects(self, objects1: List[GameObject], 
