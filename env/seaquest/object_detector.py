@@ -56,16 +56,16 @@ class SeaquestObjectDetector(BaseObjectDetector):
 
         objects = []
         for i, coords in enumerate(coords_list):
-            if object_type in ['player', 'diver', 'enemy', 'enemy_submarine', 'enemy_missile']:
-                print(colors)
-                print(side)
-                print(coords_list)
+            if object_type in ['player']:
+                # print(colors)
+                # print(side)
+                # print(coords_list)
                 obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}', characteristics={'facing_side': side})
             else:
-                print(object_type)
+                # print(object_type)
                 obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}')
             objects.append(obj)
-            print(objects)
+            # print(objects)
 
         return objects
         
@@ -110,24 +110,23 @@ class SeaquestObjectDetector(BaseObjectDetector):
     def _detect_submarines(self, image: np.ndarray) -> List[GameObject]:
         """Detect submarine objects with underwater and surface detection."""
         submarines = []
+        all_submarine_coords = []
         
         # Detect underwater submarines
         underwater_params = self.game_config.detection_params.get('submarine', {})
         underwater_coords = find_objects(image, self.game_config.object_colors['submarine'], 
                                        **underwater_params)
-        
-        for i, coords in enumerate(underwater_coords):
-            submarine = GameObject('enemy_submarine', coords, f'enemy_submarine_{i}')
-            submarines.append(submarine)
+        all_submarine_coords.extend(underwater_coords)
         
         # Detect submarines on water surface
         surface_params = self.game_config.detection_params.get('submarine_on_water', {})
         surface_coords = find_objects(image, self.game_config.object_colors['submarine'], 
                                     **surface_params)
+        all_submarine_coords.extend(surface_coords)
         
-        for coords in surface_coords:
-            submarine = GameObject('enemy_submarine', coords, 
-                                 f'enemy_submarine_{len(submarines)}')
+        # Create GameObjects with sequential numbering
+        for i, coords in enumerate(all_submarine_coords):
+            submarine = GameObject('enemy_submarine', coords, f'enemy_submarine_{i}')
             submarines.append(submarine)
         
         return submarines
@@ -137,30 +136,33 @@ class SeaquestObjectDetector(BaseObjectDetector):
         params = self.game_config.detection_params.get('enemy_missile', {})
         coords_list = find_objects(image, self.game_config.object_colors['enemy_missile'], **params)
         
-        enemy_missiles = []
-        for i, coords in enumerate(coords_list):
-            missile = GameObject('enemy_missile', coords, f'enemy_missile_{i}')
-            enemy_missiles.append(missile)
+        # First, collect all valid missile coordinates
+        valid_missile_coords = []
         
-        # Remove missiles that overlap with divers
-        missiles_to_remove = []
-        for missile in enemy_missiles:
+        # Add missile coordinates that don't overlap with divers
+        for coords in coords_list:
+            temp_missile = GameObject('enemy_missile', coords, 'temp')
+            overlaps_with_diver = False
+            
             for diver in divers:
-                if self._objects_overlap(missile, diver):
-                    missiles_to_remove.append(missile)
+                if self._objects_overlap(temp_missile, diver):
+                    overlaps_with_diver = True
                     break
-        
-        for missile in missiles_to_remove:
-            if missile in enemy_missiles:
-                enemy_missiles.remove(missile)
+            
+            if not overlaps_with_diver:
+                valid_missile_coords.append(coords)
         
         # Add small divers that are actually enemy missiles (Seaquest-specific logic)
-        if (divers):
+        if divers:
             for diver in divers:
                 if (6 <= diver.width <= 8) and diver.height == 4:
-                    missile = GameObject('enemy_missile', diver.bounding_box, 
-                                      f'enemy_missile_{len(enemy_missiles)}')
-                    enemy_missiles.append(missile)
+                    valid_missile_coords.append(diver.bounding_box)
+        
+        # Create GameObjects with sequential numbering
+        enemy_missiles = []
+        for i, coords in enumerate(valid_missile_coords):
+            missile = GameObject('enemy_missile', coords, f'enemy_missile_{i}')
+            enemy_missiles.append(missile)
         
         return enemy_missiles
     
@@ -193,7 +195,15 @@ class SeaquestObjectDetector(BaseObjectDetector):
                 detected_objects['player_missile'],
                 detected_objects['player']
             )
+            # Reassign sequential IDs after filtering
+            for i, missile in enumerate(cleaned_missiles):
+                missile.object_id = f'player_missile_{i}'
             detected_objects['player_missile'] = cleaned_missiles
+        
+        # Reassign sequential IDs for all object types to ensure consistency
+        for object_type, objects in detected_objects.items():
+            for i, obj in enumerate(objects):
+                obj.object_id = f'{object_type}_{i}'
     
     def _objects_overlap(self, obj1: GameObject, obj2: GameObject) -> bool:
         """Check if two game objects overlap (Seaquest-specific logic)."""

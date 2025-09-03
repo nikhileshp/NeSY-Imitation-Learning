@@ -52,7 +52,7 @@ class VisualizationManager:
         for object_type, objects in detected_objects.items():
             color = self.object_color_mapping.get(object_type, (255, 255, 255))
             
-            print(objects)
+            # print(objects)
             if not objects:
                 continue
             for game_object in objects:
@@ -83,9 +83,15 @@ class VisualizationManager:
             center1 = obj1.center
             center2 = obj2.center
             
-            # Draw line between centers
+            # Determine line color based on relationship type
             line_color = self.base_colors.get('relationship_line', (0, 0, 0))
-            cv2.line(annotated_image, center1, center2, line_color, 1)
+            
+            # Use green line for nearby relationships
+            if 'nearby' in relationships:
+                line_color = self.base_colors.get('nearby_line', (0, 255, 0))  # Green
+            
+            # Draw line between centers
+            cv2.line(annotated_image, center1, center2, line_color, 2)
             
             # Create relationship text
             relationships_text = '-'.join([rel[0].upper() for rel in relationships])

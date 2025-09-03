@@ -125,6 +125,11 @@ def same_level_of(obj1: GameObject, obj2: GameObject, min_coverage: float = MIN_
     return coverage_ratio >= min_coverage
     
 
+def nearby(obj1: GameObject, obj2: GameObject, threshold: float = 14) -> bool:
+    """Check if obj1 is nearby obj2 within a certain distance."""
+    return obj1 != obj2 and ((obj1.center[0] - obj2.center[0]) ** 2 + (obj1.center[1] - obj2.center[1]) ** 2) ** 0.5 <= threshold
+
+
 def overlaps(obj1: GameObject, obj2: GameObject) -> bool:
     """Check if two objects overlap."""
     return not (obj1.right <= obj2.left or obj2.right <= obj1.left or 

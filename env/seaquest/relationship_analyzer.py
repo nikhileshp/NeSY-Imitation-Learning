@@ -88,7 +88,7 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         # Analyze water surface relationship
         if self.game_config:
             reference_levels = self.game_config.get_reference_levels()
-            print(reference_levels)
+            # print(reference_levels)
             for level_name, level_y in reference_levels.items():
                 
                 ref_relationship = self._analyze_reference_level_relationship(player, level_name, level_y)

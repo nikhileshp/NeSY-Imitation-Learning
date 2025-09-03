@@ -2,7 +2,7 @@
 Core relationship analyzer module for analyzing spatial relationships between game objects.
 """
 from typing import List, Dict, Tuple, Optional, Protocol, Callable
-from .game_object import GameObject, SpatialRelationship, above_reference_level, right_of, left_of, above_of, below_of, same_level_of
+from .game_object import GameObject, SpatialRelationship, above_reference_level, nearby, right_of, left_of, above_of, below_of, same_level_of
 
 
 class GameRelationshipConfig(Protocol):
@@ -139,7 +139,10 @@ class BaseRelationshipAnalyzer:
             # Check if they are at the same level
             if same_level_of(obj1, obj2):
                 relationships.append(SpatialRelationship(obj1, obj2, 'sameLevelAs'))
-        
+
+        if nearby(obj1, obj2, threshold=25):  # Increased threshold for better nearby detection
+            relationships.append(SpatialRelationship(obj1, obj2, 'nearby'))
+            
         return relationships
     
     def create_connection_list(self, relationships: List[SpatialRelationship]) -> List[Dict]:

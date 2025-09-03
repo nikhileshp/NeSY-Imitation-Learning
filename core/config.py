@@ -7,7 +7,8 @@ Contains base constants and visualization settings.
 BASE_VISUALIZATION_COLORS = {
     "gaze_position": (0, 0, 255),       # Red
     "relationship_line": (0, 0, 0),     # Black
-    "relationship_text": (0, 0, 0)     # Black
+    "relationship_text": (0, 0, 0),    # Black
+    "nearby_line": (0, 255, 0)          # Green (for nearby relationships)
 }
 
 # General constants
