@@ -131,6 +131,7 @@ class GameAnalysisApp:
             # print(relationships)
             connection_list = self.relationship_analyzer.create_connection_list(relationships)
             print(f"Connection list: {len(connection_list)} connections")
+            print(connection_list)
             
         except Exception as e:
             print(f"Error in relationship analysis: {e}")
@@ -209,7 +210,7 @@ class GameAnalysisApp:
         # Analyze relationships
         relationships = self.relationship_analyzer.analyze_all_relationships(detected_objects)
         connection_list = self.relationship_analyzer.create_connection_list(relationships)
-        
+        print(connection_list)
         # Create visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
             image, detected_objects, connection_list, gaze_positions
