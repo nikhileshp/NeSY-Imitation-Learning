@@ -160,7 +160,7 @@ class BaseRelationshipAnalyzer:
         for relationship in relationships:
             # Skip reference level relationships for connection list
             if any(level in relationship.obj2.object_id.lower() 
-                   for level in ['water', 'right', 'left', 'surface', 'ground', 'ceiling']):
+                   for level in ['water', 'right', 'left', 'surface', 'ground', 'ceiling', "diver_count_state"]):
                 continue
             
             # Check if we already have a connection between these objects

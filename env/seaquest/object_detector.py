@@ -7,6 +7,7 @@ from models.OC_Atari.ocatari.vision.utils import find_objects, facing_side
 
 from core.object_detector import BaseObjectDetector, GameConfig
 from core.game_object import GameObject
+from core.object_tracker import ObjectTracker
 from .config import OBJECT_COLORS, ENEMY_COLORS, DETECTION_PARAMS
 
 
@@ -28,11 +29,27 @@ class SeaquestGameConfig:
 
 
 class SeaquestObjectDetector(BaseObjectDetector):
-    """Seaquest-specific object detector with custom detection logic."""
+    """Seaquest-specific object detector with custom detection logic and object tracking."""
     
     def __init__(self):
         """Initialize with Seaquest configuration."""
         super().__init__(SeaquestGameConfig())
+        
+        # Initialize object tracker with maximum object counts for each type
+        max_objects = {
+            'player': 1,
+            'enemy': 20,          # Allow up to 20 enemies
+            'enemy_submarine': 10, # Allow up to 10 submarines
+            'diver': 15,           # Allow up to 15 divers
+            'collected_diver': 8,  # Max 8 collected divers (game limit is 6)
+            'player_missile': 5,   # Allow up to 5 player missiles
+            'enemy_missile': 20,   # Allow up to 20 enemy missiles
+            'lives': 5,            # Max 5 lives display
+            'oxygen_bar': 1,
+            'oxygen_depleted': 1
+        }
+        self.object_tracker = ObjectTracker(max_objects)
+        self.use_tracking = True
     
     def detect_objects_by_type(self, image, object_type):
         """
@@ -42,11 +59,7 @@ class SeaquestObjectDetector(BaseObjectDetector):
             image: Input image as numpy array
             object_type: Type of object to detect
             
-<<<<<<< HEAD
         Returns:git 
-=======
-        Returns:
->>>>>>> 190b91e726defbd5cece8eeda34d99cbe02eda79
             List of detected GameObjects
         """
         if object_type not in self.game_config.object_colors:
@@ -60,7 +73,7 @@ class SeaquestObjectDetector(BaseObjectDetector):
 
         objects = []
         for i, coords in enumerate(coords_list):
-            if object_type in ['player']:
+            if object_type in ['player','enemy_submarine']:
                 # print(colors)
                 # print(side)
                 # print(coords_list)
@@ -108,6 +121,10 @@ class SeaquestObjectDetector(BaseObjectDetector):
         
         # Apply Seaquest-specific cleanup
         self._cleanup_detections(detected_objects)
+        
+        # Apply object tracking to maintain consistent IDs across frames
+        if self.use_tracking:
+            detected_objects = self.object_tracker.track_all_objects(detected_objects)
        
         return detected_objects
     
@@ -213,3 +230,19 @@ class SeaquestObjectDetector(BaseObjectDetector):
         """Check if two game objects overlap (Seaquest-specific logic)."""
         return (obj1.left >= obj2.left and obj1.left <= obj2.right and 
                 obj1.top >= obj2.top and obj1.top <= obj2.bottom)
+    
+    def enable_tracking(self):
+        """Enable object tracking to maintain consistent IDs."""
+        self.use_tracking = True
+    
+    def disable_tracking(self):
+        """Disable object tracking (use sequential IDs)."""
+        self.use_tracking = False
+    
+    def reset_tracking(self):
+        """Reset the object tracker state."""
+        self.object_tracker.reset()
+    
+    def get_tracking_info(self):
+        """Get current tracking information for debugging."""
+        return self.object_tracker.get_tracking_info()

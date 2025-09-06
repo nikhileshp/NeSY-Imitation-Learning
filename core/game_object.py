@@ -119,10 +119,8 @@ def below_of(obj1: GameObject, obj2: GameObject, min_coverage: float = MIN_COVER
 
 def same_level_of(obj1: GameObject, obj2: GameObject, min_coverage: float = MIN_COVERAGE_RATIO) -> bool:
     """Check if obj1 is at the same level as obj2."""
-    mid_y1 = obj1.y + obj1.height // 2
-    coverage = max(0, min(obj1.bottom, obj2.bottom) - max(obj1.top, obj2.top))
-    coverage_ratio = coverage / obj2.height if obj2.height > 0 else 0
-    return coverage_ratio >= min_coverage
+    # If not above or below then they are at the same level
+    return not above_of(obj1, obj2, min_coverage) and not below_of(obj1, obj2, min_coverage)
     
 
 def nearby(obj1: GameObject, obj2: GameObject, threshold: float = 14) -> bool:

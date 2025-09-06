@@ -34,16 +34,18 @@ class VisualizationManager:
         self.object_color_mapping.update(new_mapping)
     
     def draw_all_objects(self, image: np.ndarray, 
-                        detected_objects: Dict[str, List[GameObject]]) -> np.ndarray:
+                        detected_objects: Dict[str, List[GameObject]], 
+                        relationships: Optional[List[SpatialRelationship]] = None) -> np.ndarray:
         """
-        Draw bounding boxes around all detected objects.
+        Draw bounding boxes around all detected objects with enhanced features.
         
         Args:
             image: Input image as numpy array
             detected_objects: Dictionary mapping object types to GameObjects
+            relationships: Optional list of relationships for directional arrows
             
         Returns:
-            Image with bounding boxes drawn
+            Image with bounding boxes, indexes, and directional arrows drawn
         """
         # Create a copy to avoid modifying the original image
         annotated_image = image.copy()
@@ -52,11 +54,16 @@ class VisualizationManager:
         for object_type, objects in detected_objects.items():
             color = self.object_color_mapping.get(object_type, (255, 255, 255))
             
-            # print(objects)
             if not objects:
                 continue
+                
             for game_object in objects:
-                mark_bb(annotated_image, game_object.bounding_box, color=color)
+                # Draw bounding box
+                self._draw_bounding_box_with_index(annotated_image, game_object, color)
+                
+                # Draw directional arrow if object has facing side relationship
+                if relationships:
+                    self._draw_directional_arrow(annotated_image, game_object, relationships)
         
         return annotated_image
     
@@ -91,7 +98,7 @@ class VisualizationManager:
                 line_color = self.base_colors.get('nearby_line', (0, 255, 0))  # Green
             
             # Draw line between centers
-            cv2.line(annotated_image, center1, center2, line_color, 2)
+            cv2.line(annotated_image, center1, center2, line_color, 1)
             
             # Create relationship text
             relationships_text = '-'.join([rel[0].upper() for rel in relationships])
@@ -102,7 +109,7 @@ class VisualizationManager:
             # Draw relationship text
             text_color = self.base_colors.get('relationship_text', (0, 0, 0))
             cv2.putText(annotated_image, relationships_text, mid_point, 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.3, text_color, 1)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.2, text_color, 1)
         
         return annotated_image
     
@@ -135,6 +142,7 @@ class VisualizationManager:
                                          detected_objects: Dict[str, List[GameObject]],
                                          connection_list: List[Dict],
                                          gaze_positions: List[Tuple[int, int]],
+                                         relationships: Optional[List[SpatialRelationship]] = None,
                                          scale_factor: int = 2) -> np.ndarray:
         """
         Create a comprehensive visualization with all elements.
@@ -144,6 +152,7 @@ class VisualizationManager:
             detected_objects: Dictionary mapping object types to GameObjects
             connection_list: List of connection dictionaries
             gaze_positions: List of (x, y) gaze position tuples
+            relationships: Optional list of relationships for enhanced features
             scale_factor: Factor by which to scale the output image
             
         Returns:
@@ -155,8 +164,8 @@ class VisualizationManager:
         # Get image dimensions
         height, width = image.shape[:2]
         
-        # Draw all objects with bounding boxes
-        annotated_image = self.draw_all_objects(annotated_image, detected_objects)
+        # Draw all objects with bounding boxes, indexes, and directional arrows
+        annotated_image = self.draw_all_objects(annotated_image, detected_objects, relationships)
         
         # Draw relationships
         annotated_image = self.draw_relationships(annotated_image, connection_list)
@@ -264,6 +273,124 @@ class VisualizationManager:
                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
         
         return annotated_image
+    
+    def _draw_bounding_box_with_index(self, image: np.ndarray, game_object: GameObject, color: Tuple[int, int, int]):
+        """
+        Draw bounding box with object index on the top-right corner.
+        
+        Args:
+            image: Image to draw on
+            game_object: GameObject to draw
+            color: Bounding box color
+        """
+        # Draw the bounding box using the existing mark_bb function
+        mark_bb(image, game_object.bounding_box, color=color)
+        
+        # Extract index from object_id (e.g., "enemy_0" -> "0")
+        object_index = self._extract_object_index(game_object.object_id)
+        
+        if object_index is not None:
+            # Position index at top-right corner of bounding box
+            index_x = game_object.x + game_object.width - 8  # 8 pixels from right edge
+            index_y = game_object.y + 12  # 12 pixels down from top
+            
+            # Ensure index is within image bounds
+            index_x = max(0, min(index_x, image.shape[1] - 10))
+            index_y = max(12, min(index_y, image.shape[0] - 5))
+            
+            # Draw small background circle for better visibility
+            cv2.circle(image, (index_x + 4, index_y - 4), 6, (0, 0, 0), -1)  # Black background
+            cv2.circle(image, (index_x + 4, index_y - 4), 6, color, 1)  # Colored border
+            
+            # Draw index number
+            cv2.putText(image, str(object_index), (index_x, index_y),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
+    
+    def _extract_object_index(self, object_id: str) -> Optional[int]:
+        """
+        Extract the numeric index from an object ID.
+        
+        Args:
+            object_id: Object ID string (e.g., "enemy_0", "player_1")
+            
+        Returns:
+            Integer index or None if not found
+        """
+        try:
+            # Split by underscore and get the last part
+            parts = object_id.split('_')
+            if len(parts) >= 2:
+                return int(parts[-1])
+        except (ValueError, IndexError):
+            pass
+        return None
+    
+    def _draw_directional_arrow(self, image: np.ndarray, game_object: GameObject, 
+                               relationships: List[SpatialRelationship]):
+        """
+        Draw directional arrow for objects with facing side relationships.
+        
+        Args:
+            image: Image to draw on
+            game_object: GameObject to check for facing relationships
+            relationships: List of spatial relationships
+        """
+        # Find facing side relationship for this object
+        facing_direction = None
+        for relationship in relationships:
+            if (relationship.obj1 == game_object and 
+                relationship.relationship_type.startswith('facing')):
+                # Extract direction from relationship type (e.g., 'facingLeft' -> 'left')
+                direction_part = relationship.relationship_type.replace('facing', '').lower()
+                facing_direction = direction_part
+                break
+        
+        if facing_direction:
+            self._draw_arrow_for_direction(image, game_object, facing_direction)
+    
+    def _draw_arrow_for_direction(self, image: np.ndarray, game_object: GameObject, direction: str):
+        """
+        Draw an arrow indicating the facing direction.
+        
+        Args:
+            image: Image to draw on
+            game_object: GameObject to draw arrow for
+            direction: Direction string ('left', 'right', 'up', 'down')
+        """
+        # Calculate arrow position (center of object)
+        center_x, center_y = game_object.center
+        
+        # Arrow properties
+        arrow_length = 15
+        arrow_color = (255, 255, 0)  # Yellow arrow
+        arrow_thickness = 2
+        
+        # Calculate arrow end point based on direction
+        if direction == 'left':
+            end_x = center_x - arrow_length
+            end_y = center_y
+        elif direction == 'right':
+            end_x = center_x + arrow_length
+            end_y = center_y
+        elif direction == 'up':
+            end_x = center_x
+            end_y = center_y - arrow_length
+        elif direction == 'down':
+            end_x = center_x
+            end_y = center_y + arrow_length
+        else:
+            return  # Unknown direction
+        
+        # Draw arrow line
+        cv2.arrowedLine(image, (center_x, center_y), (end_x, end_y), 
+                       arrow_color, arrow_thickness, tipLength=0.3)
+        
+        # Add direction label near the arrow
+        label_x = end_x + (5 if direction == 'right' else -15 if direction == 'left' else -8)
+        label_y = end_y + (5 if direction == 'down' else -5 if direction == 'up' else 5)
+        
+        cv2.putText(image, direction[0].upper(), (label_x, label_y),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.3, arrow_color, 1)
 
 
 def create_seaquest_visualization_manager() -> VisualizationManager:
