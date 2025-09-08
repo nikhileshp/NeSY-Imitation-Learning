@@ -10,7 +10,7 @@ from collections import deque
 class MovementTracker:
     """Tracks object movement to determine facing direction."""
     
-    def __init__(self, history_size: int = 5, min_movement_threshold: float = 2.0, momentum_threshold: int = 3):
+    def __init__(self, history_size: int = 5, min_movement_threshold: float = 2.0, momentum_threshold: int = 3, lock_direction: bool = False):
         """
         Initialize movement tracker.
         
@@ -18,13 +18,16 @@ class MovementTracker:
             history_size: Number of previous positions to track
             min_movement_threshold: Minimum movement distance to consider for direction
             momentum_threshold: Number of consistent direction changes needed to update facing
+            lock_direction: If True, direction is locked once detected and never changes
         """
         self.history_size = history_size
         self.min_movement_threshold = min_movement_threshold
         self.momentum_threshold = momentum_threshold
+        self.lock_direction = lock_direction
         self.position_history: Dict[str, deque] = {}
         self.facing_direction_cache: Dict[str, str] = {}
         self.direction_momentum: Dict[str, deque] = {}  # Track direction changes for momentum
+        self.direction_locked: Dict[str, bool] = {}  # Track which objects have locked directions
     
     def update_position(self, object_id: str, center_x: float, center_y: float):
         """
@@ -42,9 +45,10 @@ class MovementTracker:
     
     def get_facing_direction(self, object_id: str) -> Optional[str]:
         """
-        Determine facing direction based on X-coordinate movement only with momentum-based stability.
-        Enemy submarines only move left or right. Uses momentum to avoid flickering when
-        submarines briefly move backward.
+        Determine facing direction based on X-coordinate movement only.
+        
+        If lock_direction is True, the direction is determined once and never changes.
+        Otherwise, uses momentum-based stability to avoid flickering when submarines briefly move backward.
         
         Args:
             object_id: Unique identifier for the object
@@ -54,6 +58,10 @@ class MovementTracker:
         """
         if object_id not in self.position_history:
             return None
+        
+        # If direction locking is enabled and this object already has a locked direction, return it
+        if self.lock_direction and self.direction_locked.get(object_id, False):
+            return self.facing_direction_cache.get(object_id)
         
         history = list(self.position_history[object_id])
         
@@ -77,42 +85,80 @@ class MovementTracker:
             # No significant movement, return cached direction
             return self.facing_direction_cache.get(object_id, None)
         
-        # Determine immediate direction based on most recent movements
-        recent_avg_dx = np.mean(x_movements[-2:]) if len(x_movements) >= 2 else x_movements[-1]
-        immediate_direction = 'left' if recent_avg_dx < 0 else 'right'
-        
-        # Initialize momentum tracking for this object if not exists
-        if object_id not in self.direction_momentum:
-            self.direction_momentum[object_id] = deque(maxlen=self.momentum_threshold * 2)
-        
-        # Add the immediate direction to momentum tracking
-        self.direction_momentum[object_id].append(immediate_direction)
-        
-        # Current cached direction
-        current_cached_direction = self.facing_direction_cache.get(object_id)
-        
-        # If we don't have a cached direction, use immediate direction
-        if current_cached_direction is None:
-            self.facing_direction_cache[object_id] = immediate_direction
-            return immediate_direction
-        
-        # Count consecutive occurrences of the immediate direction
-        momentum_history = list(self.direction_momentum[object_id])
-        if len(momentum_history) < self.momentum_threshold:
-            # Not enough momentum history, keep current direction
+        # Determine direction based on movement patterns
+        if self.lock_direction:
+            # For locked direction mode, analyze first 5 frames of movement to find max direction
+            if len(history) >= 5:  # Wait for 5 frames before determining direction
+                # Calculate cumulative movement in each direction over first 5 frames
+                left_movement = 0
+                right_movement = 0
+                
+                for i in range(1, min(6, len(history))):
+                    prev_x, prev_y = history[i-1]
+                    curr_x, curr_y = history[i]
+                    dx = curr_x - prev_x
+                    
+                    # Only consider significant movements
+                    if abs(dx) >= self.min_movement_threshold:
+                        if dx < 0:
+                            left_movement += abs(dx)
+                        else:
+                            right_movement += abs(dx)
+                
+                # Determine direction based on maximum movement
+                if left_movement > right_movement:
+                    direction = 'left'
+                elif right_movement > left_movement:
+                    direction = 'right'
+                else:
+                    # If movements are equal, fall back to average of all movements
+                    avg_dx = np.mean(x_movements) if x_movements else 0
+                    direction = 'left' if avg_dx < 0 else 'right'
+                
+                # Lock the direction now that we have 5 frames of data
+                self.facing_direction_cache[object_id] = direction
+                self.direction_locked[object_id] = True
+                return direction
+            else:
+                # Not enough frames yet, return cached direction if available, otherwise None
+                return self.facing_direction_cache.get(object_id, None)
+        else:
+            # Use momentum-based approach for dynamic direction changes
+            recent_avg_dx = np.mean(x_movements[-2:]) if len(x_movements) >= 2 else x_movements[-1]
+            immediate_direction = 'left' if recent_avg_dx < 0 else 'right'
+            
+            # Initialize momentum tracking for this object if not exists
+            if object_id not in self.direction_momentum:
+                self.direction_momentum[object_id] = deque(maxlen=self.momentum_threshold * 2)
+            
+            # Add the immediate direction to momentum tracking
+            self.direction_momentum[object_id].append(immediate_direction)
+            
+            # Current cached direction
+            current_cached_direction = self.facing_direction_cache.get(object_id)
+            
+            # If we don't have a cached direction, use immediate direction
+            if current_cached_direction is None:
+                self.facing_direction_cache[object_id] = immediate_direction
+                return immediate_direction
+            
+            # Count consecutive occurrences of the immediate direction
+            momentum_history = list(self.direction_momentum[object_id])
+            if len(momentum_history) < self.momentum_threshold:
+                # Not enough momentum history, keep current direction
+                return current_cached_direction
+            
+            # Check if the last N directions are consistent and different from cached
+            recent_directions = momentum_history[-self.momentum_threshold:]
+            if (len(set(recent_directions)) == 1 and  # All same direction
+                recent_directions[0] != current_cached_direction and  # Different from cached
+                all(d == immediate_direction for d in recent_directions)):  # Consistent with immediate
+                # Enough momentum to change direction
+                self.facing_direction_cache[object_id] = immediate_direction
+                return immediate_direction
+            
+            # Not enough momentum to change, keep cached direction
             return current_cached_direction
-        
-        # Check if the last N directions are consistent and different from cached
-        recent_directions = momentum_history[-self.momentum_threshold:]
-        if (len(set(recent_directions)) == 1 and  # All same direction
-            recent_directions[0] != current_cached_direction and  # Different from cached
-            all(d == immediate_direction for d in recent_directions)):  # Consistent with immediate
-            # Enough momentum to change direction
-            self.facing_direction_cache[object_id] = immediate_direction
-            return immediate_direction
-        
-        # Not enough momentum to change, keep cached direction
-        return current_cached_direction
     
     
     def reset_object(self, object_id: str):
@@ -128,6 +174,8 @@ class MovementTracker:
             del self.facing_direction_cache[object_id]
         if object_id in self.direction_momentum:
             del self.direction_momentum[object_id]
+        if object_id in self.direction_locked:
+            del self.direction_locked[object_id]
     
     def get_debug_info(self, object_id: str) -> Dict:
         """
@@ -142,6 +190,7 @@ class MovementTracker:
         history = list(self.position_history.get(object_id, []))
         cached_direction = self.facing_direction_cache.get(object_id, None)
         momentum_history = list(self.direction_momentum.get(object_id, []))
+        is_locked = self.direction_locked.get(object_id, False)
         
         debug_info = {
             'object_id': object_id,
@@ -149,7 +198,9 @@ class MovementTracker:
             'cached_direction': cached_direction,
             'history_length': len(history),
             'momentum_history': momentum_history,
-            'momentum_threshold': self.momentum_threshold
+            'momentum_threshold': self.momentum_threshold,
+            'lock_direction': self.lock_direction,
+            'direction_locked': is_locked
         }
         
         if len(history) >= 2:
@@ -169,12 +220,17 @@ class MovementTracker:
 class EnemySubmarineFacingDetector:
     """Specialized facing detection for enemy submarines using movement tracking."""
     
-    def __init__(self):
-        """Initialize the enemy submarine facing detector."""
+    def __init__(self, lock_direction: bool = True):
+        """Initialize the enemy submarine facing detector.
+        
+        Args:
+            lock_direction: If True, direction is locked once detected (recommended for submarines)
+        """
         self.movement_tracker = MovementTracker(
-            history_size=5,  # Keep sufficient history for momentum calculation
+            history_size=6,  # Need at least 6 positions to analyze 5 frame transitions
             min_movement_threshold=1.0,  # Lower threshold for submarine movement
-            momentum_threshold=3  # Require 3 consistent direction changes to switch
+            momentum_threshold=3,  # Require 3 consistent direction changes to switch (if not locked)
+            lock_direction=lock_direction  # Lock direction once determined
         )
     
     def update_submarine_position(self, submarine_object):
