@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Any
 from scipy.optimize import linear_sum_assignment
 
 from core.game_object import GameObject
+from core.movement_tracker import EnemySubmarineFacingDetector
 
 
 class NoObject:
@@ -27,9 +28,9 @@ class NoObject:
 class TrackableGameObject(GameObject):
     """Extended GameObject with tracking capabilities for OC-Atari compatibility."""
     
-    def __init__(self, object_type: str, bounding_box: tuple, object_id: str = None, 
-                 characteristics: dict = None):
-        super().__init__(object_type, bounding_box, object_id, characteristics)
+    def __init__(self, object_type: str, bounding_box: tuple, characteristics: dict = None, 
+                 object_id: str = None):
+        super().__init__(object_type, bounding_box, characteristics or {}, object_id)
         # Add tracking properties required by OC-Atari functions
         self._xy = (self.x, self.y)
         self.wh = (self.width, self.height)
@@ -66,6 +67,8 @@ class ObjectTracker:
         self.max_objects_per_type = max_objects_per_type or {}
         self.previous_objects = {}  # Track objects from previous frame
         self.current_frame = 0
+        # Initialize enemy submarine facing detector
+        self.submarine_facing_detector = EnemySubmarineFacingDetector()
         
     def _compute_cost_matrix(self, prev_objects: List, current_bboxes: List) -> np.ndarray:
         """
@@ -92,10 +95,10 @@ class ObjectTracker:
         """Convert GameObject list to bounding box tuples for matching."""
         return [obj.bounding_box for obj in objects]
     
-    def _create_trackable_object(self, object_type: str, bbox: tuple, index: int) -> TrackableGameObject:
-        """Create a new trackable object with consistent ID."""
+    def _create_trackable_object(self, object_type: str, bbox: tuple, index: int, characteristics: dict = None) -> TrackableGameObject:
+        """Create a new trackable object with consistent ID and characteristics."""
         object_id = f"{object_type}_{index}"
-        obj = TrackableGameObject(object_type, bbox, object_id)
+        obj = TrackableGameObject(object_type, bbox, characteristics, object_id)
         # Ensure the object_id is set correctly
         obj.object_id = object_id
         return obj
@@ -134,7 +137,12 @@ class ObjectTracker:
         # If no previous objects, create new ones with consistent IDs
         if all(isinstance(obj, NoObject) or not obj for obj in prev_objects):
             for i in range(min(max_objects, len(current_bboxes))):
-                prev_objects[i] = self._create_trackable_object(object_type, current_bboxes[i], i)
+                # Carry forward the object characteristics if available
+                if i < len(detected_objects):
+                    characteristics = detected_objects[i].characteristics
+                else:
+                    characteristics = {}
+                prev_objects[i] = self._create_trackable_object(object_type, current_bboxes[i], i, characteristics)
             return [obj for obj in prev_objects if obj and not isinstance(obj, NoObject)]
         
         # Perform Hungarian matching
@@ -147,17 +155,22 @@ class ObjectTracker:
         # Update matched objects
         for obj_idx, bbox_idx in zip(obj_indices, bbox_indices):
             if obj_idx < len(prev_objects) and bbox_idx < len(current_bboxes):
+                # Get characteristics from current detection
+                current_characteristics = detected_objects[bbox_idx].characteristics if bbox_idx < len(detected_objects) else {}
+                
                 if isinstance(prev_objects[obj_idx], NoObject) or not prev_objects[obj_idx]:
-                    # Create new object with the same index
+                    # Create new object with the same index and current characteristics
                     new_objects[obj_idx] = self._create_trackable_object(
-                        object_type, current_bboxes[bbox_idx], obj_idx)
+                        object_type, current_bboxes[bbox_idx], obj_idx, current_characteristics)
                 else:
-                    # Update existing object
+                    # Update existing object position and characteristics
                     existing_obj = prev_objects[obj_idx]
                     existing_obj.x, existing_obj.y, existing_obj.width, existing_obj.height = current_bboxes[bbox_idx]
                     existing_obj._xy = (existing_obj.x, existing_obj.y)
                     existing_obj.wh = (existing_obj.width, existing_obj.height)
                     existing_obj.num_frames_invisible = 0
+                    # Update characteristics with current detection data
+                    existing_obj.characteristics = current_characteristics
                     new_objects[obj_idx] = existing_obj
         
         # Handle unmatched detections - assign to first available slots
@@ -171,8 +184,10 @@ class ObjectTracker:
         for bbox_idx in unmatched_detections:
             if available_slots:
                 slot_idx = available_slots.pop(0)
+                # Get characteristics from the unmatched detection
+                unmatched_characteristics = detected_objects[bbox_idx].characteristics if bbox_idx < len(detected_objects) else {}
                 new_objects[slot_idx] = self._create_trackable_object(
-                    object_type, current_bboxes[bbox_idx], slot_idx)
+                    object_type, current_bboxes[bbox_idx], slot_idx, unmatched_characteristics)
         
         # Update previous objects for next frame
         self.previous_objects[object_type] = new_objects
@@ -195,6 +210,14 @@ class ObjectTracker:
         
         for object_type, objects in detected_objects.items():
             tracked_objects[object_type] = self.match_objects_for_type(object_type, objects)
+            
+        # Update movement tracking and facing direction for enemy submarines
+        if 'enemy_submarine' in tracked_objects:
+            for submarine in tracked_objects['enemy_submarine']:
+                # Update position in movement tracker
+                self.submarine_facing_detector.update_submarine_position(submarine)
+                # Update characteristics with movement-based facing direction
+                self.submarine_facing_detector.update_submarine_characteristics(submarine)
             
         return tracked_objects
     

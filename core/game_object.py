@@ -29,6 +29,11 @@ class GameObject:
         """Returns the bounding box as (x, y, width, height)."""
         return (self.x, self.y, self.width, self.height)
     
+    @bounding_box.setter
+    def bounding_box(self, value: Tuple[int, int, int, int]):
+        """Sets the bounding box as (x, y, width, height)."""
+        self.x, self.y, self.width, self.height = value
+    
     @property
     def center(self) -> Tuple[int, int]:
         """Returns the center point of the object."""
@@ -55,7 +60,7 @@ class GameObject:
         return self.y + self.height
     
     def __repr__(self) -> str:
-        return f"GameObject({self.object_id}, {self.object_type}, {self.bounding_box})"
+        return f"GameObject({self.object_id}, {self.object_type}, {self.bounding_box}, {self.characteristics})"
 
 
 class SpatialRelationship:

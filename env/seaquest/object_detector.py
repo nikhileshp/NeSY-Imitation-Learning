@@ -73,14 +73,13 @@ class SeaquestObjectDetector(BaseObjectDetector):
 
         objects = []
         for i, coords in enumerate(coords_list):
-            if object_type in ['player','enemy_submarine']:
-                # print(colors)
-                # print(side)
-                # print(coords_list)
-                obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}', characteristics={'facing_side': side})
+            if object_type in ['player']:
+
+
+                obj = GameObject(object_type=object_type, bounding_box=coords, object_id=f'{object_type}_{i}', characteristics={'facing_side': side})
             else:
                 # print(object_type)
-                obj = GameObject(object_type, coords, object_id=f'{object_type}_{i}')
+                obj = GameObject(object_type=object_type, bounding_box=coords, object_id=f'{object_type}_{i}')
             objects.append(obj)
             # print(objects)
 
@@ -139,6 +138,7 @@ class SeaquestObjectDetector(BaseObjectDetector):
                                        **underwater_params)
         all_submarine_coords.extend(underwater_coords)
         
+
         # Detect submarines on water surface
         surface_params = self.game_config.detection_params.get('submarine_on_water', {})
         surface_coords = find_objects(image, self.game_config.object_colors['submarine'], 
@@ -147,7 +147,10 @@ class SeaquestObjectDetector(BaseObjectDetector):
         
         # Create GameObjects with sequential numbering
         for i, coords in enumerate(all_submarine_coords):
-            submarine = GameObject('enemy_submarine', coords, f'enemy_submarine_{i}')
+            side = facing_side(image, self.game_config.object_colors['submarine'], [coords])
+            submarine = GameObject(object_type='enemy_submarine', bounding_box=coords, object_id=f'enemy_submarine_{i}'
+                                   ,characteristics={'facing_side': side})
+            
             submarines.append(submarine)
         
         return submarines

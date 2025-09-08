@@ -61,9 +61,12 @@ class VisualizationManager:
                 # Draw bounding box
                 self._draw_bounding_box_with_index(annotated_image, game_object, color)
                 
-                # Draw directional arrow if object has facing side relationship
+                # Draw directional arrow if object has facing side relationship OR facing_side characteristic
                 if relationships:
                     self._draw_directional_arrow(annotated_image, game_object, relationships)
+                elif hasattr(game_object, 'characteristics') and 'facing_side' in game_object.characteristics:
+                    # Draw arrow directly from object characteristics
+                    self._draw_arrow_for_direction(annotated_image, game_object, game_object.characteristics['facing_side'])
         
         return annotated_image
     
@@ -107,9 +110,9 @@ class VisualizationManager:
             mid_point = ((center1[0] + center2[0]) // 2, (center1[1] + center2[1]) // 2)
             
             # Draw relationship text
-            text_color = self.base_colors.get('relationship_text', (0, 0, 0))
+            text_color = self.base_colors.get('relationship_text', (255,255,255))
             cv2.putText(annotated_image, relationships_text, mid_point, 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.2, text_color, 1)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.3, text_color, 1)
         
         return annotated_image
     
@@ -297,14 +300,10 @@ class VisualizationManager:
             # Ensure index is within image bounds
             index_x = max(0, min(index_x, image.shape[1] - 10))
             index_y = max(12, min(index_y, image.shape[0] - 5))
-            
-            # Draw small background circle for better visibility
-            cv2.circle(image, (index_x + 4, index_y - 4), 6, (0, 0, 0), -1)  # Black background
-            cv2.circle(image, (index_x + 4, index_y - 4), 6, color, 1)  # Colored border
-            
+           
             # Draw index number
             cv2.putText(image, str(object_index), (index_x, index_y),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 255, 255), 1)
     
     def _extract_object_index(self, object_id: str) -> Optional[int]:
         """
@@ -339,9 +338,15 @@ class VisualizationManager:
         facing_direction = None
         for relationship in relationships:
             if (relationship.obj1 == game_object and 
-                relationship.relationship_type.startswith('facing')):
-                # Extract direction from relationship type (e.g., 'facingLeft' -> 'left')
-                direction_part = relationship.relationship_type.replace('facing', '').lower()
+                (relationship.relationship_type.startswith('facing') or 
+                 relationship.relationship_type.startswith('enemyFacing'))):
+                # Extract direction from relationship type
+                if relationship.relationship_type.startswith('enemyFacing'):
+                    # e.g., 'enemyFacingLeft' -> 'left'
+                    direction_part = relationship.relationship_type.replace('enemyFacing', '').lower()
+                else:
+                    # e.g., 'facingLeft' -> 'left'
+                    direction_part = relationship.relationship_type.replace('facing', '').lower()
                 facing_direction = direction_part
                 break
         
@@ -361,8 +366,8 @@ class VisualizationManager:
         center_x, center_y = game_object.center
         
         # Arrow properties
-        arrow_length = 15
-        arrow_color = (255, 255, 0)  # Yellow arrow
+        arrow_length = 15  # Length of the arrow
+        arrow_color = (0, 0, 0)  # Black arrow
         arrow_thickness = 2
         
         # Calculate arrow end point based on direction
@@ -390,7 +395,7 @@ class VisualizationManager:
         label_y = end_y + (5 if direction == 'down' else -5 if direction == 'up' else 5)
         
         cv2.putText(image, direction[0].upper(), (label_x, label_y),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.3, arrow_color, 1)
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255,255,255), 1)
 
 
 def create_seaquest_visualization_manager() -> VisualizationManager:

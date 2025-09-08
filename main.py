@@ -77,13 +77,13 @@ class GameAnalysisApp:
             if i % fps != 0:
                 continue
             
-            try:
-                self._process_single_image(image_folder, img_name, width, height)
+           
+            self._process_single_image(image_folder, img_name, width, height)
             # except KeyboardInterrupt:
                 # print("\\nProcessing interrupted by user")
-            except Exception as e:
-                print(f"Error processing {img_name}: {e}")
-            continue
+            # except Exception as e:
+                # print(f"Error processing {img_name}: {e}")
+            # continue
         
         # Save updated gaze data if available
         if not self.gaze_df.empty:
@@ -210,7 +210,7 @@ class GameAnalysisApp:
         # Analyze relationships
         relationships = self.relationship_analyzer.analyze_all_relationships(detected_objects)
         connection_list = self.relationship_analyzer.create_connection_list(relationships)
-        print(connection_list)
+        
         # Create visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
             image, detected_objects, connection_list, gaze_positions

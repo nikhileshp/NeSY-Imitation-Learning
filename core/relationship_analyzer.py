@@ -87,6 +87,7 @@ class BaseRelationshipAnalyzer:
             level_name: Name of the reference level
         """
         for characteristic, value in obj.characteristics.items():
+            print("Analyzing characteristic", characteristic, value)
             if characteristic == "facing_side":
                 ref_obj = GameObject("facing_side", (0, 0, 0, 0), object_id=value)
                 return SpatialRelationship(obj, ref_obj, f'facing{value.capitalize()}')
@@ -160,7 +161,7 @@ class BaseRelationshipAnalyzer:
         for relationship in relationships:
             # Skip reference level relationships for connection list
             if any(level in relationship.obj2.object_id.lower() 
-                   for level in ['water', 'right', 'left', 'surface', 'ground', 'ceiling', "diver_count_state"]):
+                   for level in ['oxygen_level_state',g'water', 'right', 'left', 'surface', 'ground', 'ceiling', "diver_count_state"]):
                 continue
             
             # Check if we already have a connection between these objects
