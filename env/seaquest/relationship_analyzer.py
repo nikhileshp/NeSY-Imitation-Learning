@@ -56,6 +56,10 @@ class SeaquestRelationshipConfig:
                 return "oxygenLow()."
             elif rel_type == 'oxygenOk':
                 return "oxygenOk()."
+        
+        # Special formatting for visibility relationships - include object ID
+        if obj2_type == 'visibility_state':
+            return f"{rel_type}({obj1_id})."
      
         # Handle grounded spatial relations that already include object type in relation name
         # Extract the base relation type and check if it contains object type suffix
@@ -106,10 +110,14 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
                     if char_relationship:
                         relationships.append(char_relationship)
         
+        # Analyze visibility relationships for all detected objects (regardless of player presence)
+        visibility_relationships = self._analyze_visibility_relationships(detected_objects)
+        relationships.extend(visibility_relationships)
+        
         # Get player objects for other relationship analysis
         players = detected_objects.get('player', [])
         
-        # If no players, return just the facing relationships
+        # If no players, return the facing and visibility relationships
         if not players:
             return relationships
             
@@ -247,6 +255,48 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         # Return the appropriate relationship
         return SpatialRelationship(player, virtual_oxygen_state, oxygen_state)
     
+    def _analyze_visibility_relationships(self, detected_objects):
+        """
+        Analyze visibility relationships for all detected objects.
+        Creates visibility relationships for enemies, divers, submarines, and missiles.
+        
+        Args:
+            detected_objects: Dictionary mapping object types to lists of GameObjects
+            
+        Returns:
+            List of SpatialRelationship objects for visibility
+        """
+        from core.game_object import GameObject
+        
+        visibility_relationships = []
+        
+        # Define mapping from object types to visibility relationship names
+        visibility_mappings = {
+            'enemy': 'visibleEnemy',
+            'diver': 'visibleDiver', 
+            'enemy_submarine': 'visibleEnemySubmarine',
+            'enemy_missile': 'visibleMissile'  # Only enemy missiles, not player missiles
+        }
+        
+        # Create a virtual "visibility" object to represent the visibility state
+        virtual_visibility = GameObject('visibility_state', (0, 0, 0, 0), object_id='visible')
+        
+        # Check each object type and create visibility relationships
+        for object_type, visibility_name in visibility_mappings.items():
+            objects = detected_objects.get(object_type, [])
+            
+            # If any objects of this type are detected, create a visibility relationship
+            if objects:
+                # We can create one relationship per object or one per type
+                # For now, let's create one relationship per detected object
+                for obj in objects:
+                    visibility_relationship = SpatialRelationship(
+                        obj, virtual_visibility, visibility_name
+                    )
+                    visibility_relationships.append(visibility_relationship)
+        
+        return visibility_relationships
+    
     def _analyze_object_characteristics_relationship(self, game_object):
         """
         Analyze object characteristics to create facing side relationships.
@@ -316,6 +366,9 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
             # Special handling for oxygen relationships - no arguments
             elif obj2_type == 'oxygen_state':
                 formatted_relationships.append(f"{rel_type}")
+            # Special handling for visibility relationships - include object ID
+            elif obj2_type == 'visibility_state':
+                formatted_relationships.append(f"{rel_type}({obj1_id})")
             else:
                 formatted_relationships.append(f"{rel_type}({obj2_id})")
         

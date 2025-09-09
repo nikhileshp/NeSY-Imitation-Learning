@@ -131,6 +131,9 @@ class ObjectTracker:
                     if obj.num_frames_invisible > obj.max_frames_invisible:
                         # Replace with NoObject if invisible too long
                         idx = prev_objects.index(obj)
+                        # Reset submarine direction detector for this object ID if it's a submarine
+                        if object_type == 'enemy_submarine':
+                            self.submarine_direction_detector.reset_submarine_direction(obj.object_id)
                         prev_objects[idx] = NoObject()
             return [obj for obj in prev_objects if obj and not isinstance(obj, NoObject)]
         
@@ -160,6 +163,10 @@ class ObjectTracker:
                 
                 if isinstance(prev_objects[obj_idx], NoObject) or not prev_objects[obj_idx]:
                     # Create new object with the same index and current characteristics
+                    # For submarines, ensure we reset any cached direction data
+                    if object_type == 'enemy_submarine':
+                        object_id = f"{object_type}_{obj_idx}"
+                        self.submarine_direction_detector.reset_submarine_direction(object_id)
                     new_objects[obj_idx] = self._create_trackable_object(
                         object_type, current_bboxes[bbox_idx], obj_idx, current_characteristics)
                 else:

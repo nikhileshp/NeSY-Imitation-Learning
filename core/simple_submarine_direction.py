@@ -23,6 +23,7 @@ class SimpleSubmarineDirectionDetector:
                         positions (default 80, center of 160px wide Seaquest screen)
         """
         self.x_threshold = x_threshold
+        self.cached_directions = {}  # Cache directions for tracking object lifecycle
     
     def detect_submarine_direction(self, submarine_object) -> Optional[str]:
         """
@@ -84,3 +85,20 @@ class SimpleSubmarineDirectionDetector:
             threshold: New x-coordinate threshold
         """
         self.x_threshold = threshold
+    
+    def reset_submarine_direction(self, object_id: str):
+        """
+        Reset the cached direction for a specific submarine object ID.
+        This should be called when a submarine leaves the screen.
+        
+        Args:
+            object_id: The object ID of the submarine to reset
+        """
+        if object_id in self.cached_directions:
+            del self.cached_directions[object_id]
+    
+    def clear_all_cached_directions(self):
+        """
+        Clear all cached submarine directions. Useful for resetting between episodes.
+        """
+        self.cached_directions.clear()

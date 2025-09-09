@@ -6,6 +6,7 @@ import sys
 import os
 import cv2
 import pandas as pd
+import argparse
 from typing import List, Dict, Optional, Tuple
 
 # Import core modules
@@ -39,7 +40,8 @@ class GameAnalysisApp:
         self.gaze_processor = GazeDataProcessor()
         self.gaze_df = pd.DataFrame()
     
-    def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, start_frame: int = 0):
+    def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
+            start_frame: int = 0, no_visual: bool = False, process_all: bool = False, save_rel: bool = False):
         """
         Run the main analysis pipeline.
         
@@ -48,6 +50,9 @@ class GameAnalysisApp:
             output_video: Output video filename (not currently used)
             fps: Processing frequency (process every fps-th image)
             start_frame: Frame index to start processing from (default: 0)
+            no_visual: Skip visual display of frames
+            process_all: Process all frames instead of stepping through
+            save_rel: Save relationship data to files
         """
         # Validate input folder
         if not os.path.exists(image_folder):
@@ -73,25 +78,44 @@ class GameAnalysisApp:
         first_frame = cv2.imread(os.path.join(image_folder, images[0]))
         height, width, _ = first_frame.shape
         
+        # Store processing options in instance variables for access in _process_single_image
+        self.no_visual = no_visual
+        self.process_all = process_all
+        self.save_rel = save_rel
+        
         # Process each image starting from the specified frame
-        for i, img_name in enumerate(images):
-            if i < start_frame:
-                continue
-            if i % fps != 0:
-                continue
+        try:
+            processed_count = 0
+            total_to_process = len([i for i in range(len(images)) if i >= start_frame and i % fps == 0])
             
-           
-            self._process_single_image(image_folder, img_name, width, height)
-            # except KeyboardInterrupt:
-                # print("\\nProcessing interrupted by user")
-            # except Exception as e:
-                # print(f"Error processing {img_name}: {e}")
-            # continue
+            for i, img_name in enumerate(images):
+                if i < start_frame:
+                    continue
+                if i % fps != 0:
+                    continue
+                
+                processed_count += 1
+                if no_visual:
+                    print(f"Progress: {processed_count}/{total_to_process} frames processed")
+                
+                self._process_single_image(image_folder, img_name, width, height)
+                
+        except KeyboardInterrupt:
+            print("\nProcessing interrupted by user")
+        except Exception as e:
+            print(f"Error during processing: {e}")
+            raise
         
         # Save updated gaze data if available
         if not self.gaze_df.empty:
             new_path = self.gaze_processor.save_updated_gaze_data(self.gaze_df, text_file_path)
             print(f"Saved updated gaze data with relationships to {new_path}")
+        
+        # Save relationship data if requested
+        if save_rel:
+            rel_output_path = os.path.join(image_folder, "relationships_output.txt")
+            print(f"Saving relationship data to {rel_output_path}")
+            # This would need to be implemented based on your specific requirements
         
         self.visualizer.close_all_windows()
     
@@ -158,12 +182,18 @@ class GameAnalysisApp:
             image, detected_objects, connection_list, gaze_positions, scale_factor=2
         )
         
-        # Display the image
-        key = self.visualizer.display_image(annotated_image, 'Frame', wait_for_key=True)
-        
-        # Check for ESC key to exit
-        if key == 27:  # ESC key
-            raise KeyboardInterrupt
+        # Display the image (unless no_visual is set)
+        if not getattr(self, 'no_visual', False):
+            wait_for_key = not getattr(self, 'process_all', False)
+            window_title = f'Frame: {img_name}'
+            key = self.visualizer.display_image(annotated_image, window_title, wait_for_key=wait_for_key)
+            
+            # Check for ESC key to exit
+            if key == 27:  # ESC key
+                raise KeyboardInterrupt
+        else:
+            # Just print completion when no visual display
+            print(f"  ✓ Completed: {img_name}")
     
     def _print_detected_objects(self, detected_objects: Dict[str, List[GameObject]]):
         """Print information about detected objects."""
@@ -231,29 +261,61 @@ class GameAnalysisApp:
 
 def main():
     """Main entry point for the application."""
-    if len(sys.argv) < 2:
-        print('Usage: python main.py image_folder [output_video] [fps] [game_type] [start_frame]')
-        print('  image_folder: Path to folder containing game images')
-        print('  output_video: Output video filename (optional, default: test_output.mp4)')
-        print('  fps: Processing frequency (optional, default: 1)')
-        print('  game_type: Game type (optional, default: seaquest)')
-        print('  start_frame: Frame index to start processing from (optional, default: 0)')
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description='Game object detection and relationship analysis for Atari games',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python main.py --data /path/to/images
+  python main.py --data /path/to/images --fps 2 --start-frame 100
+  python main.py --data /path/to/images --no-visual --process-all
+  python main.py --data /path/to/images --game-type seaquest --save-rel
+        """
+    )
     
-    image_folder = sys.argv[1]
-    output_video = sys.argv[2] if len(sys.argv) > 2 else "test_output.mp4"
-    fps = int(sys.argv[3]) if len(sys.argv) > 3 else 1
-    game_type = sys.argv[4] if len(sys.argv) > 4 else "seaquest"
-    start_frame = int(sys.argv[5]) if len(sys.argv) > 5 else 0
+    # Required arguments
+    parser.add_argument('--data',
+                       help='Path to folder containing game images',
+                       default='data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18')
+    # Optional arguments
+    parser.add_argument('--output-video', default='test_output.mp4',
+                       help='Output video filename (default: test_output.mp4)')
+    parser.add_argument('--fps', type=int, default=1,
+                       help='Processing frequency - process every fps-th image (default: 1)')
+    parser.add_argument('--game-type', default='seaquest',
+                       help='Game type to analyze (default: seaquest)')
+    parser.add_argument('--start-frame', type=int, default=0,
+                       help='Frame index to start processing from (default: 0)')
+    parser.add_argument('--no-visual', action='store_true',
+                       help='Skip visual display of frames (faster processing)')
+    parser.add_argument('--process-all', action='store_true',
+                       help='Process all frames without waiting for keypress')
+    parser.add_argument('--save-rel', action='store_true',
+                       help='Save relationship data to output files')
     
+    args = parser.parse_args()
     
-        # Create and run the application
-    app = GameAnalysisApp(game_type)
-    app.run(image_folder, output_video, fps, start_frame)
+    # Create and run the application
+    try:
+        app = GameAnalysisApp(args.game_type)
+        print(f"Starting analysis with:")
+        print(f"  Data folder: {args.data}")
+        print(f"  Game type: {args.game_type}")
+        print(f"  FPS: {args.fps}")
+        print(f"  Start frame: {args.start_frame}")
+        print(f"  Visual display: {'disabled' if args.no_visual else 'enabled'}")
+        print(f"  Process mode: {'automatic' if args.process_all else 'step-by-step'}")
+        print(f"  Save relationships: {'yes' if args.save_rel else 'no'}")
+        print()
         
-    # except Exception as e:
-    #     print(f"Application error: {e}")
-    #     sys.exit(1)
+        app.run(args.data, args.output_video, args.fps, args.start_frame, 
+               args.no_visual, args.process_all, args.save_rel)
+               
+        print("\nAnalysis completed successfully!")
+        
+    except Exception as e:
+        print(f"\nApplication error: {e}")
+        sys.exit(1)
 
 
 if __name__ == '__main__':

@@ -146,11 +146,10 @@ class SeaquestObjectDetector(BaseObjectDetector):
         all_submarine_coords.extend(surface_coords)
         
         # Create GameObjects with sequential numbering
+        # Note: We don't set facing_side here to allow the ObjectTracker's 
+        # SimpleSubmarineDirectionDetector to determine direction based on x-coordinate
         for i, coords in enumerate(all_submarine_coords):
-            side = facing_side(image, self.game_config.object_colors['submarine'], [coords])
-            submarine = GameObject(object_type='enemy_submarine', bounding_box=coords, object_id=f'enemy_submarine_{i}'
-                                   ,characteristics={'facing_side': side})
-            
+            submarine = GameObject(object_type='enemy_submarine', bounding_box=coords, object_id=f'enemy_submarine_{i}')
             submarines.append(submarine)
         
         return submarines
