@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Any
 from scipy.optimize import linear_sum_assignment
 
 from core.game_object import GameObject
-from core.movement_tracker import EnemySubmarineFacingDetector
+from core.direction_stabilizer import EnemySubmarineDirectionStabilizer
 
 
 class NoObject:
@@ -67,8 +67,8 @@ class ObjectTracker:
         self.max_objects_per_type = max_objects_per_type or {}
         self.previous_objects = {}  # Track objects from previous frame
         self.current_frame = 0
-        # Initialize enemy submarine facing detector
-        self.submarine_facing_detector = EnemySubmarineFacingDetector()
+        # Initialize enemy submarine direction stabilizer
+        self.submarine_direction_stabilizer = EnemySubmarineDirectionStabilizer()
         
     def _compute_cost_matrix(self, prev_objects: List, current_bboxes: List) -> np.ndarray:
         """
@@ -211,13 +211,11 @@ class ObjectTracker:
         for object_type, objects in detected_objects.items():
             tracked_objects[object_type] = self.match_objects_for_type(object_type, objects)
             
-        # Update movement tracking and facing direction for enemy submarines
+        # Update direction stabilization for enemy submarines
         if 'enemy_submarine' in tracked_objects:
             for submarine in tracked_objects['enemy_submarine']:
-                # Update position in movement tracker
-                self.submarine_facing_detector.update_submarine_position(submarine)
-                # Update characteristics with movement-based facing direction
-                self.submarine_facing_detector.update_submarine_characteristics(submarine)
+                # Update submarine direction using visual detection stabilizer
+                self.submarine_direction_stabilizer.update_submarine_direction(submarine)
             
         return tracked_objects
     

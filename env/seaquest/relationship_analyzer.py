@@ -255,7 +255,7 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
     def _analyze_object_characteristics_relationship(self, game_object):
         """
         Analyze object characteristics to create facing side relationships.
-        For enemy submarines, prioritizes movement-based facing detection.
+        Uses visual detection with stabilization for all objects.
         
         Args:
             game_object: GameObject with characteristics
@@ -272,9 +272,6 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         if not facing_direction:
             return None
         
-        # For enemy submarines, check if this is movement-based detection
-        facing_source = game_object.characteristics.get('facing_source', 'visual')
-        
         # Create virtual object for the facing direction
         virtual_facing_object = GameObject('facing_side', (0, 0, 0, 0), 
                                          object_id=facing_direction)
@@ -283,14 +280,6 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         if game_object.object_type == 'enemy_submarine':
             # Special case for enemy submarines - use enemyFacing prefix
             relationship_type = f"enemyFacing{facing_direction.capitalize()}"
-            
-            # Add debug info to show the source of facing detection
-            if facing_source == 'movement_tracking':
-                # This is the preferred, stable movement-based detection
-                pass
-            else:
-                # This is visual-based detection, less reliable
-                print(f"Warning: Enemy submarine {game_object.object_id} using visual facing detection")
         else:
             # Standard facing relationship
             relationship_type = f"facing{facing_direction.capitalize()}"
