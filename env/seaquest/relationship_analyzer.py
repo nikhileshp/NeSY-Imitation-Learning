@@ -57,18 +57,13 @@ class SeaquestRelationshipConfig:
             elif rel_type == 'oxygenOk':
                 return "oxygenOk()."
      
-        # Special formatting for specific Seaquest object types - keep second argument
-        if obj2_type == 'enemy':
-            return f"{rel_type}Enemy({obj2_id})."
-        elif obj2_type == 'enemy_submarine':
-            return f"{rel_type}Enemy({obj2_id})."
-        elif obj2_type == 'player_missile':
-            return f"{rel_type}Missile({obj2_id})."
-        elif obj2_type == 'enemy_missile':
-            return f"{rel_type}Missile({obj2_id})."
-        elif obj2_type == 'diver':
-            return f"{rel_type}Diver({obj2_id})."
+        # Handle grounded spatial relations that already include object type in relation name
+        # Extract the base relation type and check if it contains object type suffix
+        if any(grounded in rel_type for grounded in ['Enemy', 'Diver', 'Submarine', 'Missile']):
+            # The relation type already includes the object type (e.g., nearbyDiver, leftOfEnemy)
+            return f"{rel_type}({obj2_id})."
         
+        # Fallback for any other relation types
         else:
             return f"{rel_type}({obj2_id})."
 

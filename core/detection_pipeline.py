@@ -3,33 +3,33 @@ Detection pipeline integration for applying direction stabilization to enemy sub
 """
 
 from typing import Dict, List
-from .direction_stabilizer import EnemySubmarineDirectionStabilizer
+from .simple_submarine_direction import SimpleSubmarineDirectionDetector
 
 
 class SeaquestDetectionPipeline:
     """
-    Detection pipeline that applies direction stabilization to enemy submarines.
-    Uses visual detection (same as player) with frequency-based stabilization over 5 frames.
+    Detection pipeline that applies simple direction detection to enemy submarines.
+    Uses x-coordinate of first detection frame to determine fixed facing direction.
     """
     
     def __init__(self):
-        """Initialize the detection pipeline with direction stabilizer."""
-        self.direction_stabilizer = EnemySubmarineDirectionStabilizer(history_size=5)
+        """Initialize the detection pipeline with simple direction detector."""
+        self.direction_detector = SimpleSubmarineDirectionDetector()
     
     def process_detected_objects(self, detected_objects: Dict[str, List]) -> Dict[str, List]:
         """
-        Process detected objects to apply direction stabilization to enemy submarines.
+        Process detected objects to apply simple direction detection to enemy submarines.
         
         Args:
             detected_objects: Dictionary mapping object types to lists of GameObjects
             
         Returns:
-            Processed detected objects with stabilized directions
+            Processed detected objects with direction detection applied
         """
-        # Apply direction stabilization to enemy submarines
+        # Apply simple direction detection to enemy submarines
         enemy_submarines = detected_objects.get('enemy_submarine', [])
         for submarine in enemy_submarines:
-            self.direction_stabilizer.update_submarine_direction(submarine)
+            self.direction_detector.detect_submarine_direction(submarine)
         
         return detected_objects
     
@@ -42,12 +42,12 @@ class SeaquestDetectionPipeline:
         """
         return {
             'pipeline_type': 'SeaquestDetectionPipeline',
-            'direction_stabilizer_enabled': True,
-            'stabilization_method': 'visual_frequency_based'
+            'direction_detector_enabled': True,
+            'detection_method': 'x_coordinate_first_frame',
+            'detector_debug': self.direction_detector.get_debug_info()
         }
     
     def reset(self):
         """Reset the pipeline state."""
-        # Reset direction stabilizer
-        for submarine_id in list(self.direction_stabilizer.stabilizer.direction_history.keys()):
-            self.direction_stabilizer.stabilizer.reset_object(submarine_id)
+        # Reset direction detector
+        self.direction_detector.reset_all()

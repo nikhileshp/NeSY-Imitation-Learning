@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Any
 from scipy.optimize import linear_sum_assignment
 
 from core.game_object import GameObject
-from core.direction_stabilizer import EnemySubmarineDirectionStabilizer
+from core.simple_submarine_direction import SimpleSubmarineDirectionDetector
 
 
 class NoObject:
@@ -67,8 +67,8 @@ class ObjectTracker:
         self.max_objects_per_type = max_objects_per_type or {}
         self.previous_objects = {}  # Track objects from previous frame
         self.current_frame = 0
-        # Initialize enemy submarine direction stabilizer
-        self.submarine_direction_stabilizer = EnemySubmarineDirectionStabilizer()
+        # Initialize simple submarine direction detector
+        self.submarine_direction_detector = SimpleSubmarineDirectionDetector()
         
     def _compute_cost_matrix(self, prev_objects: List, current_bboxes: List) -> np.ndarray:
         """
@@ -163,14 +163,27 @@ class ObjectTracker:
                     new_objects[obj_idx] = self._create_trackable_object(
                         object_type, current_bboxes[bbox_idx], obj_idx, current_characteristics)
                 else:
-                    # Update existing object position and characteristics
+                    # Update existing object position but preserve submarine facing direction
                     existing_obj = prev_objects[obj_idx]
                     existing_obj.x, existing_obj.y, existing_obj.width, existing_obj.height = current_bboxes[bbox_idx]
                     existing_obj._xy = (existing_obj.x, existing_obj.y)
                     existing_obj.wh = (existing_obj.width, existing_obj.height)
                     existing_obj.num_frames_invisible = 0
-                    # Update characteristics with current detection data
-                    existing_obj.characteristics = current_characteristics
+                    
+                    # Preserve existing submarine facing direction if it exists
+                    if (object_type == 'enemy_submarine' and 
+                        hasattr(existing_obj, 'characteristics') and 
+                        'facing_side' in existing_obj.characteristics):
+                        # Keep the existing facing direction
+                        facing_direction = existing_obj.characteristics['facing_side']
+                        facing_source = existing_obj.characteristics.get('facing_source', 'x_coordinate_first_frame')
+                        existing_obj.characteristics = current_characteristics
+                        existing_obj.characteristics['facing_side'] = facing_direction
+                        existing_obj.characteristics['facing_source'] = facing_source
+                    else:
+                        # Update characteristics with current detection data
+                        existing_obj.characteristics = current_characteristics
+                    
                     new_objects[obj_idx] = existing_obj
         
         # Handle unmatched detections - assign to first available slots
@@ -211,11 +224,13 @@ class ObjectTracker:
         for object_type, objects in detected_objects.items():
             tracked_objects[object_type] = self.match_objects_for_type(object_type, objects)
             
-        # Update direction stabilization for enemy submarines
+        # Apply simple direction detection for newly created enemy submarines
         if 'enemy_submarine' in tracked_objects:
             for submarine in tracked_objects['enemy_submarine']:
-                # Update submarine direction using visual detection stabilizer
-                self.submarine_direction_stabilizer.update_submarine_direction(submarine)
+                # Only detect direction if this submarine doesn't have a direction yet
+                # or if it's a newly created submarine
+                if not hasattr(submarine, 'characteristics') or 'facing_side' not in submarine.characteristics:
+                    self.submarine_direction_detector.detect_submarine_direction(submarine)
             
         return tracked_objects
     

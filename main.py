@@ -39,7 +39,7 @@ class GameAnalysisApp:
         self.gaze_processor = GazeDataProcessor()
         self.gaze_df = pd.DataFrame()
     
-    def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1):
+    def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, start_frame: int = 0):
         """
         Run the main analysis pipeline.
         
@@ -47,6 +47,7 @@ class GameAnalysisApp:
             image_folder: Path to folder containing game images
             output_video: Output video filename (not currently used)
             fps: Processing frequency (process every fps-th image)
+            start_frame: Frame index to start processing from (default: 0)
         """
         # Validate input folder
         if not os.path.exists(image_folder):
@@ -66,14 +67,16 @@ class GameAnalysisApp:
         if not images:
             raise ValueError(f"No valid image files found in {image_folder}")
         
-        print(f"Found {len(images)} images to process")
+        print(f"Found {len(images)} images to process (starting from frame {start_frame})")
         
         # Get image dimensions from first frame
         first_frame = cv2.imread(os.path.join(image_folder, images[0]))
         height, width, _ = first_frame.shape
         
-        # Process each image
+        # Process each image starting from the specified frame
         for i, img_name in enumerate(images):
+            if i < start_frame:
+                continue
             if i % fps != 0:
                 continue
             
@@ -131,7 +134,7 @@ class GameAnalysisApp:
             # print(relationships)
             connection_list = self.relationship_analyzer.create_connection_list(relationships)
             print(f"Connection list: {len(connection_list)} connections")
-            print(connection_list)
+            # print(connection_list)
             
         except Exception as e:
             print(f"Error in relationship analysis: {e}")
@@ -229,22 +232,24 @@ class GameAnalysisApp:
 def main():
     """Main entry point for the application."""
     if len(sys.argv) < 2:
-        print('Usage: python main.py image_folder [output_video] [fps] [game_type]')
+        print('Usage: python main.py image_folder [output_video] [fps] [game_type] [start_frame]')
         print('  image_folder: Path to folder containing game images')
         print('  output_video: Output video filename (optional, default: test_output.mp4)')
         print('  fps: Processing frequency (optional, default: 1)')
         print('  game_type: Game type (optional, default: seaquest)')
+        print('  start_frame: Frame index to start processing from (optional, default: 0)')
         sys.exit(1)
     
     image_folder = sys.argv[1]
     output_video = sys.argv[2] if len(sys.argv) > 2 else "test_output.mp4"
     fps = int(sys.argv[3]) if len(sys.argv) > 3 else 1
     game_type = sys.argv[4] if len(sys.argv) > 4 else "seaquest"
+    start_frame = int(sys.argv[5]) if len(sys.argv) > 5 else 0
     
     
         # Create and run the application
     app = GameAnalysisApp(game_type)
-    app.run(image_folder, output_video, fps)
+    app.run(image_folder, output_video, fps, start_frame)
         
     # except Exception as e:
     #     print(f"Application error: {e}")

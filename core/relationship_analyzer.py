@@ -115,6 +115,7 @@ class BaseRelationshipAnalyzer:
     def _analyze_object_relationships(self, obj1: GameObject, obj2: GameObject) -> List[SpatialRelationship]:
         """
         Analyze all possible relationships between two objects.
+        Creates grounded spatial relations that include the second object's type.
         
         Args:
             obj1: First GameObject
@@ -125,26 +126,48 @@ class BaseRelationshipAnalyzer:
         """
         relationships = []
         
+        # Get the grounding object type for relation naming
+        grounding_suffix = self._get_grounding_suffix(obj2.object_type)
+        
         # Horizontal relationships
         if left_of(obj1, obj2):
-            relationships.append(SpatialRelationship(obj1, obj2, 'leftOf'))
+            relationships.append(SpatialRelationship(obj1, obj2, f'leftOf{grounding_suffix}'))
         elif right_of(obj1, obj2):
-            relationships.append(SpatialRelationship(obj1, obj2, 'rightOf'))
+            relationships.append(SpatialRelationship(obj1, obj2, f'rightOf{grounding_suffix}'))
         
         # Vertical relationships
         if above_of(obj1, obj2):
-            relationships.append(SpatialRelationship(obj1, obj2, 'aboveOf'))
+            relationships.append(SpatialRelationship(obj1, obj2, f'aboveOf{grounding_suffix}'))
         elif below_of(obj1, obj2):
-            relationships.append(SpatialRelationship(obj1, obj2, 'belowOf'))
+            relationships.append(SpatialRelationship(obj1, obj2, f'belowOf{grounding_suffix}'))
         else:
             # Check if they are at the same level
             if same_level_of(obj1, obj2):
-                relationships.append(SpatialRelationship(obj1, obj2, 'sameLevelAs'))
+                relationships.append(SpatialRelationship(obj1, obj2, f'sameLevelAs{grounding_suffix}'))
 
         if nearby(obj1, obj2, threshold=25):  # Increased threshold for better nearby detection
-            relationships.append(SpatialRelationship(obj1, obj2, 'nearby'))
+            relationships.append(SpatialRelationship(obj1, obj2, f'nearby{grounding_suffix}'))
             
         return relationships
+    
+    def _get_grounding_suffix(self, object_type: str) -> str:
+        """
+        Convert object type to appropriate suffix for grounded spatial relations.
+        
+        Args:
+            object_type: The type of the grounding object
+            
+        Returns:
+            Capitalized suffix for the relation name
+        """
+        # Handle compound object types by taking the last part and capitalizing
+        if '_' in object_type:
+            # For types like 'enemy_submarine', 'player_missile', use the last part
+            parts = object_type.split('_')
+            return parts[-1].capitalize()
+        else:
+            # For simple types like 'diver', 'enemy', capitalize directly
+            return object_type.capitalize()
     
     def create_connection_list(self, relationships: List[SpatialRelationship]) -> List[Dict]:
         """
