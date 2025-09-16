@@ -89,11 +89,12 @@ class GazeDataProcessor:
             'action': action,
             'gaze_positions': gaze_positions,
             'objects': "",
-            'relationships': ""
+            'relationships': "",
+            'goal': ""
         }
     
     def update_frame_data(self, gaze_df: pd.DataFrame, frame_id: str, 
-                         objects_list: List[str], relationships_text: str) -> None:
+                         objects_list: List[str], relationships_text: str, goal: str = "") -> None:
         """
         Update gaze DataFrame with object and relationship information for a specific frame.
         
@@ -102,6 +103,7 @@ class GazeDataProcessor:
             frame_id: Frame identifier
             objects_list: List of detected object IDs
             relationships_text: Formatted relationships text
+            goal: Detected goal for this frame
         """
         if gaze_df.empty:
             return
@@ -117,6 +119,9 @@ class GazeDataProcessor:
         
         # Update relationships column
         gaze_df.loc[frame_mask, 'relationships'] = relationships_text
+        
+        # Update goal column
+        gaze_df.loc[frame_mask, 'goal'] = goal
     
     def get_gaze_positions_for_frame(self, gaze_df: pd.DataFrame, 
                                    frame_id: str) -> List[Tuple[int, int]]:
@@ -154,8 +159,8 @@ class GazeDataProcessor:
         Returns:
             Path to the new saved file
         """
-        # Create new filename with _with_relationships suffix
-        new_path = original_path.replace(".txt", "_with_relationships.txt")
+        # Create new filename with _with_relationships_and_goals suffix
+        new_path = original_path.replace(".txt", "_with_relationships_and_goals.txt")
         
         # Remove gaze_positions column before saving (as it contains complex data)
         df_to_save = gaze_df.drop(columns=['gaze_positions'], errors='ignore')
@@ -206,3 +211,23 @@ class GazeDataProcessor:
                 return False
         
         return True
+    
+    def get_action_for_frame(self, gaze_df: pd.DataFrame, frame_id: str) -> int:
+        """
+        Get the action value for a specific frame.
+        
+        Args:
+            gaze_df: Gaze data DataFrame
+            frame_id: Frame identifier
+            
+        Returns:
+            Action value for the frame, or 0 if not found
+        """
+        if gaze_df.empty:
+            return 0
+        
+        frame_data = gaze_df[gaze_df['frameid'] == frame_id]
+        if frame_data.empty:
+            return 0
+        
+        return int(frame_data['action'].values[0]) if len(frame_data['action'].values) > 0 else 0

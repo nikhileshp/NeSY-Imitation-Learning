@@ -22,6 +22,8 @@ class VisualizationManager:
         """
         self.base_colors = BASE_VISUALIZATION_COLORS
         self.object_color_mapping = object_color_mapping or DEFAULT_OBJECT_COLORS.copy()
+        self.main_window_name = "Game Analysis"
+        self.window_initialized = False
     
     
     def update_color_mapping(self, new_mapping: Dict[str, Tuple[int, int, int]]):
@@ -146,7 +148,8 @@ class VisualizationManager:
                                          connection_list: List[Dict],
                                          gaze_positions: List[Tuple[int, int]],
                                          relationships: Optional[List[SpatialRelationship]] = None,
-                                         scale_factor: int = 2) -> np.ndarray:
+                                         scale_factor: int = 2,
+                                         detected_goal: str = "") -> np.ndarray:
         """
         Create a comprehensive visualization with all elements.
         
@@ -157,6 +160,7 @@ class VisualizationManager:
             gaze_positions: List of (x, y) gaze position tuples
             relationships: Optional list of relationships for enhanced features
             scale_factor: Factor by which to scale the output image
+            detected_goal: Detected goal text to display on frame
             
         Returns:
             Comprehensive annotated image
@@ -177,6 +181,10 @@ class VisualizationManager:
         annotated_image = self.draw_gaze_positions(annotated_image, gaze_positions, 
                                                   width, height)
         
+        # Add goal text to top left corner
+        if detected_goal:
+            self._draw_goal_text(annotated_image, detected_goal)
+        
         # Scale up the image for better visibility
         if scale_factor > 1:
             new_width = width * scale_factor
@@ -189,17 +197,35 @@ class VisualizationManager:
     def display_image(self, image: np.ndarray, window_name: str = 'Frame', 
                      wait_for_key: bool = True) -> int:
         """
-        Display an image in an OpenCV window.
+        Display an image in the same OpenCV window, reusing the window if it exists.
         
         Args:
             image: Image to display
-            window_name: Name of the display window
+            window_name: Name of the display window (updated to show frame info)
             wait_for_key: Whether to wait for a key press
             
         Returns:
             Key code if wait_for_key is True, otherwise -1
         """
-        cv2.imshow(window_name, image)
+        # Initialize window with specific properties if not already done
+        if not self.window_initialized:
+            cv2.namedWindow(self.main_window_name, cv2.WINDOW_AUTOSIZE)
+            try:
+                cv2.setWindowProperty(self.main_window_name, cv2.WND_PROP_TOPMOST, 1)
+            except cv2.error:
+                # Ignore if setting window property fails (some systems don't support it)
+                pass
+            self.window_initialized = True
+        
+        # Display the image in the same window first
+        cv2.imshow(self.main_window_name, image)
+        
+        # Update window title to show current frame info (after image is shown)
+        try:
+            cv2.setWindowTitle(self.main_window_name, window_name)
+        except cv2.error:
+            # If setting title fails, continue without it
+            pass
         
         if wait_for_key:
             key = cv2.waitKey(0)
@@ -209,8 +235,15 @@ class VisualizationManager:
             return -1
     
     def close_all_windows(self):
-        """Close all OpenCV windows."""
+        """Close all OpenCV windows and reset window state."""
         cv2.destroyAllWindows()
+        self.window_initialized = False
+    
+    def close_main_window(self):
+        """Close the main visualization window and reset its state."""
+        if self.window_initialized:
+            cv2.destroyWindow(self.main_window_name)
+            self.window_initialized = False
     
     def add_object_labels(self, image: np.ndarray, 
                          detected_objects: Dict[str, List[GameObject]]) -> np.ndarray:
@@ -396,6 +429,52 @@ class VisualizationManager:
         
         cv2.putText(image, direction[0].upper(), (label_x, label_y),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255,255,255), 1)
+    
+    def _draw_goal_text(self, image: np.ndarray, goal: str):
+        """
+        Draw the detected goal text on the top left of the image.
+        
+        Args:
+            image: Image to draw on
+            goal: Goal text to display
+        """
+        # Goal text properties
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.2
+        thickness = 1
+        
+        # Format goal text
+        goal_text = f"Goal: {goal}"
+        
+        # Get text size for background rectangle
+        (text_width, text_height), baseline = cv2.getTextSize(goal_text, font, font_scale, thickness)
+        
+        # Position for top left corner with some padding
+        x_pos = 10
+        y_pos = text_height + 15  # 15 pixels from top
+        
+        # Draw background rectangle for better text visibility
+        padding = 5
+        cv2.rectangle(image, 
+                     (x_pos - padding, y_pos - text_height - padding), 
+                     (x_pos + text_width + padding, y_pos + baseline + padding),
+                     (0, 0, 0, 128),  # Semi-transparent black background
+                     -1)
+        
+        # Choose text color based on goal type
+        text_colors = {
+            'retrieve_diver': (0, 255, 255),    # Yellow
+            'kill_enemy': (0, 0, 255),          # Red  
+            'avoid_enemy': (0, 165, 255),       # Orange
+            'surface': (0, 255, 0),             # Green
+            'waitForOxygen': (255, 0, 255),     # Magenta
+            'unknown': (128, 128, 128)          # Gray
+        }
+        
+        text_color = text_colors.get(goal, (255, 255, 255))  # Default to white
+        
+        # Draw the goal text
+        cv2.putText(image, goal_text, (x_pos, y_pos), font, font_scale, text_color, thickness)
 
 
 def create_seaquest_visualization_manager() -> VisualizationManager:

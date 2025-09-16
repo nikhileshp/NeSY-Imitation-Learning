@@ -13,6 +13,7 @@ from typing import List, Dict, Optional, Tuple
 from core.gaze_data_processor import GazeDataProcessor
 from core.visualization_manager import VisualizationManager
 from core.game_object import GameObject
+from core.goal_detector import GoalDetector
 
 # Import Seaquest-specific modules
 from env.seaquest.object_detector import SeaquestObjectDetector
@@ -38,6 +39,7 @@ class GameAnalysisApp:
             raise ValueError(f"Game type '{game_type}' not supported yet")
         
         self.gaze_processor = GazeDataProcessor()
+        self.goal_detector = GoalDetector()
         self.gaze_df = pd.DataFrame()
     
     def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
@@ -158,7 +160,7 @@ class GameAnalysisApp:
             # print(relationships)
             connection_list = self.relationship_analyzer.create_connection_list(relationships)
             print(f"Connection list: {len(connection_list)} connections")
-            # print(connection_list)
+            print(connection_list)
             
         except Exception as e:
             print(f"Error in relationship analysis: {e}")
@@ -168,18 +170,28 @@ class GameAnalysisApp:
         # Process gaze data for this frame
         frame_id = img_name.replace('.png', '').replace('.jpg', '').replace('.jpeg', '')
         gaze_positions = []
+        detected_goal = "unknown"
         
         if not self.gaze_df.empty:
             gaze_positions = self.gaze_processor.get_gaze_positions_for_frame(self.gaze_df, frame_id)
             
-            # Update gaze DataFrame with object and relationship information
+            # Get action for goal detection
+            action = self.gaze_processor.get_action_for_frame(self.gaze_df, frame_id)
+            
+            # Detect goal based on gaze data and game state
+            if gaze_positions:
+                detected_goal = self.goal_detector.detect_goal(
+                    gaze_positions, detected_objects, action, frame_id
+                )
+            
+            # Update gaze DataFrame with object, relationship, and goal information
             objects_list = self.object_detector.get_all_objects_as_list(detected_objects)
             relationships_text = self.relationship_analyzer.format_relationships_for_dataframe(relationships)
-            self.gaze_processor.update_frame_data(self.gaze_df, frame_id, objects_list, relationships_text)
+            self.gaze_processor.update_frame_data(self.gaze_df, frame_id, objects_list, relationships_text, detected_goal)
         
         # Create comprehensive visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
-            image, detected_objects, connection_list, gaze_positions, scale_factor=2
+            image, detected_objects, connection_list, gaze_positions, scale_factor=2, detected_goal=detected_goal
         )
         
         # Display the image (unless no_visual is set)
@@ -191,6 +203,7 @@ class GameAnalysisApp:
             # Check for ESC key to exit
             if key == 27:  # ESC key
                 raise KeyboardInterrupt
+        
         else:
             # Just print completion when no visual display
             print(f"  ✓ Completed: {img_name}")
@@ -232,10 +245,18 @@ class GameAnalysisApp:
         
         # Load gaze data if provided
         gaze_positions = []
+        detected_goal = "unknown"
         if gaze_data_path and os.path.exists(gaze_data_path):
             gaze_df = self.gaze_processor.load_gaze_data(gaze_data_path)
             frame_id = os.path.basename(image_path).split('.')[0]
             gaze_positions = self.gaze_processor.get_gaze_positions_for_frame(gaze_df, frame_id)
+            
+            # Detect goal if gaze data is available
+            if gaze_positions:
+                action = self.gaze_processor.get_action_for_frame(gaze_df, frame_id)
+                detected_goal = self.goal_detector.detect_goal(
+                    gaze_positions, detected_objects, action, frame_id
+                )
         
         # Detect objects
         detected_objects = self.object_detector.detect_all_objects(image)
@@ -246,7 +267,7 @@ class GameAnalysisApp:
         
         # Create visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
-            image, detected_objects, connection_list, gaze_positions
+            image, detected_objects, connection_list, gaze_positions, detected_goal=detected_goal
         )
         
         return {
@@ -255,7 +276,8 @@ class GameAnalysisApp:
             'detected_objects': detected_objects,
             'relationships': relationships,
             'connection_list': connection_list,
-            'gaze_positions': gaze_positions
+            'gaze_positions': gaze_positions,
+            'detected_goal': detected_goal
         }
 
 
