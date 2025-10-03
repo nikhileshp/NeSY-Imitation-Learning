@@ -8,6 +8,7 @@ import cv2
 import pandas as pd
 import argparse
 from typing import List, Dict, Optional, Tuple
+from tqdm import tqdm
 
 # Import core modules
 from core.gaze_data_processor import GazeDataProcessor
@@ -41,9 +42,11 @@ class GameAnalysisApp:
         self.gaze_processor = GazeDataProcessor()
         self.goal_detector = GoalDetector()
         self.gaze_df = pd.DataFrame()
+        self.verbose = 1  # Default verbosity level
     
     def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
-            start_frame: int = 0, no_visual: bool = False, process_all: bool = False, save_rel: bool = False):
+            start_frame: int = 0, no_visual: bool = False, process_all: bool = False, 
+            save_rel: bool = False, verbose: int = 1):
         """
         Run the main analysis pipeline.
         
@@ -55,7 +58,11 @@ class GameAnalysisApp:
             no_visual: Skip visual display of frames
             process_all: Process all frames instead of stepping through
             save_rel: Save relationship data to files
+            verbose: Verbosity level (0=quiet, 1=minimal, 2=verbose)
         """
+        # Store verbosity level
+        self.verbose = verbose
+        
         # Validate input folder
         if not os.path.exists(image_folder):
             raise FileNotFoundError(f"Image folder {image_folder} does not exist.")
@@ -64,9 +71,11 @@ class GameAnalysisApp:
         text_file_path = image_folder + ".txt"
         try:
             self.gaze_df = self.gaze_processor.load_gaze_data(text_file_path)
-            print(f"Loaded gaze data from {text_file_path}")
+            if verbose >= 2:
+                print(f"Loaded gaze data from {text_file_path}")
         except FileNotFoundError:
-            print(f"Warning: Gaze data file {text_file_path} not found. Continuing without gaze data.")
+            if verbose >= 2:
+                print(f"Warning: Gaze data file {text_file_path} not found. Continuing without gaze data.")
             self.gaze_df = pd.DataFrame()
         
         # Get and sort image files
@@ -74,7 +83,8 @@ class GameAnalysisApp:
         if not images:
             raise ValueError(f"No valid image files found in {image_folder}")
         
-        print(f"Found {len(images)} images to process (starting from frame {start_frame})")
+        if verbose >= 2:
+            print(f"Found {len(images)} images to process (starting from frame {start_frame})")
         
         # Get image dimensions from first frame
         first_frame = cv2.imread(os.path.join(image_folder, images[0]))
@@ -87,36 +97,38 @@ class GameAnalysisApp:
         
         # Process each image starting from the specified frame
         try:
-            processed_count = 0
-            total_to_process = len([i for i in range(len(images)) if i >= start_frame and i % fps == 0])
+            # Filter images to process
+            images_to_process = [(i, img_name) for i, img_name in enumerate(images) 
+                               if i >= start_frame and i % fps == 0]
             
-            for i, img_name in enumerate(images):
-                if i < start_frame:
-                    continue
-                if i % fps != 0:
-                    continue
-                
-                processed_count += 1
-                if no_visual:
-                    print(f"Progress: {processed_count}/{total_to_process} frames processed")
-                
-                self._process_single_image(image_folder, img_name, width, height)
+            # Create progress bar for this trajectory
+            trajectory_name = os.path.basename(image_folder)
+            pbar_desc = f"Processing {trajectory_name}" if len(trajectory_name) > 0 else "Processing images"
+            
+            with tqdm(images_to_process, desc=pbar_desc, disable=(verbose == 0)) as pbar:
+                for i, img_name in pbar:
+                    self._process_single_image(image_folder, img_name, width, height)
+                    pbar.set_postfix_str(f"Frame: {img_name}")
                 
         except KeyboardInterrupt:
-            print("\nProcessing interrupted by user")
+            if verbose >= 1:
+                print("\nProcessing interrupted by user")
         except Exception as e:
-            print(f"Error during processing: {e}")
+            if verbose >= 1:
+                print(f"Error during processing: {e}")
             raise
         
         # Save updated gaze data if available
         if not self.gaze_df.empty:
             new_path = self.gaze_processor.save_updated_gaze_data(self.gaze_df, text_file_path)
-            print(f"Saved updated gaze data with relationships to {new_path}")
+            if verbose >= 2:
+                print(f"Saved updated gaze data with relationships to {new_path}")
         
         # Save relationship data if requested
         if save_rel:
             rel_output_path = os.path.join(image_folder, "relationships_output.txt")
-            print(f"Saving relationship data to {rel_output_path}")
+            if verbose >= 2:
+                print(f"Saving relationship data to {rel_output_path}")
             # This would need to be implemented based on your specific requirements
         
         self.visualizer.close_all_windows()
@@ -137,33 +149,37 @@ class GameAnalysisApp:
     def _process_single_image(self, image_folder: str, img_name: str, 
                             width: int, height: int):
         """Process a single image through the complete pipeline."""
-        print(f"Processing {img_name}:")
+        if self.verbose >= 2:
+            print(f"Processing {img_name}:")
         
         # Load image
         img_path = os.path.join(image_folder, img_name)
         image = cv2.imread(img_path)
         if image is None:
-            print(f"Failed to load image: {img_path}")
+            if self.verbose >= 1:
+                print(f"Failed to load image: {img_path}")
             return
         
         # Detect objects
         detected_objects = self.object_detector.detect_all_objects(image)
-        # print("Printing detected objs")
-        self._print_detected_objects(detected_objects)
+        if self.verbose >= 2:
+            self._print_detected_objects(detected_objects)
         
         # Analyze relationships
         try:
             relationships = self.relationship_analyzer.analyze_all_relationships(detected_objects)
-            self._print_relationships(relationships)
+            if self.verbose >= 2:
+                self._print_relationships(relationships)
             
             # Create connection list for visualization
-            # print(relationships)
             connection_list = self.relationship_analyzer.create_connection_list(relationships)
-            print(f"Connection list: {len(connection_list)} connections")
-            print(connection_list)
+            if self.verbose >= 2:
+                print(f"Connection list: {len(connection_list)} connections")
+                print(connection_list)
             
         except Exception as e:
-            print(f"Error in relationship analysis: {e}")
+            if self.verbose >= 1:
+                print(f"Error in relationship analysis: {e}")
             relationships = []
             connection_list = []
         
@@ -206,23 +222,51 @@ class GameAnalysisApp:
         
         else:
             # Just print completion when no visual display
-            print(f"  ✓ Completed: {img_name}")
+            if self.verbose >= 2:
+                print(f"  ✓ Completed: {img_name}")
+
+    def list_trajectory_dirs(self, parent_folder: str) -> List[str]:
+        """
+        List trajectory subfolders inside parent_folder that have a matching .txt file
+        alongside them (same base name) and contain at least one image.
+        """
+        if not os.path.isdir(parent_folder):
+            return []
+        candidates = []
+        for entry in os.listdir(parent_folder):
+            full_path = os.path.join(parent_folder, entry)
+            if not os.path.isdir(full_path):
+                continue
+            # Must have corresponding txt next to the folder
+            txt_path = os.path.join(parent_folder, f"{entry}.txt")
+            if not os.path.exists(txt_path):
+                continue
+            # Must contain at least one image file
+            try:
+                imgs = self._get_sorted_images(full_path)
+            except Exception:
+                imgs = []
+            if imgs:
+                candidates.append(full_path)
+        return sorted(candidates)
     
     def _print_detected_objects(self, detected_objects: Dict[str, List[GameObject]]):
         """Print information about detected objects."""
-        print("Found objects:")
-        for object_type, objects in detected_objects.items():
-            if objects:
-                object_dict = {obj.object_id: obj.bounding_box for obj in objects}
-                print(f"{object_type.capitalize()} objects: {object_dict}")
+        if self.verbose >= 2:
+            print("Found objects:")
+            for object_type, objects in detected_objects.items():
+                if objects:
+                    object_dict = {obj.object_id: obj.bounding_box for obj in objects}
+                    print(f"{object_type.capitalize()} objects: {object_dict}")
     
     def _print_relationships(self, relationships):
         """Print relationship information."""
-        print("\\nRelationship between objects:")
-        descriptions = self.relationship_analyzer.get_relationship_descriptions(relationships)
-        for description in descriptions:
-            print(description)
-        print()
+        if self.verbose >= 2:
+            print("\\nRelationship between objects:")
+            descriptions = self.relationship_analyzer.get_relationship_descriptions(relationships)
+            for description in descriptions:
+                print(description)
+            print()
     
     def process_single_image_file(self, image_path: str, 
                                 gaze_data_path: Optional[str] = None) -> Dict:
@@ -288,16 +332,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py --data /path/to/images
-  python main.py --data /path/to/images --fps 2 --start-frame 100
-  python main.py --data /path/to/images --no-visual --process-all
-  python main.py --data /path/to/images --game-type seaquest --save-rel
+  # Process a single trajectory folder
+  python main.py --data /path/to/data/seaquest/gaze_data_tmp/54_RZ_...
+  python main.py --data /path/to/trajectory --fps 2 --start-frame 100
+  python main.py --data /path/to/trajectory --no-visual --process-all
+
+  # Process all trajectories contained in a parent data folder
+  python main.py --data /path/to/data/seaquest/gaze_data_tmp --all-trajectories --no-visual --process-all
+  python main.py --data /path/to/data/seaquest/gaze_data_tmp --all-trajectories --game-type seaquest --save-rel
         """
     )
     
-    # Required arguments
+    # Required/primary argument
     parser.add_argument('--data',
-                       help='Path to folder containing game images',
+                       help='Path to folder containing game images OR a parent folder containing multiple trajectory subfolders',
                        default='data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18')
     # Optional arguments
     parser.add_argument('--output-video', default='test_output.mp4',
@@ -314,6 +362,10 @@ Examples:
                        help='Process all frames without waiting for keypress')
     parser.add_argument('--save-rel', action='store_true',
                        help='Save relationship data to output files')
+    parser.add_argument('--all-trajectories', action='store_true',
+                       help='If set, treat --data as a parent folder and process all trajectory subfolders that have a matching .txt file')
+    parser.add_argument('--verbose', '-v', type=int, default=1, choices=[0, 1, 2],
+                       help='Verbosity level: 0=quiet (progress bars only), 1=minimal output, 2=verbose output (default: 1)')
     
     args = parser.parse_args()
     
@@ -321,19 +373,74 @@ Examples:
     try:
         app = GameAnalysisApp(args.game_type)
         print(f"Starting analysis with:")
-        print(f"  Data folder: {args.data}")
+        print(f"  Data path: {args.data}")
         print(f"  Game type: {args.game_type}")
         print(f"  FPS: {args.fps}")
         print(f"  Start frame: {args.start_frame}")
         print(f"  Visual display: {'disabled' if args.no_visual else 'enabled'}")
         print(f"  Process mode: {'automatic' if args.process_all else 'step-by-step'}")
         print(f"  Save relationships: {'yes' if args.save_rel else 'no'}")
+        print(f"  All trajectories mode: {'yes' if args.all_trajectories else 'no'}")
+        print(f"  Verbosity level: {args.verbose}")
         print()
         
-        app.run(args.data, args.output_video, args.fps, args.start_frame, 
-               args.no_visual, args.process_all, args.save_rel)
-               
-        print("\nAnalysis completed successfully!")
+        if args.all_trajectories:
+            # Treat args.data as a parent folder containing multiple trajectory subfolders
+            traj_dirs = app.list_trajectory_dirs(args.data)
+            if not traj_dirs:
+                raise ValueError(f"No valid trajectory subfolders with matching .txt files found in {args.data}")
+            
+            if args.verbose >= 1:
+                print(f"Discovered {len(traj_dirs)} trajectory folders. Starting batch processing...\n")
+            
+            # Collect all trajectory data into a consolidated DataFrame
+            consolidated_df = pd.DataFrame()
+            
+            # Overall progress bar for all trajectories
+            with tqdm(traj_dirs, desc="Overall Progress", disable=(args.verbose == 0)) as overall_pbar:
+                for traj_dir in overall_pbar:
+                    trajectory_name = os.path.basename(traj_dir)
+                    overall_pbar.set_postfix_str(f"Processing: {trajectory_name}")
+                    
+                    try:
+                        app.run(traj_dir, args.output_video, args.fps, args.start_frame, 
+                                args.no_visual, args.process_all, args.save_rel, args.verbose)
+                        
+                        # Add trajectory identifier to the gaze DataFrame
+                        if not app.gaze_df.empty:
+                            app.gaze_df['trajectory'] = trajectory_name
+                            # Concatenate to consolidated DataFrame
+                            consolidated_df = pd.concat([consolidated_df, app.gaze_df], ignore_index=True)
+                        
+                        if args.verbose >= 2:
+                            print(f"Completed trajectory: {traj_dir}")
+                            
+                    except Exception as e:
+                        if args.verbose >= 1:
+                            print(f"Error processing trajectory {traj_dir}: {e}")
+                        # Continue to next trajectory
+                        continue
+            
+            # Save consolidated relationships data
+            if not consolidated_df.empty:
+                relationships_output_path = os.path.join(args.data, "relationships.txt")
+                consolidated_df.to_csv(relationships_output_path, sep='\t', index=False)
+                if args.verbose >= 1:
+                    print(f"\nSaved consolidated relationships data for all trajectories to {relationships_output_path}")
+                    print(f"Total frames processed: {len(consolidated_df)}")
+                    print(f"Trajectories included: {consolidated_df['trajectory'].nunique()}")
+            else:
+                if args.verbose >= 1:
+                    print("\nNo data to save - all trajectories were empty or failed to process.")
+            
+            if args.verbose >= 1:
+                print("\nBatch processing completed!")
+        else:
+            # Process a single trajectory folder
+            app.run(args.data, args.output_video, args.fps, args.start_frame, 
+                    args.no_visual, args.process_all, args.save_rel, args.verbose)
+            if args.verbose >= 1:
+                print("\nAnalysis completed successfully!")
         
     except Exception as e:
         print(f"\nApplication error: {e}")

@@ -105,7 +105,7 @@ class SeaquestRelationshipAnalyzer(BaseRelationshipAnalyzer):
         for obj in detected_objects.values():
             for o in obj:
                 if 'facing_side' in o.characteristics:
-                    print("Found facing side characteristic", o.characteristics)
+                    # print("Found facing side characteristic", o.characteristics)
                     char_relationship = self._analyze_object_characteristics_relationship(o)
                     if char_relationship:
                         relationships.append(char_relationship)

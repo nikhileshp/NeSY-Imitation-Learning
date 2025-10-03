@@ -49,8 +49,8 @@ class GoalDetector:
         # Determine goal based on object and game state
         goal = self._determine_goal(closest_object, detected_objects, action, current_gaze_point)
         
-        print(f"Frame {frame_id}: Gaze at {current_gaze_point}, closest object: "
-              f"{closest_object.object_type if closest_object else 'None'}, goal: {goal}")
+        # print(f"Frame {frame_id}: Gaze at {current_gaze_point}, closest object: "
+            #   f"{closest_object.object_type if closest_object else 'None'}, goal: {goal}")
         
         return goal
     
