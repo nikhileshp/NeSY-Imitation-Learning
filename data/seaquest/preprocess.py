@@ -270,4 +270,3 @@ for action in primitive_actions:
     f.write(str(bk_dict[action]))
   with open("data/seaquest/"+action+"/test/"+f"test_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))
-
