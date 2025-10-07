@@ -59,6 +59,11 @@ bridgers = [bridger.lower() for bridger in bridgers]
 modes = [mode.lower() for mode in modes]
 
 for action in primitive_actions:
+  #delete the directory if it exists
+  if os.path.exists(f"data/seaquest/{action}"):
+    import shutil
+    shutil.rmtree(f"data/seaquest/{action}")
+  #create the directory
   os.makedirs(f"data/seaquest/{action}/train", exist_ok=True)
   os.makedirs(f"data/seaquest/{action}/test", exist_ok=True)
 
