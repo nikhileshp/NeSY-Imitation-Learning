@@ -126,11 +126,10 @@ class GameAnalysisApp:
         
         # Save relationship data if requested
         if save_rel:
-            rel_output_path = os.path.join(image_folder, "relationships_output.txt")
+            rel_output_path = os.path.join(image_folder, image_folder.split('/')[-1]+"_relationships.txt")
+            # self.gaze_df.to_csv(rel_output_path, sep='\t', index=False)
             if verbose >= 2:
-                print(f"Saving relationship data to {rel_output_path}")
-            # This would need to be implemented based on your specific requirements
-        
+                print(f"Saved relationship data to {rel_output_path}")
         self.visualizer.close_all_windows()
     
     def _get_sorted_images(self, image_folder: str) -> List[str]:
