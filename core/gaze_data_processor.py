@@ -90,11 +90,13 @@ class GazeDataProcessor:
             'gaze_positions': gaze_positions,
             'objects': "",
             'relationships': "",
-            'goal': ""
+            'goal': "",
+            'distance_weights': ""
         }
     
     def update_frame_data(self, gaze_df: pd.DataFrame, frame_id: str, 
-                         objects_list: List[str], relationships_text: str, goal: str = "") -> None:
+                         objects_list: List[str], relationships_text: str, goal: str = "",
+                         distance_weights: str = "") -> None:
         """
         Update gaze DataFrame with object and relationship information for a specific frame.
         
@@ -104,6 +106,7 @@ class GazeDataProcessor:
             objects_list: List of detected object IDs
             relationships_text: Formatted relationships text
             goal: Detected goal for this frame
+            distance_weights: Formatted distance weights text
         """
         if gaze_df.empty:
             return
@@ -122,6 +125,9 @@ class GazeDataProcessor:
         
         # Update goal column
         gaze_df.loc[frame_mask, 'goal'] = goal
+        
+        # Update distance weights column
+        gaze_df.loc[frame_mask, 'distance_weights'] = distance_weights
     
     def get_gaze_positions_for_frame(self, gaze_df: pd.DataFrame, 
                                    frame_id: str) -> List[Tuple[int, int]]:

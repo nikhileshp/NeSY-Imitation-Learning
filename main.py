@@ -15,6 +15,7 @@ from core.gaze_data_processor import GazeDataProcessor
 from core.visualization_manager import VisualizationManager
 from core.game_object import GameObject
 from core.goal_detector import GoalDetector
+from core.distance_weight_calculator import DistanceWeightCalculator
 
 # Import Seaquest-specific modules
 from env.seaquest.object_detector import SeaquestObjectDetector
@@ -43,6 +44,7 @@ class GameAnalysisApp:
         self.goal_detector = GoalDetector()
         self.gaze_df = pd.DataFrame()
         self.verbose = 1  # Default verbosity level
+        self.distance_weight_calculator = None  # Will be initialized when screen dimensions are known
     
     def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
             start_frame: int = 0, no_visual: bool = False, process_all: bool = False, 
@@ -90,6 +92,9 @@ class GameAnalysisApp:
         first_frame = cv2.imread(os.path.join(image_folder, images[0]))
         height, width, _ = first_frame.shape
         
+        # Initialize distance weight calculator with screen dimensions
+        self.distance_weight_calculator = DistanceWeightCalculator(width, height)
+        
         # Store processing options in instance variables for access in _process_single_image
         self.no_visual = no_visual
         self.process_all = process_all
@@ -121,15 +126,18 @@ class GameAnalysisApp:
         # Save updated gaze data if available
         if not self.gaze_df.empty:
             new_path = self.gaze_processor.save_updated_gaze_data(self.gaze_df, text_file_path)
-            if verbose >= 2:
+            if verbose >= 1:
                 print(f"Saved updated gaze data with relationships to {new_path}")
         
         # Save relationship data if requested
         if save_rel:
-            rel_output_path = os.path.join(image_folder, image_folder.split('/')[-1]+"_relationships.txt")
-            # self.gaze_df.to_csv(rel_output_path, sep='\t', index=False)
-            if verbose >= 2:
-                print(f"Saved relationship data to {rel_output_path}")
+            rel_output_path = os.path.join(image_folder, "relationships_output.txt")
+            if verbose >= 1:
+                print(f"Saving relationship data to {rel_output_path}")
+            # This would need to be implemented based on your specific requirements
+            # Return the df or save it directly
+            self.gaze_df.to_csv(rel_output_path, sep='\t', index=False)
+
         self.visualizer.close_all_windows()
     
     def _get_sorted_images(self, image_folder: str) -> List[str]:
@@ -186,6 +194,7 @@ class GameAnalysisApp:
         frame_id = img_name.replace('.png', '').replace('.jpg', '').replace('.jpeg', '')
         gaze_positions = []
         detected_goal = "unknown"
+        distance_weights_text = ""  # Initialize outside the if block
         
         if not self.gaze_df.empty:
             gaze_positions = self.gaze_processor.get_gaze_positions_for_frame(self.gaze_df, frame_id)
@@ -199,14 +208,33 @@ class GameAnalysisApp:
                     gaze_positions, detected_objects, action, frame_id
                 )
             
+            # Calculate distance weights for relationships involving spatial objects
+            if self.distance_weight_calculator and gaze_positions:
+                distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
+                    relationships, gaze_positions
+                )
+                distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
+                    distance_weights
+                )
+                
+                if self.verbose >= 2 and distance_weights:
+                    print(f"\n  Distance weights for relationships:")
+                    for rel_identifier, weight in distance_weights.items():
+                        print(f"    {rel_identifier}: {weight:.3f}")
+                    print(f"  Formatted: {distance_weights_text}")
+            
             # Update gaze DataFrame with object, relationship, and goal information
             objects_list = self.object_detector.get_all_objects_as_list(detected_objects)
             relationships_text = self.relationship_analyzer.format_relationships_for_dataframe(relationships)
-            self.gaze_processor.update_frame_data(self.gaze_df, frame_id, objects_list, relationships_text, detected_goal)
+            self.gaze_processor.update_frame_data(
+                self.gaze_df, frame_id, objects_list, relationships_text, detected_goal,
+                distance_weights_text
+            )
         
         # Create comprehensive visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
-            image, detected_objects, connection_list, gaze_positions, scale_factor=2, detected_goal=detected_goal
+            image, detected_objects, connection_list, gaze_positions, scale_factor=2, 
+            detected_goal=detected_goal, distance_weights_text=distance_weights_text
         )
         
         # Display the image (unless no_visual is set)
@@ -308,9 +336,24 @@ class GameAnalysisApp:
         relationships = self.relationship_analyzer.analyze_all_relationships(detected_objects)
         connection_list = self.relationship_analyzer.create_connection_list(relationships)
         
+        # Initialize distance weight calculator for this image dimensions if not already done
+        if self.distance_weight_calculator is None:
+            self.distance_weight_calculator = DistanceWeightCalculator(width, height)
+        
+        # Calculate distance weights if gaze data is available
+        distance_weights_text = ""
+        if self.distance_weight_calculator and gaze_positions:
+            distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
+                relationships, gaze_positions
+            )
+            distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
+                distance_weights
+            )
+        
         # Create visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
-            image, detected_objects, connection_list, gaze_positions, detected_goal=detected_goal
+            image, detected_objects, connection_list, gaze_positions, 
+            detected_goal=detected_goal, distance_weights_text=distance_weights_text
         )
         
         return {
@@ -355,9 +398,9 @@ Examples:
                        help='Game type to analyze (default: seaquest)')
     parser.add_argument('--start-frame', type=int, default=0,
                        help='Frame index to start processing from (default: 0)')
-    parser.add_argument('--no-visual', action='store_true',
+    parser.add_argument('--no-visual', action='store_true', default=False,
                        help='Skip visual display of frames (faster processing)')
-    parser.add_argument('--process-all', action='store_true',
+    parser.add_argument('--process-all', action='store_true', default=False,
                        help='Process all frames without waiting for keypress')
     parser.add_argument('--save-rel', action='store_true',
                        help='Save relationship data to output files')

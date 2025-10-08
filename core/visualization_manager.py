@@ -120,15 +120,17 @@ class VisualizationManager:
     
     def draw_gaze_positions(self, image: np.ndarray, 
                            gaze_positions: List[Tuple[int, int]], 
-                           image_width: int, image_height: int) -> np.ndarray:
+                           image_width: int, image_height: int,
+                           distance_weights_text: str = "") -> np.ndarray:
         """
-        Draw gaze positions as red dots on the image.
+        Draw gaze positions as red dots on the image with enhanced visibility.
         
         Args:
             image: Input image as numpy array
             gaze_positions: List of (x, y) gaze position tuples
             image_width: Width of the original image
             image_height: Height of the original image
+            distance_weights_text: Formatted distance weights text to display
             
         Returns:
             Image with gaze positions drawn
@@ -136,10 +138,25 @@ class VisualizationManager:
         annotated_image = image.copy()
         gaze_color = self.base_colors.get('gaze_position', (0, 0, 255))
         
-        for x, y in gaze_positions:
+        # Draw all gaze positions
+        for i, (x, y) in enumerate(gaze_positions):
             # Check if gaze position is within image bounds
             if 0 <= x < image_width and 0 <= y < image_height:
-                cv2.circle(annotated_image, (x, y), 1, gaze_color, -1)
+                if i == len(gaze_positions) - 1:  # Last position (displayed gaze)
+                    # Draw larger circle for the displayed gaze position
+                    cv2.circle(annotated_image, (x, y), 4, gaze_color, -1)
+                    # Draw outer ring for more visibility
+                    cv2.circle(annotated_image, (x, y), 6, (0, 255, 255), 1)  # Yellow ring
+                    # Add label
+                    cv2.putText(annotated_image, 'GAZE', (x + 8, y - 8),
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 1)
+                else:
+                    # Draw smaller circles for other gaze positions
+                    cv2.circle(annotated_image, (x, y), 2, (100, 100, 255), -1)  # Lighter red
+        
+        # Add gaze info text if provided
+        if distance_weights_text:
+            self._draw_gaze_info(annotated_image, gaze_positions, distance_weights_text)
         
         return annotated_image
     
@@ -149,7 +166,8 @@ class VisualizationManager:
                                          gaze_positions: List[Tuple[int, int]],
                                          relationships: Optional[List[SpatialRelationship]] = None,
                                          scale_factor: int = 2,
-                                         detected_goal: str = "") -> np.ndarray:
+                                         detected_goal: str = "",
+                                         distance_weights_text: str = "") -> np.ndarray:
         """
         Create a comprehensive visualization with all elements.
         
@@ -161,6 +179,7 @@ class VisualizationManager:
             relationships: Optional list of relationships for enhanced features
             scale_factor: Factor by which to scale the output image
             detected_goal: Detected goal text to display on frame
+            distance_weights_text: Formatted distance weights text to display
             
         Returns:
             Comprehensive annotated image
@@ -177,9 +196,9 @@ class VisualizationManager:
         # Draw relationships
         annotated_image = self.draw_relationships(annotated_image, connection_list)
         
-        # Draw gaze positions
+        # Draw gaze positions with distance weights info
         annotated_image = self.draw_gaze_positions(annotated_image, gaze_positions, 
-                                                  width, height)
+                                                  width, height, distance_weights_text)
         
         # Add goal text to top left corner
         if detected_goal:
@@ -475,6 +494,115 @@ class VisualizationManager:
         
         # Draw the goal text
         cv2.putText(image, goal_text, (x_pos, y_pos), font, font_scale, text_color, thickness)
+    
+    def _draw_gaze_info(self, image: np.ndarray, gaze_positions: List[Tuple[int, int]], 
+                       distance_weights_text: str):
+        """
+        Draw gaze information including position and distance weights on the image.
+        
+        Args:
+            image: Image to draw on
+            gaze_positions: List of gaze positions
+            distance_weights_text: Formatted distance weights text
+        """
+        if not gaze_positions:
+            return
+        
+        # Get the displayed gaze position (last one)
+        displayed_gaze = gaze_positions[-1]
+        
+        # Position for gaze info (bottom left corner)
+        info_x = 10
+        info_y = image.shape[0] - 10  # Start from bottom
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.3
+        thickness = 1
+        line_spacing = 12
+        
+        # Background color for text visibility
+        bg_color = (0, 0, 0)  # Black background
+        text_color = (255, 255, 255)  # White text
+        
+        # Draw gaze position
+        gaze_text = f"Gaze: ({displayed_gaze[0]}, {displayed_gaze[1]})"
+        self._draw_text_with_background(image, gaze_text, (info_x, info_y), 
+                                      font, font_scale, text_color, bg_color, thickness)
+        info_y -= line_spacing
+        
+        # Draw distance weights if available
+        if distance_weights_text:
+            weight_lines = self._split_text_for_display(distance_weights_text, max_chars=50)
+            for line in weight_lines:
+                if line.strip():  # Skip empty lines
+                    self._draw_text_with_background(image, line, (info_x, info_y), 
+                                                  font, font_scale, text_color, bg_color, thickness)
+                    info_y -= line_spacing
+    
+    def _draw_text_with_background(self, image: np.ndarray, text: str, position: Tuple[int, int],
+                                 font, font_scale: float, text_color: Tuple[int, int, int],
+                                 bg_color: Tuple[int, int, int], thickness: int):
+        """
+        Draw text with a background rectangle for better visibility.
+        
+        Args:
+            image: Image to draw on
+            text: Text to draw
+            position: (x, y) position for text
+            font: OpenCV font
+            font_scale: Font scale
+            text_color: Text color (BGR)
+            bg_color: Background color (BGR)
+            thickness: Text thickness
+        """
+        # Get text size
+        (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+        
+        x, y = position
+        padding = 2
+        
+        # Draw background rectangle
+        cv2.rectangle(image, 
+                     (x - padding, y - text_height - padding), 
+                     (x + text_width + padding, y + baseline + padding),
+                     bg_color, -1)
+        
+        # Draw text
+        cv2.putText(image, text, position, font, font_scale, text_color, thickness)
+    
+    def _split_text_for_display(self, text: str, max_chars: int = 50) -> List[str]:
+        """
+        Split long text into multiple lines for better display.
+        
+        Args:
+            text: Text to split
+            max_chars: Maximum characters per line
+            
+        Returns:
+            List of text lines
+        """
+        if len(text) <= max_chars:
+            return [text]
+        
+        # Split by separators first
+        parts = text.split(' ; ')
+        lines = []
+        current_line = ""
+        
+        for part in parts:
+            if len(current_line + part) <= max_chars:
+                if current_line:
+                    current_line += " ; " + part
+                else:
+                    current_line = part
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = part
+        
+        if current_line:
+            lines.append(current_line)
+        
+        return lines
 
 
 def create_seaquest_visualization_manager() -> VisualizationManager:
