@@ -1,20 +1,19 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt
- 
+# python data/seaquest/preprocess.py --file relationship.txt
 # Common parameters
 JAR="data/seaquest/boostsrl-1.1.1.jar"
 
 AUC_JAR="BoostSRL/src/edu/wisc/cs/will/DataSetUtils/"
-TREES=1
+TREES=5
 NEG_POS_RATIO=2
  
 # List of targets (actions)
 TARGETS=("fire" "up" "down" "left" "right" "noop")
 TRAIN_DIRS=("data/seaquest/fire/train" "data/seaquest/up/train" "data/seaquest/down/train" "data/seaquest/left/train" "data/seaquest/right/train" "data/seaquest/noop/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
-MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}"
+MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_all"
 MODELS=(
     "$MODEL_BASE/fire"
     "$MODEL_BASE/up"
@@ -39,8 +38,8 @@ for i in "${!TARGETS[@]}"; do
         -target "$TARGET" \
         -trees "$TREES" \
         -aucJarPath "$AUC_JAR" \
-        -model "$MODEL" \
-        -noBoost 
+        -negPosRatio "$NEG_POS_RATIO" \
+        -model "$MODEL"
     echo "✅ Completed training for $TARGET"
     echo ""
 done
@@ -84,6 +83,8 @@ for i in "${!TARGETS[@]}"; do
     TEST_DIR="${TEST_DIRS[$i]}"
 
     LOG_FILE="${LOG_FILES[$i]}"
+
+
  
     # Clear previous log if exists
 > "$LOG_FILE"
@@ -112,7 +113,8 @@ for i in "${!TARGETS[@]}"; do
             -test "$TEST_DIR" \
             -target "$TARGET" \
             -trees "$TREES" \
-            -aucJarPath "$AUC_JAR" 
+            -aucJarPath "$AUC_JAR" \
+            
 
         echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Target: $TARGET"
 

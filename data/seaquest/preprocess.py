@@ -6,6 +6,7 @@ import string
 import os
 
 
+
 modes=["aboveOfDiver(+state, +diver).",
 "aboveOfEnemy(+state, +enemy).",
 "aboveOfMissile(+state, +missile). ",
@@ -143,8 +144,9 @@ train_action_files = {action: [[], []] for action in primitive_actions}
 test_action_files = {action: [[], []] for action in primitive_actions}
 
 for _, row in train.iterrows():
-  frame_id = str(row["frameid"]).split("_")[-1]
-  s_id = "s" + str(frame_id)
+  # frame_id = str(row["frameid"]).split("_")[-1]
+  # s_id = "s" + str(frame_id)
+  s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
   taken_actions = []
@@ -168,8 +170,9 @@ for _, row in train.iterrows():
 # Remove rows which have action>5
 
 for _, row in test.iterrows():
-  frame_id = str(row["frameid"]).split("_")[-1]
-  s_id = "s" + str(frame_id)
+  # frame_id = str(row["frameid"]).split("_")[-1]
+  # s_id = "s" + str(frame_id)
+  s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
   taken_actions = []
@@ -196,8 +199,9 @@ for pa in primitive_actions:
     for _, row in train.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
-        frame_id = str(row["frameid"]).split("_")[-1]
-        s_id = "s" + str(frame_id)
+        # frame_id = str(row["frameid"]).split("_")[-1]
+        # # s_id = "s" + str(frame_id)
+        s_id = "s" + str(row["frameid"].replace("_",""))
         for rel in rels.split(" , "):
           rel = rel.strip()
           if rel:
@@ -216,8 +220,9 @@ for pa in primitive_actions:
     for _, row in test.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
-        frame_id = str(row["frameid"]).split("_")[-1]
-        s_id = "s" + str(frame_id)
+        # frame_id = str(row["frameid"]).split("_")[-1]
+        # # s_id = "s" + str(frame_id)
+        s_id = "s" + str(row["frameid"].replace("_",""))
         for rel in rels.split(" , "):
           rel = rel.strip()
           if rel:
@@ -264,7 +269,7 @@ for action in primitive_actions:
   train_dict[action].facts = train_facts
   test_dict[action].facts = test_facts
 
-  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=10,number_of_cycles=10, node_size=2, max_tree_depth=8)
+  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100)
   #write the background to file
   with open("data/seaquest/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))

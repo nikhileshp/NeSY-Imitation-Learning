@@ -60,8 +60,13 @@ for action in primitive_actions:
 max_prob_index = {state_id: np.argmax(probs) for state_id, probs in state_id_action_probs.items()}
 
 test_df = pd.read_csv("test.csv")
-test_df['state_id'] = test_df['frameid'].apply(lambda x: "s" + str(x).split("_")[-1])
+test_df['state_id'] = test_df['frameid'].apply(lambda x: "s" + str(x).lower().replace("_",""))
+print(test_df.head())
+state_ids = sorted(list(test_df['state_id']))
+print(state_id_list[0:10])
+print('sRZ80297210013' in state_id_list)
 test_df['predicted_action'] = test_df['state_id'].apply(lambda x: max_prob_index[x])
+
 
 #Compute weighted f1 score from test_df
 

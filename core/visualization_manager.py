@@ -144,19 +144,20 @@ class VisualizationManager:
             if 0 <= x < image_width and 0 <= y < image_height:
                 if i == len(gaze_positions) - 1:  # Last position (displayed gaze)
                     # Draw larger circle for the displayed gaze position
-                    cv2.circle(annotated_image, (x, y), 4, gaze_color, -1)
+                    cv2.circle(annotated_image, (x, y), 1, gaze_color, -1)
                     # Draw outer ring for more visibility
-                    cv2.circle(annotated_image, (x, y), 6, (0, 255, 255), 1)  # Yellow ring
+                    cv2.circle(annotated_image, (x, y), 2, (0, 255, 255), 1)  # Yellow ring
                     # Add label
-                    cv2.putText(annotated_image, 'GAZE', (x + 8, y - 8),
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 1)
+                    # cv2.putText(annotated_image, 'GAZE', (x + 8, y - 8),
+                    #            cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 1)
                 else:
                     # Draw smaller circles for other gaze positions
-                    cv2.circle(annotated_image, (x, y), 2, (100, 100, 255), -1)  # Lighter red
+                    cv2.circle(annotated_image, (x, y), 1, (100, 100, 255), -1)  # Lighter red
         
         # Add gaze info text if provided
         if distance_weights_text:
-            self._draw_gaze_info(annotated_image, gaze_positions, distance_weights_text)
+            pass
+            # self._draw_gaze_info(annotated_image, gaze_positions, distance_weights_text)
         
         return annotated_image
     
