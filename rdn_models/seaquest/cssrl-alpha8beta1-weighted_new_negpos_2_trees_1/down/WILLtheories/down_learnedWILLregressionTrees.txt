@@ -1,0 +1,605 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 3
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 100
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 6,261
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 14:06:15 10/16/25.  [Using 93,747,288 memory cells.]  %%%%%
+
+% FOR down(A):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, B), samelevelasdiver(A, B) )
+%   | then if ( facingright(A), leftofdiver(A, B) )
+%   | | then if ( visiblemissile(A, C), leftofmissile(A, C) )
+%   | | | then return 0.799963860928397;  // std dev = 0.826, 31.000 (wgt'ed) examples reached here.  /* #neg=20 #pos=11 */
+%   | | | else return 0.7054729846449973;  // std dev = 1.170, 300.000 (wgt'ed) examples reached here.  /* #neg=285 #pos=15 */
+%   | | else if ( facingleft(A), rightofdiver(A, B) )
+%   | | | then return 0.7298099921763089;  // std dev = 1.637, 249.000 (wgt'ed) examples reached here.  /* #neg=217 #pos=32 */
+%   | | | else return 0.8070261160840739;  // std dev = 1.797, 143.000 (wgt'ed) examples reached here.  /* #neg=89 #pos=54 */
+%   | else if ( visiblediver(A, D), aboveofdiver(A, D) )
+%   | | then if ( visibleenemysubmarine(A, E), aboveofsubmarine(A, E) )
+%   | | | then return 0.8037959329843207;  // std dev = 3.539, 561.000 (wgt'ed) examples reached here.  /* #neg=355 #pos=206 */
+%   | | | else return 0.9087552543860388;  // std dev = 4.101, 843.000 (wgt'ed) examples reached here.  /* #neg=248 #pos=595 */
+%   | | else if ( visibleenemy(A, F), belowofenemy(A, F) )
+%   | | | then return 0.7781485836672307;  // std dev = 4.720, 1,139.000 (wgt'ed) examples reached here.  /* #neg=815 #pos=324 */
+%   | | | else return 0.8297836493260466;  // std dev = 5.555, 1,297.000 (wgt'ed) examples reached here.  /* #neg=712 #pos=585 */
+%   else if ( diversempty(A) )
+%   | then if ( visibleenemysubmarine(A, G), belowofsubmarine(A, G) )
+%   | | then if ( facingleft(A), visiblediver(A, H) )
+%   | | | then return 0.7559255599249881;  // std dev = 1.230, 94.000 (wgt'ed) examples reached here.  /* #neg=74 #pos=20 */
+%   | | | else return 0.8543525487362233;  // std dev = 1.777, 132.000 (wgt'ed) examples reached here.  /* #neg=62 #pos=70 */
+%   | | else if ( visibleenemysubmarine(A, I), rightofsubmarine(A, I) )
+%   | | | then return 0.709699849240645;  // std dev = 1.122, 220.000 (wgt'ed) examples reached here.  /* #neg=206 #pos=14 */
+%   | | | else return 0.760723712590694;  // std dev = 3.444, 701.000 (wgt'ed) examples reached here.  /* #neg=541 #pos=160 */
+%   | else if ( visiblediver(A, J), nearbydiver(A, J) )
+%   | | then if ( leftofdiver(A, J), facingright(A) )
+%   | | | then return 0.9999445514752772;  // std dev = 4.21e-08, 11.000 (wgt'ed) examples reached here.  /* #pos=11 */
+%   | | | else return 0.6899744811276126;  // std dev = 0.000, 41.000 (wgt'ed) examples reached here.  /* #neg=41 */
+%   | | else return 0.6930803936561464;  // std dev = 0.690, 499.000 (wgt'ed) examples reached here.  /* #neg=494 #pos=5 */
+
+
+% Clauses:
+
+down(A, 0.799963860928397) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     facingright(A), 
+     leftofdiver(A, B), 
+     visiblemissile(A, C), 
+     leftofmissile(A, C), 
+     !. // Clause #1.
+
+down(A, 0.7054729846449973) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     facingright(A), 
+     leftofdiver(A, B), 
+     !. // Clause #2.
+
+down(A, 0.7298099921763089) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     facingleft(A), 
+     rightofdiver(A, B), 
+     !. // Clause #3.
+
+down(A, 0.8070261160840739) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     !. // Clause #4.
+
+down(A, 0.8037959329843207) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     visibleenemysubmarine(A, C), 
+     aboveofsubmarine(A, C), 
+     !. // Clause #5.
+
+down(A, 0.9087552543860388) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     !. // Clause #6.
+
+down(A, 0.7781485836672307) :- 
+     diversnotfull(A), 
+     visibleenemy(A, B), 
+     belowofenemy(A, B), 
+     !. // Clause #7.
+
+down(A, 0.8297836493260466) :- 
+     diversnotfull(A), 
+     !. // Clause #8.
+
+down(A, 0.7559255599249881) :- 
+     diversempty(A), 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     facingleft(A), 
+     visiblediver(A, C), 
+     !. // Clause #9.
+
+down(A, 0.8543525487362233) :- 
+     diversempty(A), 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     !. // Clause #10.
+
+down(A, 0.709699849240645) :- 
+     diversempty(A), 
+     visibleenemysubmarine(A, B), 
+     rightofsubmarine(A, B), 
+     !. // Clause #11.
+
+down(A, 0.760723712590694) :- 
+     diversempty(A), 
+     !. // Clause #12.
+
+down(A, 0.9999445514752772) :- 
+     visiblediver(A, B), 
+     nearbydiver(A, B), 
+     leftofdiver(A, B), 
+     facingright(A), 
+     !. // Clause #13.
+
+down(A, 0.6899744811276126) :- 
+     visiblediver(A, B), 
+     nearbydiver(A, B), 
+     !. // Clause #14.
+
+down(A, 0.6930803936561464) :- !. // Clause #15.
+
+
+% The flattened versions of these clauses:
+
+flattened_down(a, 0.799963860928397) :-  /* #neg=20 #pos=11 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar1),
+   samelevelasdiver(a, uniqueVar1),
+   facingright(a),
+   leftofdiver(a, uniqueVar1),
+   visiblemissile(a, uniqueVar2),
+   leftofmissile(a, uniqueVar2),
+   !. // Flattened version of clause #1.
+
+flattened_down(a, 0.7054729846449973) :-  /* #neg=285 #pos=15 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar3),
+   samelevelasdiver(a, uniqueVar3),
+   facingright(a),
+   leftofdiver(a, uniqueVar3),
+   !. // Flattened version of clause #2.
+
+flattened_down(a, 0.7298099921763089) :-  /* #neg=217 #pos=32 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar4),
+   samelevelasdiver(a, uniqueVar4),
+   facingleft(a),
+   rightofdiver(a, uniqueVar4),
+   !. // Flattened version of clause #3.
+
+flattened_down(a, 0.8070261160840739) :-  /* #neg=89 #pos=54 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar5),
+   samelevelasdiver(a, uniqueVar5),
+   !. // Flattened version of clause #4.
+
+flattened_down(a, 0.8037959329843207) :-  /* #neg=355 #pos=206 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar6),
+   aboveofdiver(a, uniqueVar6),
+   visibleenemysubmarine(a, uniqueVar7),
+   aboveofsubmarine(a, uniqueVar7),
+   !. // Flattened version of clause #5.
+
+flattened_down(a, 0.9087552543860388) :-  /* #neg=248 #pos=595 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar8),
+   aboveofdiver(a, uniqueVar8),
+   !. // Flattened version of clause #6.
+
+flattened_down(a, 0.7781485836672307) :-  /* #neg=815 #pos=324 */ 
+   diversnotfull(a),
+   visibleenemy(a, uniqueVar9),
+   belowofenemy(a, uniqueVar9),
+   !. // Flattened version of clause #7.
+
+flattened_down(a, 0.8297836493260466) :-  /* #neg=712 #pos=585 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #8.
+
+flattened_down(a, 0.7559255599249881) :-  /* #neg=74 #pos=20 */ 
+   diversempty(a),
+   visibleenemysubmarine(a, uniqueVar10),
+   belowofsubmarine(a, uniqueVar10),
+   facingleft(a),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #9.
+
+flattened_down(a, 0.8543525487362233) :-  /* #neg=62 #pos=70 */ 
+   diversempty(a),
+   visibleenemysubmarine(a, uniqueVar11),
+   belowofsubmarine(a, uniqueVar11),
+   !. // Flattened version of clause #10.
+
+flattened_down(a, 0.709699849240645) :-  /* #neg=206 #pos=14 */ 
+   diversempty(a),
+   visibleenemysubmarine(a, uniqueVar12),
+   rightofsubmarine(a, uniqueVar12),
+   !. // Flattened version of clause #11.
+
+flattened_down(a, 0.760723712590694) :-  /* #neg=541 #pos=160 */ 
+   diversempty(a),
+   !. // Flattened version of clause #12.
+
+flattened_down(a, 0.9999445514752772) :-  /* #pos=11 */ 
+   visiblediver(a, uniqueVar13),
+   nearbydiver(a, uniqueVar13),
+   leftofdiver(a, uniqueVar13),
+   facingright(a),
+   !. // Flattened version of clause #13.
+
+flattened_down(a, 0.6899744811276126) :-  /* #neg=41 */ 
+   visiblediver(a, uniqueVar14),
+   nearbydiver(a, uniqueVar14),
+   !. // Flattened version of clause #14.
+
+flattened_down(underscore, 0.6930803936561464) :-  /* #neg=494 #pos=5 */ 
+   !. // Flattened version of clause #15.
+
+
+% The unique flattened literals:
+%   visibleenemysubmarine(a, uniqueVar10)
+%   samelevelasdiver(a, uniqueVar4)
+%   visibleenemy(a, uniqueVar9)
+%   belowofsubmarine(a, uniqueVar10)
+%   belowofsubmarine(a, uniqueVar11)
+%   visiblediver(a, uniqueVar14)
+%   samelevelasdiver(a, uniqueVar3)
+%   visibleenemysubmarine(a, uniqueVar12)
+%   facingleft(a)
+%   visibleenemysubmarine(a, uniqueVar11)
+%   rightofsubmarine(a, uniqueVar12)
+%   leftofdiver(a, uniqueVar1)
+%   visiblemissile(a, uniqueVar2)
+%   samelevelasdiver(a, uniqueVar1)
+%   visiblediver(a, uniqueVar8)
+%   visiblediver(a, uniqueVar6)
+%   nearbydiver(a, uniqueVar13)
+%   leftofdiver(a, uniqueVar13)
+%   visiblediver(a, uniqueVar5)
+%   rightofdiver(a, uniqueVar4)
+%   leftofmissile(a, uniqueVar2)
+%   leftofdiver(a, uniqueVar3)
+%   visiblediver(a, uniqueVar4)
+%   diversnotfull(a)
+%   nearbydiver(a, uniqueVar14)
+%   belowofenemy(a, uniqueVar9)
+%   aboveofsubmarine(a, uniqueVar7)
+%   visiblediver(a, uniqueVar3)
+%   aboveofdiver(a, uniqueVar6)
+%   aboveofdiver(a, uniqueVar8)
+%   visiblediver(a, underscore)
+%   diversempty(a)
+%   samelevelasdiver(a, uniqueVar5)
+%   visiblediver(a, uniqueVar13)
+%   visiblediver(a, uniqueVar1)
+%   visibleenemysubmarine(a, uniqueVar7)
+%   facingright(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for down.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+down(D, Total) :- // A general accessor. 
+   down(D, 1000000, Total), !.
+down(D, Total) :- waitHere("This should not fail", down(D, Total)).
+
+down(D, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_down_tree1(D, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+down(D, TreesToUse, Total) :- waitHere("This should not fail", down(D, TreesToUse, Total)).
+
+getScore_down_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_down_tree1(D, TreesToUse, Total1) :- down_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(down, 37, [
+   visibleenemysubmarine(a, uniqueVar10),
+   samelevelasdiver(a, uniqueVar4),
+   visibleenemy(a, uniqueVar9),
+   belowofsubmarine(a, uniqueVar10),
+   belowofsubmarine(a, uniqueVar11),
+   visiblediver(a, uniqueVar14),
+   samelevelasdiver(a, uniqueVar3),
+   visibleenemysubmarine(a, uniqueVar12),
+   facingleft(a),
+   visibleenemysubmarine(a, uniqueVar11),
+   rightofsubmarine(a, uniqueVar12),
+   leftofdiver(a, uniqueVar1),
+   visiblemissile(a, uniqueVar2),
+   samelevelasdiver(a, uniqueVar1),
+   visiblediver(a, uniqueVar8),
+   visiblediver(a, uniqueVar6),
+   nearbydiver(a, uniqueVar13),
+   leftofdiver(a, uniqueVar13),
+   visiblediver(a, uniqueVar5),
+   rightofdiver(a, uniqueVar4),
+   leftofmissile(a, uniqueVar2),
+   leftofdiver(a, uniqueVar3),
+   visiblediver(a, uniqueVar4),
+   diversnotfull(a),
+   nearbydiver(a, uniqueVar14),
+   belowofenemy(a, uniqueVar9),
+   aboveofsubmarine(a, uniqueVar7),
+   visiblediver(a, uniqueVar3),
+   aboveofdiver(a, uniqueVar6),
+   aboveofdiver(a, uniqueVar8),
+   visiblediver(a, underscore),
+   diversempty(a),
+   samelevelasdiver(a, uniqueVar5),
+   visiblediver(a, uniqueVar13),
+   visiblediver(a, uniqueVar1),
+   visibleenemysubmarine(a, uniqueVar7),
+   facingright(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 14:06:26 10/16/25.  [Using 93,892,072 memory cells.]  %%%%%
+
+% FOR down(A):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, B), aboveofdiver(A, B) )
+%   | then if ( visibleenemysubmarine(A, C), rightofsubmarine(A, C) )
+%   | | then if ( leftofdiver(A, B), facingleft(A) )
+%   | | | then return 0.8782285552654646;  // std dev = 2.092, 191.000 (wgt'ed) examples reached here.  /* #neg=75 #pos=116 */
+%   | | | else return 0.753767793758532;  // std dev = 2.440, 379.000 (wgt'ed) examples reached here.  /* #neg=301 #pos=78 */
+%   | | else if ( visibleenemy(A, D), rightofenemy(A, D) )
+%   | | | then return 0.86660547093465;  // std dev = 3.556, 537.000 (wgt'ed) examples reached here.  /* #neg=231 #pos=306 */
+%   | | | else return 0.9330445362923278;  // std dev = 2.604, 417.000 (wgt'ed) examples reached here.  /* #neg=90 #pos=327 */
+%   | else if ( visibleenemy(A, E), visiblediver(A, F) )
+%   | | then if ( leftofenemy(A, E), aboveofenemy(A, E) )
+%   | | | then return 0.7784192745334809;  // std dev = 2.711, 375.000 (wgt'ed) examples reached here.  /* #neg=268 #pos=107 */
+%   | | | else return 0.7197316078809888;  // std dev = 2.042, 500.000 (wgt'ed) examples reached here.  /* #neg=452 #pos=48 */
+%   | | else if ( visibleenemy(A, G), samelevelasenemy(A, G) )
+%   | | | then return 0.7612098389093707;  // std dev = 2.866, 483.000 (wgt'ed) examples reached here.  /* #neg=372 #pos=111 */
+%   | | | else return 0.8243993361445275;  // std dev = 6.298, 1,681.000 (wgt'ed) examples reached here.  /* #neg=952 #pos=729 */
+%   else if ( diversempty(A) )
+%   | then if ( facingleft(A), visiblediver(A, H) )
+%   | | then if ( visibleenemysubmarine(A, I), leftofsubmarine(A, I) )
+%   | | | then return 0.7704861877114223;  // std dev = 1.193, 77.000 (wgt'ed) examples reached here.  /* #neg=57 #pos=20 */
+%   | | | else return 0.6994247881504065;  // std dev = 0.682, 164.000 (wgt'ed) examples reached here.  /* #neg=159 #pos=5 */
+%   | | else if ( visibleenemysubmarine(A, J), belowofsubmarine(A, J) )
+%   | | | then return 0.8543525487362208;  // std dev = 1.777, 132.000 (wgt'ed) examples reached here.  /* #neg=62 #pos=70 */
+%   | | | else return 0.7576552846014519;  // std dev = 3.563, 774.000 (wgt'ed) examples reached here.  /* #neg=605 #pos=169 */
+%   | else if ( visibleenemy(A, K), aboveofenemy(A, K) )
+%   | | then return 0.6934185930203629;  // std dev = 0.689, 450.000 (wgt'ed) examples reached here.  /* #neg=445 #pos=5 */
+%   | | else if ( visiblediver(A, L), nearbydiver(A, L) )
+%   | | | then return 0.8694308376446812;  // std dev = 0.667, 19.000 (wgt'ed) examples reached here.  /* #neg=8 #pos=11 */
+%   | | | else return 0.6899744811276127;  // std dev = 0.000, 82.000 (wgt'ed) examples reached here.  /* #neg=82 */
+
+
+% Clauses:
+
+down(A, 0.8782285552654646) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     visibleenemysubmarine(A, C), 
+     rightofsubmarine(A, C), 
+     leftofdiver(A, B), 
+     facingleft(A), 
+     !. // Clause #1.
+
+down(A, 0.753767793758532) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     visibleenemysubmarine(A, C), 
+     rightofsubmarine(A, C), 
+     !. // Clause #2.
+
+down(A, 0.86660547093465) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     visibleenemy(A, C), 
+     rightofenemy(A, C), 
+     !. // Clause #3.
+
+down(A, 0.9330445362923278) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     aboveofdiver(A, B), 
+     !. // Clause #4.
+
+down(A, 0.7784192745334809) :- 
+     diversnotfull(A), 
+     visibleenemy(A, B), 
+     visiblediver(A, C), 
+     leftofenemy(A, B), 
+     aboveofenemy(A, B), 
+     !. // Clause #5.
+
+down(A, 0.7197316078809888) :- 
+     diversnotfull(A), 
+     visibleenemy(A, B), 
+     visiblediver(A, C), 
+     !. // Clause #6.
+
+down(A, 0.7612098389093707) :- 
+     diversnotfull(A), 
+     visibleenemy(A, B), 
+     samelevelasenemy(A, B), 
+     !. // Clause #7.
+
+down(A, 0.8243993361445275) :- 
+     diversnotfull(A), 
+     !. // Clause #8.
+
+down(A, 0.7704861877114223) :- 
+     diversempty(A), 
+     facingleft(A), 
+     visiblediver(A, B), 
+     visibleenemysubmarine(A, C), 
+     leftofsubmarine(A, C), 
+     !. // Clause #9.
+
+down(A, 0.6994247881504065) :- 
+     diversempty(A), 
+     facingleft(A), 
+     visiblediver(A, B), 
+     !. // Clause #10.
+
+down(A, 0.8543525487362208) :- 
+     diversempty(A), 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     !. // Clause #11.
+
+down(A, 0.7576552846014519) :- 
+     diversempty(A), 
+     !. // Clause #12.
+
+down(A, 0.6934185930203629) :- 
+     visibleenemy(A, B), 
+     aboveofenemy(A, B), 
+     !. // Clause #13.
+
+down(A, 0.8694308376446812) :- 
+     visiblediver(A, B), 
+     nearbydiver(A, B), 
+     !. // Clause #14.
+
+down(A, 0.6899744811276127) :- !. // Clause #15.
+
+
+% The flattened versions of these clauses:
+
+flattened_down(a, 0.8782285552654646) :-  /* #neg=75 #pos=116 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar15),
+   aboveofdiver(a, uniqueVar15),
+   visibleenemysubmarine(a, uniqueVar16),
+   rightofsubmarine(a, uniqueVar16),
+   leftofdiver(a, uniqueVar15),
+   facingleft(a),
+   !. // Flattened version of clause #1.
+
+flattened_down(a, 0.753767793758532) :-  /* #neg=301 #pos=78 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar17),
+   aboveofdiver(a, uniqueVar17),
+   visibleenemysubmarine(a, uniqueVar18),
+   rightofsubmarine(a, uniqueVar18),
+   !. // Flattened version of clause #2.
+
+flattened_down(a, 0.86660547093465) :-  /* #neg=231 #pos=306 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar19),
+   aboveofdiver(a, uniqueVar19),
+   visibleenemy(a, uniqueVar20),
+   rightofenemy(a, uniqueVar20),
+   !. // Flattened version of clause #3.
+
+flattened_down(a, 0.9330445362923278) :-  /* #neg=90 #pos=327 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar21),
+   aboveofdiver(a, uniqueVar21),
+   !. // Flattened version of clause #4.
+
+flattened_down(a, 0.7784192745334809) :-  /* #neg=268 #pos=107 */ 
+   diversnotfull(a),
+   visibleenemy(a, uniqueVar22),
+   visiblediver(a, underscore),
+   leftofenemy(a, uniqueVar22),
+   aboveofenemy(a, uniqueVar22),
+   !. // Flattened version of clause #5.
+
+flattened_down(a, 0.7197316078809888) :-  /* #neg=452 #pos=48 */ 
+   diversnotfull(a),
+   visibleenemy(a, underscore),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #6.
+
+flattened_down(a, 0.7612098389093707) :-  /* #neg=372 #pos=111 */ 
+   diversnotfull(a),
+   visibleenemy(a, uniqueVar23),
+   samelevelasenemy(a, uniqueVar23),
+   !. // Flattened version of clause #7.
+
+flattened_down(a, 0.8243993361445275) :-  /* #neg=952 #pos=729 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #8.
+
+flattened_down(a, 0.7704861877114223) :-  /* #neg=57 #pos=20 */ 
+   diversempty(a),
+   facingleft(a),
+   visiblediver(a, underscore),
+   visibleenemysubmarine(a, uniqueVar24),
+   leftofsubmarine(a, uniqueVar24),
+   !. // Flattened version of clause #9.
+
+flattened_down(a, 0.6994247881504065) :-  /* #neg=159 #pos=5 */ 
+   diversempty(a),
+   facingleft(a),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #10.
+
+flattened_down(a, 0.8543525487362208) :-  /* #neg=62 #pos=70 */ 
+   diversempty(a),
+   visibleenemysubmarine(a, uniqueVar25),
+   belowofsubmarine(a, uniqueVar25),
+   !. // Flattened version of clause #11.
+
+flattened_down(a, 0.7576552846014519) :-  /* #neg=605 #pos=169 */ 
+   diversempty(a),
+   !. // Flattened version of clause #12.
+
+flattened_down(a, 0.6934185930203629) :-  /* #neg=445 #pos=5 */ 
+   visibleenemy(a, uniqueVar26),
+   aboveofenemy(a, uniqueVar26),
+   !. // Flattened version of clause #13.
+
+flattened_down(a, 0.8694308376446812) :-  /* #neg=8 #pos=11 */ 
+   visiblediver(a, uniqueVar27),
+   nearbydiver(a, uniqueVar27),
+   !. // Flattened version of clause #14.
+
+flattened_down(underscore, 0.6899744811276127) :-  /* #neg=82 */ 
+   !. // Flattened version of clause #15.
+
+
+% The unique flattened literals:
+%   visiblediver(a, uniqueVar21)
+%   visibleenemy(a, uniqueVar26)
+%   rightofsubmarine(a, uniqueVar18)
+%   nearbydiver(a, uniqueVar27)
+%   visibleenemysubmarine(a, uniqueVar18)
+%   visibleenemysubmarine(a, uniqueVar16)
+%   visiblediver(a, uniqueVar19)
+%   visibleenemysubmarine(a, uniqueVar25)
+%   belowofsubmarine(a, uniqueVar25)
+%   aboveofdiver(a, uniqueVar15)
+%   rightofenemy(a, uniqueVar20)
+%   facingleft(a)
+%   visiblediver(a, uniqueVar27)
+%   visibleenemysubmarine(a, uniqueVar24)
+%   visiblediver(a, uniqueVar17)
+%   aboveofenemy(a, uniqueVar22)
+%   visibleenemy(a, uniqueVar23)
+%   aboveofenemy(a, uniqueVar26)
+%   aboveofdiver(a, uniqueVar19)
+%   leftofdiver(a, uniqueVar15)
+%   visibleenemy(a, uniqueVar22)
+%   diversnotfull(a)
+%   visiblediver(a, uniqueVar15)
+%   leftofenemy(a, uniqueVar22)
+%   visiblediver(a, underscore)
+%   leftofsubmarine(a, uniqueVar24)
+%   diversempty(a)
+%   rightofsubmarine(a, uniqueVar16)
+%   visibleenemy(a, uniqueVar20)
+%   aboveofdiver(a, uniqueVar17)
+%   aboveofdiver(a, uniqueVar21)
+%   visibleenemy(a, underscore)
+%   samelevelasenemy(a, uniqueVar23)

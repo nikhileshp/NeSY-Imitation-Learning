@@ -1,0 +1,191 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 3
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 100
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 6,323
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 13:46:11 10/16/25.  [Using 93,848,056 memory cells.]  %%%%%
+
+% FOR right(A):
+%   if ( diversempty(A) )
+%   then return 0.45016600268752405;  // std dev = 0.000, 1,100.000 (wgt'ed) examples reached here.  /* #neg=991 #pos=109 */
+%   else if ( facingright(A) )
+%   | then if ( diversnotfull(A) )
+%   | | then if ( visiblediver(A, B) )
+%   | | | then return 0.4501660026875241;  // std dev = 0.000, 1,616.000 (wgt'ed) examples reached here.  /* #neg=426 #pos=1,190 */
+%   | | | else return 0.4501660026875241;  // std dev = 0.000, 1,306.000 (wgt'ed) examples reached here.  /* #neg=615 #pos=691 */
+%   | | else return 0.45016600268752344;  // std dev = 0.000, 240.000 (wgt'ed) examples reached here.  /* #neg=176 #pos=64 */
+%   | else return 0.45016600268752416;  // std dev = 1.92e-06, 2,061.000 (wgt'ed) examples reached here.  /* #neg=2,017 #pos=44 */
+
+
+% Clauses:
+
+right(A, 0.45016600268752405) :- 
+     diversempty(A), 
+     !. // Clause #1.
+
+right(A, 0.4501660026875241) :- 
+     facingright(A), 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     !. // Clause #2.
+
+right(A, 0.4501660026875241) :- 
+     facingright(A), 
+     diversnotfull(A), 
+     !. // Clause #3.
+
+right(A, 0.45016600268752344) :- 
+     facingright(A), 
+     !. // Clause #4.
+
+right(A, 0.45016600268752416) :- !. // Clause #5.
+
+
+% The flattened versions of these clauses:
+
+flattened_right(a, 0.45016600268752405) :-  /* #neg=991 #pos=109 */ 
+   diversempty(a),
+   !. // Flattened version of clause #1.
+
+flattened_right(a, 0.4501660026875241) :-  /* #neg=426 #pos=1,190 */ 
+   facingright(a),
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #2.
+
+flattened_right(a, 0.4501660026875241) :-  /* #neg=615 #pos=691 */ 
+   facingright(a),
+   diversnotfull(a),
+   !. // Flattened version of clause #3.
+
+flattened_right(a, 0.45016600268752344) :-  /* #neg=176 #pos=64 */ 
+   facingright(a),
+   !. // Flattened version of clause #4.
+
+flattened_right(underscore, 0.45016600268752416) :-  /* #neg=2,017 #pos=44 */ 
+   !. // Flattened version of clause #5.
+
+
+% The unique flattened literals:
+%   visiblediver(a, underscore)
+%   diversnotfull(a)
+%   diversempty(a)
+%   facingright(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for right.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+right(D, Total) :- // A general accessor. 
+   right(D, 1000000, Total), !.
+right(D, Total) :- waitHere("This should not fail", right(D, Total)).
+
+right(D, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_right_tree1(D, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+right(D, TreesToUse, Total) :- waitHere("This should not fail", right(D, TreesToUse, Total)).
+
+getScore_right_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_right_tree1(D, TreesToUse, Total1) :- right_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(right, 4, [
+   visiblediver(a, underscore),
+   diversnotfull(a),
+   diversempty(a),
+   facingright(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 13:46:19 10/16/25.  [Using 93,931,752 memory cells.]  %%%%%
+
+% FOR right(A):
+%   if ( diversfull(A) )
+%   then return 0.4501660026875239;  // std dev = 2.67e-07, 500.000 (wgt'ed) examples reached here.  /* #neg=431 #pos=69 */
+%   else if ( facingleft(A) )
+%   | then if ( diversempty(A) )
+%   | | then return 0.45016600268752394;  // std dev = 0.000, 656.000 (wgt'ed) examples reached here.  /* #neg=655 #pos=1 */
+%   | | else return 0.45016600268752416;  // std dev = 0.000, 1,745.000 (wgt'ed) examples reached here.  /* #neg=1,706 #pos=39 */
+%   | else if ( diversnotfull(A) )
+%   | | then if ( visiblediver(A, B) )
+%   | | | then return 0.4501660026875241;  // std dev = 0.000, 1,616.000 (wgt'ed) examples reached here.  /* #neg=426 #pos=1,190 */
+%   | | | else return 0.4501660026875241;  // std dev = 0.000, 1,306.000 (wgt'ed) examples reached here.  /* #neg=615 #pos=691 */
+%   | | else return 0.4501660026875239;  // std dev = 2.67e-07, 500.000 (wgt'ed) examples reached here.  /* #neg=392 #pos=108 */
+
+
+% Clauses:
+
+right(A, 0.4501660026875239) :- 
+     diversfull(A), 
+     !. // Clause #1.
+
+right(A, 0.45016600268752394) :- 
+     facingleft(A), 
+     diversempty(A), 
+     !. // Clause #2.
+
+right(A, 0.45016600268752416) :- 
+     facingleft(A), 
+     !. // Clause #3.
+
+right(A, 0.4501660026875241) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     !. // Clause #4.
+
+right(A, 0.4501660026875241) :- 
+     diversnotfull(A), 
+     !. // Clause #5.
+
+right(A, 0.4501660026875239) :- !. // Clause #6.
+
+
+% The flattened versions of these clauses:
+
+flattened_right(a, 0.4501660026875239) :-  /* #neg=431 #pos=69 */ 
+   diversfull(a),
+   !. // Flattened version of clause #1.
+
+flattened_right(a, 0.45016600268752394) :-  /* #neg=655 #pos=1 */ 
+   facingleft(a),
+   diversempty(a),
+   !. // Flattened version of clause #2.
+
+flattened_right(a, 0.45016600268752416) :-  /* #neg=1,706 #pos=39 */ 
+   facingleft(a),
+   !. // Flattened version of clause #3.
+
+flattened_right(a, 0.4501660026875241) :-  /* #neg=426 #pos=1,190 */ 
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #4.
+
+flattened_right(a, 0.4501660026875241) :-  /* #neg=615 #pos=691 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #5.
+
+flattened_right(underscore, 0.4501660026875239) :-  /* #neg=392 #pos=108 */ 
+   !. // Flattened version of clause #6.
+
+
+% The unique flattened literals:
+%   visiblediver(a, underscore)
+%   diversnotfull(a)
+%   diversfull(a)
+%   diversempty(a)
+%   facingleft(a)

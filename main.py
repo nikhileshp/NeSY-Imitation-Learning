@@ -45,10 +45,11 @@ class GameAnalysisApp:
         self.gaze_df = pd.DataFrame()
         self.verbose = 1  # Default verbosity level
         self.distance_weight_calculator = None  # Will be initialized when screen dimensions are known
+        self.use_alternating_class_weights = False  # Default to standard reciprocal rank weights
     
     def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
             start_frame: int = 0, no_visual: bool = False, process_all: bool = False, 
-            save_rel: bool = False, verbose: int = 1):
+            save_rel: bool = False, verbose: int = 1, use_alternating_class_weights: bool = False):
         """
         Run the main analysis pipeline.
         
@@ -61,9 +62,11 @@ class GameAnalysisApp:
             process_all: Process all frames instead of stepping through
             save_rel: Save relationship data to files
             verbose: Verbosity level (0=quiet, 1=minimal, 2=verbose)
+            use_alternating_class_weights: Use alternating class weight calculation
         """
-        # Store verbosity level
+        # Store verbosity level and settings
         self.verbose = verbose
+        self.use_alternating_class_weights = use_alternating_class_weights
         
         # Validate input folder
         if not os.path.exists(image_folder):
@@ -211,7 +214,7 @@ class GameAnalysisApp:
             # Calculate distance weights for relationships involving spatial objects
             if self.distance_weight_calculator and gaze_positions:
                 distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
-                    relationships, gaze_positions
+                    relationships, gaze_positions, self.use_alternating_class_weights
                 )
                 distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
                     distance_weights
@@ -344,7 +347,7 @@ class GameAnalysisApp:
         distance_weights_text = ""
         if self.distance_weight_calculator and gaze_positions:
             distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
-                relationships, gaze_positions
+                relationships, gaze_positions, self.use_alternating_class_weights
             )
             distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
                 distance_weights
@@ -408,6 +411,8 @@ Examples:
                        help='If set, treat --data as a parent folder and process all trajectory subfolders that have a matching .txt file')
     parser.add_argument('--verbose', '-v', type=int, default=1, choices=[0, 1, 2],
                        help='Verbosity level: 0=quiet (progress bars only), 1=minimal output, 2=verbose output (default: 1)')
+    parser.add_argument('--alternating-class-weights', action='store_true',
+                       help='Use alternating class weight calculation (first object of each class gets weight, second gets 0, etc.)')
     
     args = parser.parse_args()
     
@@ -423,6 +428,7 @@ Examples:
         print(f"  Process mode: {'automatic' if args.process_all else 'step-by-step'}")
         print(f"  Save relationships: {'yes' if args.save_rel else 'no'}")
         print(f"  All trajectories mode: {'yes' if args.all_trajectories else 'no'}")
+        print(f"  Alternating class weights: {'enabled' if args.alternating_class_weights else 'disabled'}")
         print(f"  Verbosity level: {args.verbose}")
         print()
         
@@ -446,7 +452,8 @@ Examples:
                     
                     try:
                         app.run(traj_dir, args.output_video, args.fps, args.start_frame, 
-                                args.no_visual, args.process_all, args.save_rel, args.verbose)
+                                args.no_visual, args.process_all, args.save_rel, args.verbose, 
+                                args.alternating_class_weights)
                         
                         # Add trajectory identifier to the gaze DataFrame
                         if not app.gaze_df.empty:
@@ -480,7 +487,8 @@ Examples:
         else:
             # Process a single trajectory folder
             app.run(args.data, args.output_video, args.fps, args.start_frame, 
-                    args.no_visual, args.process_all, args.save_rel, args.verbose)
+                    args.no_visual, args.process_all, args.save_rel, args.verbose, 
+                    args.alternating_class_weights)
             if args.verbose >= 1:
                 print("\nAnalysis completed successfully!")
         
