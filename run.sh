@@ -3,9 +3,9 @@ set -e  # stop if any command fails
 
 # python data/seaquest/preprocess.py --file relationship.txt
 # Common parameters
-JAR="data/seaquest/boostsrl-1.1.1.jar"
+JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
-AUC_JAR="BoostSRL/src/edu/wisc/cs/will/DataSetUtils/"
+AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
 TREES=5
 NEG_POS_RATIO=2
  
@@ -23,6 +23,14 @@ MODELS=(
     "$MODEL_BASE/noop"
 )
  
+WEIGHTS=(
+    "data/seaquest/fire/fact_weights.tsv"
+    "data/seaquest/up/fact_weights.tsv"
+    "data/seaquest/down/fact_weights.tsv"
+    "data/seaquest/left/fact_weights.tsv"
+    "data/seaquest/right/fact_weights.tsv"
+    "data/seaquest/noop/fact_weights.tsv"
+)
 # Loop through each target/model pair
 for i in "${!TARGETS[@]}"; do
     TARGET="${TARGETS[$i]}"
@@ -39,6 +47,7 @@ for i in "${!TARGETS[@]}"; do
         -trees "$TREES" \
         -aucJarPath "$AUC_JAR" \
         -negPosRatio "$NEG_POS_RATIO" \
+        -factWeights "$WEIGHTS" \
         -model "$MODEL"
     echo "✅ Completed training for $TARGET"
     echo ""
