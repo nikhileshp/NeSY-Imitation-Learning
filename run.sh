@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-# python data/seaquest/preprocess.py --file relationship.txt
+python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/237_RZ_9656617_Feb-08-14-12-21_with_relationships_and_goals.txt
 # Common parameters
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
