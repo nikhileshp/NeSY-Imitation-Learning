@@ -70,6 +70,8 @@ for action in primitive_actions:
 
 parser = argparse.ArgumentParser(description="Process relationship file")
 parser.add_argument("--file", type=str, default="", help="Relationship file")
+parser.add_argument("--node_size", type=str, default=2, help="Node size for background")
+parser.add_argument("--max_tree_depth", type=str, default=3, help="Max tree depth for background")
 args = parser.parse_args()
 
 print(args.file)
@@ -294,7 +296,8 @@ for action in primitive_actions:
   train_dict[action].facts = train_facts
   test_dict[action].facts = test_facts
 
-  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100)
+  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100,
+                               node_size=args.node_size,max_tree_depth=args.max_tree_depth)
   #write the background to file
   with open("data/seaquest/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))

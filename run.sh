@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-# python data/seaquest/preprocess.py --file relationship.txt
+python data/seaquest/preprocess.py --file relationship.txt --node_size 2 --max_tree_depth 2
 # Common parameters
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
