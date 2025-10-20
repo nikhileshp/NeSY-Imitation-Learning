@@ -1,0 +1,158 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 100
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 6,236
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 14:26:11 10/20/25.  [Using 93,661,104 memory cells.]  %%%%%
+
+% FOR down(A):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, B), samelevelasdiver(A, B) )
+%   | then return 0.0013714414933727868;  // std dev = 9.796, 782.000 (wgt'ed) examples reached here.  /* #neg=670 #pos=112 */
+%   | else return 0.30791221758241105;  // std dev = 30.674, 3,802.000 (wgt'ed) examples reached here.  /* #neg=2,092 #pos=1,710 */
+%   else if ( diversempty(A) )
+%   | then return 0.09136448280268766;  // std dev = 14.228, 1,132.000 (wgt'ed) examples reached here.  /* #neg=868 #pos=264 */
+%   | else return -0.11108183413125661;  // std dev = 3.938, 520.000 (wgt'ed) examples reached here.  /* #neg=504 #pos=16 */
+
+
+% Clauses:
+
+down(A, 0.0013714414933727868) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     !. // Clause #1.
+
+down(A, 0.30791221758241105) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+down(A, 0.09136448280268766) :- 
+     diversempty(A), 
+     !. // Clause #3.
+
+down(A, -0.11108183413125661) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_down(a, 0.0013714414933727868) :-  /* #neg=670 #pos=112 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar1),
+   samelevelasdiver(a, uniqueVar1),
+   !. // Flattened version of clause #1.
+
+flattened_down(a, 0.30791221758241105) :-  /* #neg=2,092 #pos=1,710 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_down(a, 0.09136448280268766) :-  /* #neg=868 #pos=264 */ 
+   diversempty(a),
+   !. // Flattened version of clause #3.
+
+flattened_down(underscore, -0.11108183413125661) :-  /* #neg=504 #pos=16 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   samelevelasdiver(a, uniqueVar1)
+%   diversempty(a)
+%   visiblediver(a, uniqueVar1)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for down.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+down(D, Total) :- // A general accessor. 
+   down(D, 1000000, Total), !.
+down(D, Total) :- waitHere("This should not fail", down(D, Total)).
+
+down(D, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_down_tree1(D, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+down(D, TreesToUse, Total) :- waitHere("This should not fail", down(D, TreesToUse, Total)).
+
+getScore_down_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_down_tree1(D, TreesToUse, Total1) :- down_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(down, 4, [
+   diversnotfull(a),
+   samelevelasdiver(a, uniqueVar1),
+   diversempty(a),
+   visiblediver(a, uniqueVar1)]).
+
+%%%%%  WILL-Produced Tree Combined @ 14:26:17 10/20/25.  [Using 93,824,784 memory cells.]  %%%%%
+
+% FOR down(A):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, B), samelevelasdiver(A, B) )
+%   | then return 0.0013714414933727868;  // std dev = 9.796, 782.000 (wgt'ed) examples reached here.  /* #neg=670 #pos=112 */
+%   | else return 0.30791221758241105;  // std dev = 30.674, 3,802.000 (wgt'ed) examples reached here.  /* #neg=2,092 #pos=1,710 */
+%   else if ( diversempty(A) )
+%   | then return 0.09136448280268766;  // std dev = 14.228, 1,132.000 (wgt'ed) examples reached here.  /* #neg=868 #pos=264 */
+%   | else return -0.11108183413125661;  // std dev = 3.938, 520.000 (wgt'ed) examples reached here.  /* #neg=504 #pos=16 */
+
+
+% Clauses:
+
+down(A, 0.0013714414933727868) :- 
+     diversnotfull(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     !. // Clause #1.
+
+down(A, 0.30791221758241105) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+down(A, 0.09136448280268766) :- 
+     diversempty(A), 
+     !. // Clause #3.
+
+down(A, -0.11108183413125661) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_down(a, 0.0013714414933727868) :-  /* #neg=670 #pos=112 */ 
+   diversnotfull(a),
+   visiblediver(a, uniqueVar2),
+   samelevelasdiver(a, uniqueVar2),
+   !. // Flattened version of clause #1.
+
+flattened_down(a, 0.30791221758241105) :-  /* #neg=2,092 #pos=1,710 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_down(a, 0.09136448280268766) :-  /* #neg=868 #pos=264 */ 
+   diversempty(a),
+   !. // Flattened version of clause #3.
+
+flattened_down(underscore, -0.11108183413125661) :-  /* #neg=504 #pos=16 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   diversempty(a)
+%   samelevelasdiver(a, uniqueVar2)
+%   visiblediver(a, uniqueVar2)

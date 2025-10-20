@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-MAX_DEPTH=4
+MAX_DEPTH=6
 python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
