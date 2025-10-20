@@ -215,6 +215,31 @@ for pa in primitive_actions:
             rel = rel.lower()
             rel = rel.replace("_", "")
             f.write(rel + "\n")
+  
+  with open("data/seaquest/"+pa+"/train/"+'fact_weights.tsv', 'w') as f:
+    for _, row in train.iterrows():
+    
+      weights = str(row["distance_weights"])
+      weights_list = []
+      if weights != "nan":
+        state_weights = weights.split(" , ")
+        for sw in state_weights:
+          frame_id = str(row["frameid"]).replace("_","").lower()
+          s_id = "s" + str(frame_id)
+          sw = sw.strip()
+          if sw:
+            if "(" not in sw:
+              sw = sw+"()"
+            sw = sw.replace("(","(" + s_id + ",")
+            sw = sw.replace(",)", ")")
+            if not sw.endswith("."):
+              sw += "."
+            sw = sw.lower()
+            sw = sw.replace("_", "")
+            sw = sw.replace(" ","\t")
+            weights_list.append(sw)
+      if weights_list:
+        f.write("\n".join(weights_list) + "\n")
 
   with open("data/seaquest/"+pa+"/test/"+'test_facts.txt', 'w') as f:
     for _, row in test.iterrows():

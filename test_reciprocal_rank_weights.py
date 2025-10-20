@@ -179,6 +179,71 @@ def test_alternating_class_weights():
     return weights
 
 
+def test_nearest_only_weights():
+    """Test the nearest-only weight calculation."""
+    print("Testing Nearest-Only Weight Calculation")
+    print("=" * 50)
+    
+    # Initialize calculator with screen dimensions
+    calculator = DistanceWeightCalculator(800, 600)
+    
+    # Create test objects at different distances from a gaze point
+    gaze_pos = (400, 300)  # Center of screen
+    print(f"Gaze position: {gaze_pos}")
+    
+    # Create objects at different distances
+    objects = [
+        GameObject("diver", (395, 295, 405, 305), object_id="diver_1"),      # Closest
+        GameObject("enemy", (350, 250, 370, 270), object_id="enemy_1"),      # Second closest
+        GameObject("enemy_submarine", (300, 200, 320, 220), object_id="sub_1"), # Third closest
+        GameObject("enemy_missile", (200, 100, 220, 120), object_id="missile_1"), # Farthest
+        GameObject("diver", (180, 80, 200, 100), object_id="diver_2"),       # Another far diver
+    ]
+    
+    # Calculate centers and distances for verification
+    objects_with_centers = []
+    print("\nObjects and their distances from gaze:")
+    for obj in objects:
+        center = obj.center
+        distance = calculator.calculate_distance(gaze_pos, center)
+        objects_with_centers.append((obj, center))
+        print(f"  {obj.object_type} (ID: {obj.object_id}): center={center}, distance={distance:.1f}")
+    
+    # Calculate nearest-only weights
+    weights = calculator.calculate_nearest_only_weights(gaze_pos, objects_with_centers)
+    
+    print("\nNearest-Only Weights:")
+    sorted_by_distance = sorted(objects_with_centers, 
+                               key=lambda x: calculator.calculate_distance(gaze_pos, x[1]))
+    
+    for i, (obj, center) in enumerate(sorted_by_distance):
+        distance = calculator.calculate_distance(gaze_pos, center)
+        weight = weights[obj]
+        expected_weight = 1.0 if i == 0 else 0.0  # Only nearest gets 1.0
+        
+        status = "✓" if abs(weight - expected_weight) < 0.001 else "✗"
+        rank_text = "NEAREST" if i == 0 else f"Rank {i+1}"
+        print(f"  {status} {rank_text}: {obj.object_type} (ID: {obj.object_id}) = "
+              f"distance={distance:.1f}, weight={weight:.3f} (expected: {expected_weight:.3f})")
+    
+    # Verify only one object has weight 1.0
+    weights_of_1 = [obj.object_id for obj, w in weights.items() if w == 1.0]
+    weights_of_0 = [obj.object_id for obj, w in weights.items() if w == 0.0]
+    
+    print(f"\nSummary:")
+    print(f"  Objects with weight 1.0: {weights_of_1} (should be 1 object)")
+    print(f"  Objects with weight 0.0: {weights_of_0} (should be {len(objects)-1} objects)")
+    
+    # Test with single object
+    print("\nTesting with single object:")
+    single_obj_weights = calculator.calculate_nearest_only_weights(gaze_pos, [(objects[0], objects[0].center)])
+    single_weight = list(single_obj_weights.values())[0]
+    print(f"  Single object weight: {single_weight:.3f} (expected: 1.000)")
+    
+    print()
+    return weights
+
+
 def test_edge_cases():
     """Test edge cases for reciprocal rank weights."""
     print("Testing Edge Cases")
@@ -236,6 +301,9 @@ def main():
         # Test alternating class weights
         test_alternating_class_weights()
         
+        # Test nearest-only weights
+        test_nearest_only_weights()
+        
         # Test edge cases
         test_edge_cases()
         
@@ -253,6 +321,9 @@ def main():
         print("- Third object of same class gets next available rank weight")
         print("- Fourth object of same class gets weight = 0.0")
         print("- And so on...")
+        print("\nNearest-only weights:")
+        print("- Only the nearest object gets weight = 1.0")
+        print("- All other objects get weight = 0.0")
         
     except Exception as e:
         print(f"Test failed with error: {e}")
