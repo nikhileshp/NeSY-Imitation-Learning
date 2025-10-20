@@ -5,6 +5,12 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import precision_recall_curve, auc
+import argparse
+
+parser = argparse.ArgumentParser(description="Process relationship file")
+parser.add_argument("--model_dir", type=str, default="", help="Model directory path")
+
+args = parser.parse_args()
 
 primitive_actions = ["noop","fire","up","right","left","down"]
 
@@ -75,7 +81,8 @@ print(classification_report(test_df['action'], test_df['predicted_action'], targ
 print(confusion_matrix(test_df['action'], test_df['predicted_action']))
 
 #write the classification report to a file
-with open("eval_report.txt", "w") as f:
+with open(f"{args.model_dir}/eval_report.txt", "w") as f:
+
     f.write(classification_report(test_df['action'], test_df['predicted_action'], target_names=primitive_actions))
     f.write("\n")
     f.write(str(confusion_matrix(test_df['action'], test_df['predicted_action'])))

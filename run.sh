@@ -1,23 +1,36 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-<<<<<<< HEAD
-MAX_DEPTH=6
-=======
-MAX_DEPTH=8
->>>>>>> 8d495aaf44ea58639dc65b440affdc41453f4bad
-python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
+MAX_DEPTH=$1
+WEIGHTED=$2  # "true" or "false"
+ONLY_TEST=$3  # "true" or "false"
+
+if [ "$ONLY_TEST" == "true" ]; then
+    echo "Skipping preprocess as ONLY_TEST is set to true."
+    
+else
+    echo "Starting preprocess..."
+    python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
+    echo "Preprocess completed."
+fi
+
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
 AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
-TREES=5
+TREES=1
 NEG_POS_RATIO=2
 # List of targets (actions)
 TARGETS=("fire" "up" "down" "left" "right" "noop")
+
 TRAIN_DIRS=("data/seaquest/fire/train" "data/seaquest/up/train" "data/seaquest/down/train" "data/seaquest/left/train" "data/seaquest/right/train" "data/seaquest/noop/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
-MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+if $WEIGHTED == "true"; then
+    MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+else
+    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+fi
+
 MODELS=(
     "$MODEL_BASE/fire"
     "$MODEL_BASE/up"
@@ -35,30 +48,56 @@ WEIGHTS=(
     "data/seaquest/right/train/fact_weights.tsv"
     "data/seaquest/noop/train/fact_weights.tsv"
 )
-# Loop through each target/model pair
-for i in "${!TARGETS[@]}"; do
-    TARGET="${TARGETS[$i]}"
-    MODEL="${MODELS[$i]}"
-    TRAIN_DIR="${TRAIN_DIRS[$i]}"
-    echo "======================================"
-    echo "Running BoostSRL for target: $TARGET"
-    echo "Saving model to: $MODEL"
-    echo "======================================"
-    java -jar "$JAR" \
-        -l \
-        -train "$TRAIN_DIR" \
-        -target "$TARGET" \
-        -trees "$TREES" \
-        -aucJarPath "$AUC_JAR" \
-        -negPosRatio "$NEG_POS_RATIO" \
-        -factWeights "$WEIGHTS" \
-        -model "$MODEL" \
+# Loop through each target/model 
+if [ $WEIGHTED == "true" ] && [ $ONLY_TEST == "false" ]; then
 
-    echo "✅ Completed training for $TARGET"
-    echo ""
-done
- 
-echo "🎉 All runs finished successfully!"
+    for i in "${!TARGETS[@]}"; do
+        TARGET="${TARGETS[$i]}"
+        MODEL="${MODELS[$i]}"
+        TRAIN_DIR="${TRAIN_DIRS[$i]}"
+        echo "======================================"
+        echo "Running BoostSRL for target: $TARGET"
+        echo "Saving model to: $MODEL"
+        echo "======================================"
+        java -jar "$JAR" \
+            -l \
+            -train "$TRAIN_DIR" \
+            -target "$TARGET" \
+            -trees "$TREES" \
+            -aucJarPath "$AUC_JAR" \
+            -negPosRatio "$NEG_POS_RATIO" \
+            -factWeights "${WEIGHTS[$i]}" \
+            -model "$MODEL" \
+
+        echo "✅ Completed training for $TARGET"
+        echo ""
+    done
+# If only testing is false and not weighted
+elif [ $ONLY_TEST == "false" ]; then
+
+    for i in "${!TARGETS[@]}"; do
+        TARGET="${TARGETS[$i]}"
+        MODEL="${MODELS[$i]}"
+        TRAIN_DIR="${TRAIN_DIRS[$i]}"
+        echo "======================================"
+        echo "Running BoostSRL for target: $TARGET"
+        echo "Saving model to: $MODEL"
+        echo "======================================"
+        java -jar "$JAR" \
+            -l \
+            -train "$TRAIN_DIR" \
+            -target "$TARGET" \
+            -trees "$TREES" \
+            -aucJarPath "$AUC_JAR" \
+            -negPosRatio "$NEG_POS_RATIO" \
+            -model "$MODEL" \
+
+        echo "✅ Completed training for $TARGET"
+        echo ""
+    done
+
+fi
+echo "All runs finished successfully!"
 
 
 TEST_DIRS=("data/seaquest/fire/test" "data/seaquest/up/test" "data/seaquest/down/test" "data/seaquest/left/test" "data/seaquest/right/test" "data/seaquest/noop/test")
@@ -156,4 +195,4 @@ for log in "${LOG_FILES[@]}"; do
 
 done
 
-python eval.py
+python eval.py --model_dir "$MODEL_BASE"

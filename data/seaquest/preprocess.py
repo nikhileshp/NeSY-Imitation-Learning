@@ -296,13 +296,8 @@ for action in primitive_actions:
   train_dict[action].facts = train_facts
   test_dict[action].facts = test_facts
 
-<<<<<<< HEAD
   bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100, node_size=int(args.node_size), 
                                max_tree_depth=int(args.max_tree_depth))
-=======
-  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100,
-                               node_size=int(args.node_size),max_tree_depth=int(args.max_tree_depth))
->>>>>>> 8d495aaf44ea58639dc65b440affdc41453f4bad
   #write the background to file
   with open("data/seaquest/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))
