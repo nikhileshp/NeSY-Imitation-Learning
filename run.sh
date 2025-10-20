@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
-python data/seaquest/preprocess.py --file relationship.txt --node_size 2 --max_tree_depth 2
+MAX_DEPTH=4
+python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
@@ -12,7 +13,7 @@ NEG_POS_RATIO=2
 TARGETS=("fire" "up" "down" "left" "right" "noop")
 TRAIN_DIRS=("data/seaquest/fire/train" "data/seaquest/up/train" "data/seaquest/down/train" "data/seaquest/left/train" "data/seaquest/right/train" "data/seaquest/noop/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
-MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_2"
+MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
 MODELS=(
     "$MODEL_BASE/fire"
     "$MODEL_BASE/up"
