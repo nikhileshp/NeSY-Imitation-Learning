@@ -118,10 +118,10 @@ def collect_data():
     return pd.DataFrame(eval_data), pd.DataFrame(log_data)
 
 def create_visualizations(eval_df, log_df):
-    """Create visualizations comparing model performance"""
+    """Create main comparison visualization with weighted F1 and average AUC-PR"""
     # Set up the plotting style
     plt.style.use('default')
-    fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+    fig, axes = plt.subplots(1, 1, figsize=(16, 6))
     fig.suptitle('RDN Model Performance Comparison', fontsize=16, fontweight='bold')
     
     # Define colors for each model type
@@ -131,14 +131,8 @@ def create_visualizations(eval_df, log_df):
         'weighted_1object': '#2ca02c'
     }
     
-    # Define markers for each action
-    action_markers = {
-        'down': 'v', 'up': '^', 'left': '<', 'right': '>', 
-        'fire': 's', 'noop': 'o'
-    }
-    
     # Plot 1: Weighted F1 vs Depth (from eval_report)
-    ax1 = axes[0, 0]
+    ax1 = axes
     for model_type in eval_df['model_type'].unique():
         model_data = eval_df[eval_df['model_type'] == model_type].sort_values('depth')
         ax1.plot(model_data['depth'], model_data['weighted_f1'], 
@@ -150,117 +144,38 @@ def create_visualizations(eval_df, log_df):
     ax1.set_ylabel('Weighted F1 Score')
     ax1.set_title('Weighted F1 Score vs Depth')
     ax1.legend()
+    ax1.set_ylim(0, 1)  # Set y-axis limits
     ax1.grid(True, alpha=0.3)
     
-    # Plot 2: Individual Action AUC-PR vs Depth
-    ax2 = axes[0, 1]
-    for action in log_df['action'].unique():
-        action_data = log_df[log_df['action'] == action]
-        for model_type in action_data['model_type'].unique():
-            model_action_data = action_data[action_data['model_type'] == model_type].sort_values('depth')
-            if not model_action_data.empty:
-                ax2.plot(model_action_data['depth'], model_action_data['auc_pr'], 
-                        marker=action_markers.get(action, 'o'), linewidth=1.5, markersize=6,
-                        color=colors.get(model_type, 'gray'), alpha=0.7,
-                        label=f"{model_type.replace('_', ' ').title()} - {action}")
+    # # Plot 2: Average AUC-PR vs Depth (aggregated)
+    # ax2 = axes[1]
+    # auc_pr_avg = log_df.groupby(['model_type', 'depth'])['auc_pr'].mean().reset_index()
     
-    ax2.set_xlabel('Depth')
-    ax2.set_ylabel('AUC-PR')
-    ax2.set_title('Individual Action AUC-PR vs Depth')
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax2.grid(True, alpha=0.3)
+    # for model_type in auc_pr_avg['model_type'].unique():
+    #     model_data = auc_pr_avg[auc_pr_avg['model_type'] == model_type].sort_values('depth')
+    #     ax2.plot(model_data['depth'], model_data['auc_pr'], 
+    #             marker='s', linewidth=2, markersize=8,
+    #             color=colors.get(model_type, 'gray'),
+    #             label=model_type.replace('_', ' ').title())
     
-    # Plot 3: Individual Action F1 vs Depth
-    ax3 = axes[0, 2]
-    for action in log_df['action'].unique():
-        action_data = log_df[log_df['action'] == action]
-        for model_type in action_data['model_type'].unique():
-            model_action_data = action_data[action_data['model_type'] == model_type].sort_values('depth')
-            if not model_action_data.empty:
-                ax3.plot(model_action_data['depth'], model_action_data['f1'], 
-                        marker=action_markers.get(action, 'o'), linewidth=1.5, markersize=6,
-                        color=colors.get(model_type, 'gray'), alpha=0.7,
-                        label=f"{model_type.replace('_', ' ').title()} - {action}")
-    
-    ax3.set_xlabel('Depth')
-    ax3.set_ylabel('F1 Score')
-    ax3.set_title('Individual Action F1 vs Depth')
-    ax3.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax3.grid(True, alpha=0.3)
-    
-    # Plot 4: Average AUC-PR vs Depth (aggregated)
-    ax4 = axes[1, 0]
-    auc_pr_avg = log_df.groupby(['model_type', 'depth'])['auc_pr'].mean().reset_index()
-    
-    for model_type in auc_pr_avg['model_type'].unique():
-        model_data = auc_pr_avg[auc_pr_avg['model_type'] == model_type].sort_values('depth')
-        ax4.plot(model_data['depth'], model_data['auc_pr'], 
-                marker='s', linewidth=2, markersize=8,
-                color=colors.get(model_type, 'gray'),
-                label=model_type.replace('_', ' ').title())
-    
-    ax4.set_xlabel('Depth')
-    ax4.set_ylabel('Average AUC-PR')
-    ax4.set_title('Average AUC-PR vs Depth')
-    ax4.legend()
-    ax4.grid(True, alpha=0.3)
-    
-    # Plot 5: Average F1 vs Depth (aggregated)
-    ax5 = axes[1, 1]
-    f1_avg = log_df.groupby(['model_type', 'depth'])['f1'].mean().reset_index()
-    
-    for model_type in f1_avg['model_type'].unique():
-        model_data = f1_avg[f1_avg['model_type'] == model_type].sort_values('depth')
-        ax5.plot(model_data['depth'], model_data['f1'], 
-                marker='^', linewidth=2, markersize=8,
-                color=colors.get(model_type, 'gray'),
-                label=model_type.replace('_', ' ').title())
-    
-    ax5.set_xlabel('Depth')
-    ax5.set_ylabel('Average F1 Score')
-    ax5.set_title('Average F1 Score vs Depth')
-    ax5.legend()
-    ax5.grid(True, alpha=0.3)
-    
-    # Plot 6: Combined comparison at different depths
-    ax6 = axes[1, 2]
-    
-    # Create a grouped bar chart showing all metrics at key depths
-    depths_to_show = sorted(eval_df['depth'].unique())[:6]  # Show first 6 depths
-    x_pos = np.arange(len(depths_to_show))
-    width = 0.25
-    
-    for i, model_type in enumerate(['unweighted', 'unweighted_w_abstraction', 'weighted_1object']):
-        if model_type in eval_df['model_type'].values:
-            model_f1_scores = []
-            for depth in depths_to_show:
-                scores = eval_df[(eval_df['model_type'] == model_type) & 
-                               (eval_df['depth'] == depth)]['weighted_f1'].values
-                model_f1_scores.append(scores[0] if len(scores) > 0 else 0)
-            
-            ax6.bar(x_pos + i * width, model_f1_scores, width,
-                   color=colors.get(model_type, 'gray'),
-                   label=model_type.replace('_', ' ').title())
-    
-    ax6.set_xlabel('Depth')
-    ax6.set_ylabel('Weighted F1 Score')
-    ax6.set_title('Model Comparison by Depth')
-    ax6.set_xticks(x_pos + width)
-    ax6.set_xticklabels(depths_to_show)
-    ax6.legend()
-    ax6.grid(True, alpha=0.3)
+    # ax2.set_xlabel('Depth')
+    # ax2.set_ylabel('Average AUC-PR')
+    # ax2.set_ylim(0, 1)  # Set y-axis limits
+    # ax2.set_title('Average AUC-PR vs Depth')
+    # ax2.legend()
+    # # Set y-axis limits
+    # ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.savefig('rdn_model_comparison.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def create_individual_action_plots(log_df):
-    """Create separate plots for each action's performance"""
+def create_individual_action_f1_plots(log_df):
+    """Create separate F1 plots for each action"""
     actions = sorted(log_df['action'].unique())
-    n_actions = len(actions)
     
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('Individual Action Performance by Model Type', fontsize=16, fontweight='bold')
+    fig.suptitle('Individual Action F1 Performance by Model Type', fontsize=16, fontweight='bold')
     
     colors = {
         'unweighted': '#1f77b4',
@@ -268,6 +183,47 @@ def create_individual_action_plots(log_df):
         'weighted_1object': '#2ca02c'
     }
     
+    # Plot F1 for each action
+    for i, action in enumerate(actions):
+        if i < 6:  # Only plot first 6 actions
+            ax = axes[i//3, i%3]
+            action_data = log_df[log_df['action'] == action]
+            
+            # Plot F1
+            for model_type in action_data['model_type'].unique():
+                model_data = action_data[action_data['model_type'] == model_type].sort_values('depth')
+                if not model_data.empty:
+                    ax.plot(model_data['depth'], model_data['f1'], 
+                           marker='^', linewidth=2, markersize=6,
+                           color=colors.get(model_type, 'gray'),
+                           label=model_type.replace('_', ' ').title())
+            
+            ax.set_xlabel('Depth')
+            ax.set_ylabel('F1 Score')
+            ax.set_title(f'{action.upper()} - F1')
+            ax.set_ylim(0, 1)  # Set consistent y-axis limits
+            if i == 0:  # Only show legend on first plot
+                ax.legend()
+            ax.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('individual_action_f1_performance.png', dpi=300, bbox_inches='tight')
+    plt.show()
+
+def create_individual_action_auc_pr_plots(log_df):
+    """Create separate AUC-PR plots for each action"""
+    actions = sorted(log_df['action'].unique())
+    
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    fig.suptitle('Individual Action AUC-PR Performance by Model Type', fontsize=16, fontweight='bold')
+    
+    colors = {
+        'unweighted': '#1f77b4',
+        'unweighted_w_abstraction': '#ff7f0e', 
+        'weighted_1object': '#2ca02c'
+    }
+    
+    # Plot AUC-PR for each action
     for i, action in enumerate(actions):
         if i < 6:  # Only plot first 6 actions
             ax = axes[i//3, i%3]
@@ -284,12 +240,14 @@ def create_individual_action_plots(log_df):
             
             ax.set_xlabel('Depth')
             ax.set_ylabel('AUC-PR')
-            ax.set_title(f'Action: {action.upper()}')
-            ax.legend()
+            ax.set_title(f'{action.upper()} - AUC-PR')
+            ax.set_ylim(0, 1)  # Set consistent y-axis limits
+            if i == 0:  # Only show legend on first plot
+                ax.legend()
             ax.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('individual_action_performance.png', dpi=300, bbox_inches='tight')
+    plt.savefig('individual_action_auc_pr_performance.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def print_summary_statistics(eval_df, log_df):
@@ -325,12 +283,16 @@ if __name__ == "__main__":
         print("\nCreating main comparison visualization...")
         create_visualizations(eval_df, log_df)
         
-        print("\nCreating individual action plots...")
-        create_individual_action_plots(log_df)
+        print("\nCreating individual action F1 plots...")
+        create_individual_action_f1_plots(log_df)
+        
+        print("\nCreating individual action AUC-PR plots...")
+        create_individual_action_auc_pr_plots(log_df)
         
         print_summary_statistics(eval_df, log_df)
         print("\nVisualizations saved as:")
-        print("  - rdn_model_comparison.png (main comparison)")
-        print("  - individual_action_performance.png (individual actions)")
+        print("  - rdn_model_comparison.png (main comparison: weighted F1 + average AUC-PR)")
+        print("  - individual_action_f1_performance.png (individual action F1 scores)")
+        print("  - individual_action_auc_pr_performance.png (individual action AUC-PR scores)")
     else:
         print("No data found to visualize!")

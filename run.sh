@@ -113,19 +113,6 @@ TEST_DIRS=("data/seaquest/fire/test" "data/seaquest/up/test" "data/seaquest/down
 
 LOG_FILES=(
 
-<<<<<<< Updated upstream
-    "$MODEL_BASE/fire/fire_infer.log"
-
-    "$MODEL_BASE/up/up_infer.log"
-
-    "$MODEL_BASE/down/down_infer.log"
-
-    "$MODEL_BASE/left/left_infer.log"
-
-    "$MODEL_BASE/right/right_infer.log"
-
-    "$MODEL_BASE/noop/noop_infer.log"
-=======
     "${MODEL_BASE}/fire/fire_infer.log"
 
     "${MODEL_BASE}/up/up_infer.log"
@@ -137,7 +124,6 @@ LOG_FILES=(
     "${MODEL_BASE}/right/right_infer.log"
 
     "${MODEL_BASE}/noop/noop_infer.log"
->>>>>>> Stashed changes
 
 )
  
