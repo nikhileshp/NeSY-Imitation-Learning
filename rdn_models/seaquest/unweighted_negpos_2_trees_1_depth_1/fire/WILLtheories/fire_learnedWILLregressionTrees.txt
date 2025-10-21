@@ -10,73 +10,74 @@ usePrologVariables: true.
 % maxAcceptableNodeScoreToStop        = 0.003
 % negPosRatio                         = 2.000
 % testNegPosRatio                     = -1.000
-% # of pos examples                   = 973
+% # of pos examples                   = 936
 % # of neg examples                   = 0
 
 
 
-%%%%%  WILL-Produced Tree #1 @ 15:37:10 10/20/25.  [Using 58,828,920 memory cells.]  %%%%%
+%%%%%  WILL-Produced Tree #1 @ 19:05:13 10/20/25.  [Using 60,589,520 memory cells.]  %%%%%
 
 % FOR fire(A):
 %   if ( visibleenemy(A, B), samelevelasenemy(A, B) )
-%   then if ( leftofenemy(A, B), visiblediver(A, C) )
-%   | then return 0.2737333506839266;  // std dev = 4.324, 77.000 (wgt'ed) examples reached here.  /* #neg=45 #pos=32 */
-%   | else return 0.6363590518310279;  // std dev = 6.660, 257.000 (wgt'ed) examples reached here.  /* #neg=57 #pos=200 */
-%   else if ( visiblediver(A, D) )
-%   | then return -0.09012692696945358;  // std dev = 3.771, 290.000 (wgt'ed) examples reached here.  /* #neg=275 #pos=15 */
-%   | else return 0.05012601246340969;  // std dev = 7.358, 349.000 (wgt'ed) examples reached here.  /* #neg=282 #pos=67 */
+%   then if ( facingright(A), rightofenemy(A, B) )
+%   | then return -0.1418510649004878;  // std dev = 0.000, 16.000 (wgt'ed) examples reached here.  /* #neg=16 */
+%   | else return 0.5900101338376801;  // std dev = 7.887, 317.000 (wgt'ed) examples reached here.  /* #neg=85 #pos=232 */
+%   else if ( visiblediver(A, C) )
+%   | then return -0.08185106490048785;  // std dev = 3.755, 250.000 (wgt'ed) examples reached here.  /* #neg=235 #pos=15 */
+%   | else return 0.047950634816226696;  // std dev = 7.368, 353.000 (wgt'ed) examples reached here.  /* #neg=286 #pos=67 */
 
 
 % Clauses:
 
-fire(A, 0.2737333506839266) :- 
+fire(A, -0.1418510649004878) :- 
      visibleenemy(A, B), 
      samelevelasenemy(A, B), 
-     leftofenemy(A, B), 
-     visiblediver(A, C), 
+     facingright(A), 
+     rightofenemy(A, B), 
      !. // Clause #1.
 
-fire(A, 0.6363590518310279) :- 
+fire(A, 0.5900101338376801) :- 
      visibleenemy(A, B), 
      samelevelasenemy(A, B), 
      !. // Clause #2.
 
-fire(A, -0.09012692696945358) :- 
+fire(A, -0.08185106490048785) :- 
      visiblediver(A, B), 
      !. // Clause #3.
 
-fire(A, 0.05012601246340969) :- !. // Clause #4.
+fire(A, 0.047950634816226696) :- !. // Clause #4.
 
 
 % The flattened versions of these clauses:
 
-flattened_fire(a, 0.2737333506839266) :-  /* #neg=45 #pos=32 */ 
+flattened_fire(a, -0.1418510649004878) :-  /* #neg=16 */ 
    visibleenemy(a, uniqueVar1),
    samelevelasenemy(a, uniqueVar1),
-   leftofenemy(a, uniqueVar1),
-   visiblediver(a, underscore),
+   facingright(a),
+   rightofenemy(a, uniqueVar1),
    !. // Flattened version of clause #1.
 
-flattened_fire(a, 0.6363590518310279) :-  /* #neg=57 #pos=200 */ 
+flattened_fire(a, 0.5900101338376801) :-  /* #neg=85 #pos=232 */ 
    visibleenemy(a, uniqueVar2),
    samelevelasenemy(a, uniqueVar2),
    !. // Flattened version of clause #2.
 
-flattened_fire(a, -0.09012692696945358) :-  /* #neg=275 #pos=15 */ 
+flattened_fire(a, -0.08185106490048785) :-  /* #neg=235 #pos=15 */ 
    visiblediver(a, underscore),
    !. // Flattened version of clause #3.
 
-flattened_fire(underscore, 0.05012601246340969) :-  /* #neg=282 #pos=67 */ 
+flattened_fire(underscore, 0.047950634816226696) :-  /* #neg=286 #pos=67 */ 
    !. // Flattened version of clause #4.
 
 
 % The unique flattened literals:
-%   visibleenemy(a, uniqueVar2)
-%   visibleenemy(a, uniqueVar1)
-%   visiblediver(a, underscore)
 %   samelevelasenemy(a, uniqueVar1)
+%   visibleenemy(a, uniqueVar1)
+%   facingright(a)
+%   rightofenemy(a, uniqueVar1)
+%   visibleenemy(a, uniqueVar2)
+%   visiblediver(a, underscore)
 %   samelevelasenemy(a, uniqueVar2)
-%   leftofenemy(a, uniqueVar1)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,73 +101,74 @@ fire(D, TreesToUse, Total) :- waitHere("This should not fail", fire(D, TreesToUs
 getScore_fire_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
 getScore_fire_tree1(D, TreesToUse, Total1) :- fire_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
 
-flattenedLiteralsInThisSetOfTrees(fire, 6, [
-   visibleenemy(a, uniqueVar2),
-   visibleenemy(a, uniqueVar1),
-   visiblediver(a, underscore),
+flattenedLiteralsInThisSetOfTrees(fire, 7, [
    samelevelasenemy(a, uniqueVar1),
-   samelevelasenemy(a, uniqueVar2),
-   leftofenemy(a, uniqueVar1)]).
+   visibleenemy(a, uniqueVar1),
+   facingright(a),
+   rightofenemy(a, uniqueVar1),
+   visibleenemy(a, uniqueVar2),
+   visiblediver(a, underscore),
+   samelevelasenemy(a, uniqueVar2)]).
 
-%%%%%  WILL-Produced Tree Combined @ 15:37:11 10/20/25.  [Using 59,449,536 memory cells.]  %%%%%
+%%%%%  WILL-Produced Tree Combined @ 19:05:13 10/20/25.  [Using 60,697,208 memory cells.]  %%%%%
 
 % FOR fire(A):
 %   if ( visibleenemy(A, B), samelevelasenemy(A, B) )
 %   then if ( leftofenemy(A, B), visiblediver(A, C) )
-%   | then return 0.2737333506839266;  // std dev = 4.324, 77.000 (wgt'ed) examples reached here.  /* #neg=45 #pos=32 */
-%   | else return 0.6363590518310279;  // std dev = 6.660, 257.000 (wgt'ed) examples reached here.  /* #neg=57 #pos=200 */
+%   | then return 0.3357608753980186;  // std dev = 4.089, 67.000 (wgt'ed) examples reached here.  /* #neg=35 #pos=32 */
+%   | else return 0.6100286343476305;  // std dev = 7.044, 266.000 (wgt'ed) examples reached here.  /* #neg=66 #pos=200 */
 %   else if ( visiblediver(A, D) )
-%   | then return -0.09012692696945358;  // std dev = 3.771, 290.000 (wgt'ed) examples reached here.  /* #neg=275 #pos=15 */
-%   | else return 0.05012601246340969;  // std dev = 7.358, 349.000 (wgt'ed) examples reached here.  /* #neg=282 #pos=67 */
+%   | then return -0.08185106490048785;  // std dev = 3.755, 250.000 (wgt'ed) examples reached here.  /* #neg=235 #pos=15 */
+%   | else return 0.047950634816226696;  // std dev = 7.368, 353.000 (wgt'ed) examples reached here.  /* #neg=286 #pos=67 */
 
 
 % Clauses:
 
-fire(A, 0.2737333506839266) :- 
+fire(A, 0.3357608753980186) :- 
      visibleenemy(A, B), 
      samelevelasenemy(A, B), 
      leftofenemy(A, B), 
      visiblediver(A, C), 
      !. // Clause #1.
 
-fire(A, 0.6363590518310279) :- 
+fire(A, 0.6100286343476305) :- 
      visibleenemy(A, B), 
      samelevelasenemy(A, B), 
      !. // Clause #2.
 
-fire(A, -0.09012692696945358) :- 
+fire(A, -0.08185106490048785) :- 
      visiblediver(A, B), 
      !. // Clause #3.
 
-fire(A, 0.05012601246340969) :- !. // Clause #4.
+fire(A, 0.047950634816226696) :- !. // Clause #4.
 
 
 % The flattened versions of these clauses:
 
-flattened_fire(a, 0.2737333506839266) :-  /* #neg=45 #pos=32 */ 
+flattened_fire(a, 0.3357608753980186) :-  /* #neg=35 #pos=32 */ 
    visibleenemy(a, uniqueVar3),
    samelevelasenemy(a, uniqueVar3),
    leftofenemy(a, uniqueVar3),
    visiblediver(a, underscore),
    !. // Flattened version of clause #1.
 
-flattened_fire(a, 0.6363590518310279) :-  /* #neg=57 #pos=200 */ 
+flattened_fire(a, 0.6100286343476305) :-  /* #neg=66 #pos=200 */ 
    visibleenemy(a, uniqueVar4),
    samelevelasenemy(a, uniqueVar4),
    !. // Flattened version of clause #2.
 
-flattened_fire(a, -0.09012692696945358) :-  /* #neg=275 #pos=15 */ 
+flattened_fire(a, -0.08185106490048785) :-  /* #neg=235 #pos=15 */ 
    visiblediver(a, underscore),
    !. // Flattened version of clause #3.
 
-flattened_fire(underscore, 0.05012601246340969) :-  /* #neg=282 #pos=67 */ 
+flattened_fire(underscore, 0.047950634816226696) :-  /* #neg=286 #pos=67 */ 
    !. // Flattened version of clause #4.
 
 
 % The unique flattened literals:
-%   leftofenemy(a, uniqueVar3)
+%   visibleenemy(a, uniqueVar4)
 %   samelevelasenemy(a, uniqueVar4)
+%   leftofenemy(a, uniqueVar3)
+%   samelevelasenemy(a, uniqueVar3)
 %   visiblediver(a, underscore)
 %   visibleenemy(a, uniqueVar3)
-%   samelevelasenemy(a, uniqueVar3)
-%   visibleenemy(a, uniqueVar4)

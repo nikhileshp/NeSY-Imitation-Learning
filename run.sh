@@ -107,17 +107,17 @@ TEST_DIRS=("data/seaquest/fire/test" "data/seaquest/up/test" "data/seaquest/down
 
 LOG_FILES=(
 
-    "fire_infer.log"
+    "$MODEL_BASE/fire/fire_infer.log"
 
-    "up_infer.log"
+    "$MODEL_BASE/up/up_infer.log"
 
-    "down_infer.log"
+    "$MODEL_BASE/down/down_infer.log"
 
-    "left_infer.log"
+    "$MODEL_BASE/left/left_infer.log"
 
-    "right_infer.log"
+    "$MODEL_BASE/right/right_infer.log"
 
-    "noop_infer.log"
+    "$MODEL_BASE/noop/noop_infer.log"
 
 )
  
@@ -182,16 +182,6 @@ for i in "${!TARGETS[@]}"; do
     tail -n 10 "$LOG_FILE"
 
     echo ""
-
-done
- 
-echo "🎉 All inference runs completed!"
-
-echo "Logs stored in:"
-
-for log in "${LOG_FILES[@]}"; do
-
-    echo "  - $log"
 
 done
 

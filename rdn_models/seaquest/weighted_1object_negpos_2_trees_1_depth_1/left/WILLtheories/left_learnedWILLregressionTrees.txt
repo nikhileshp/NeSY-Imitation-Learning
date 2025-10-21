@@ -1,0 +1,165 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 100
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 6,949
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 19:04:28 10/20/25.  [Using 89,603,400 memory cells.]  %%%%%
+
+% FOR left(A):
+%   if ( facingleft(A) )
+%   then if ( visiblediver(A, B), samelevelasdiver(A, B) )
+%   | then return 0.7442628212133936;  // std dev = 10.051, 1,001.000 (wgt'ed) examples reached here.  /* #neg=114 #pos=887 */
+%   | else return 0.27738329551033836;  // std dev = 27.969, 3,213.000 (wgt'ed) examples reached here.  /* #neg=1,866 #pos=1,347 */
+%   else if ( visiblediver(A, C), leftofdiver(A, C) )
+%   | then return -0.12688847138427967;  // std dev = 3.438, 802.000 (wgt'ed) examples reached here.  /* #neg=790 #pos=12 */
+%   | else return -0.08339271001171508;  // std dev = 10.315, 1,933.000 (wgt'ed) examples reached here.  /* #neg=1,820 #pos=113 */
+
+
+% Clauses:
+
+left(A, 0.7442628212133936) :- 
+     facingleft(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     !. // Clause #1.
+
+left(A, 0.27738329551033836) :- 
+     facingleft(A), 
+     !. // Clause #2.
+
+left(A, -0.12688847138427967) :- 
+     visiblediver(A, B), 
+     leftofdiver(A, B), 
+     !. // Clause #3.
+
+left(A, -0.08339271001171508) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_left(a, 0.7442628212133936) :-  /* #neg=114 #pos=887 */ 
+   facingleft(a),
+   visiblediver(a, uniqueVar1),
+   samelevelasdiver(a, uniqueVar1),
+   !. // Flattened version of clause #1.
+
+flattened_left(a, 0.27738329551033836) :-  /* #neg=1,866 #pos=1,347 */ 
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_left(a, -0.12688847138427967) :-  /* #neg=790 #pos=12 */ 
+   visiblediver(a, uniqueVar2),
+   leftofdiver(a, uniqueVar2),
+   !. // Flattened version of clause #3.
+
+flattened_left(underscore, -0.08339271001171508) :-  /* #neg=1,820 #pos=113 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   leftofdiver(a, uniqueVar2)
+%   visiblediver(a, uniqueVar1)
+%   facingleft(a)
+%   samelevelasdiver(a, uniqueVar1)
+%   visiblediver(a, uniqueVar2)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for left.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+left(D, Total) :- // A general accessor. 
+   left(D, 1000000, Total), !.
+left(D, Total) :- waitHere("This should not fail", left(D, Total)).
+
+left(D, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_left_tree1(D, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+left(D, TreesToUse, Total) :- waitHere("This should not fail", left(D, TreesToUse, Total)).
+
+getScore_left_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_left_tree1(D, TreesToUse, Total1) :- left_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(left, 5, [
+   leftofdiver(a, uniqueVar2),
+   visiblediver(a, uniqueVar1),
+   facingleft(a),
+   samelevelasdiver(a, uniqueVar1),
+   visiblediver(a, uniqueVar2)]).
+
+%%%%%  WILL-Produced Tree Combined @ 19:04:30 10/20/25.  [Using 89,689,688 memory cells.]  %%%%%
+
+% FOR left(A):
+%   if ( facingleft(A) )
+%   then if ( visiblediver(A, B), samelevelasdiver(A, B) )
+%   | then return 0.7442628212133936;  // std dev = 10.051, 1,001.000 (wgt'ed) examples reached here.  /* #neg=114 #pos=887 */
+%   | else return 0.27738329551033836;  // std dev = 27.969, 3,213.000 (wgt'ed) examples reached here.  /* #neg=1,866 #pos=1,347 */
+%   else if ( visibleenemy(A, C), rightofenemy(A, C) )
+%   | then return -0.08313220369052517;  // std dev = 9.653, 1,686.000 (wgt'ed) examples reached here.  /* #neg=1,587 #pos=99 */
+%   | else return -0.11706555489095441;  // std dev = 5.035, 1,049.000 (wgt'ed) examples reached here.  /* #neg=1,023 #pos=26 */
+
+
+% Clauses:
+
+left(A, 0.7442628212133936) :- 
+     facingleft(A), 
+     visiblediver(A, B), 
+     samelevelasdiver(A, B), 
+     !. // Clause #1.
+
+left(A, 0.27738329551033836) :- 
+     facingleft(A), 
+     !. // Clause #2.
+
+left(A, -0.08313220369052517) :- 
+     visibleenemy(A, B), 
+     rightofenemy(A, B), 
+     !. // Clause #3.
+
+left(A, -0.11706555489095441) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_left(a, 0.7442628212133936) :-  /* #neg=114 #pos=887 */ 
+   facingleft(a),
+   visiblediver(a, uniqueVar3),
+   samelevelasdiver(a, uniqueVar3),
+   !. // Flattened version of clause #1.
+
+flattened_left(a, 0.27738329551033836) :-  /* #neg=1,866 #pos=1,347 */ 
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_left(a, -0.08313220369052517) :-  /* #neg=1,587 #pos=99 */ 
+   visibleenemy(a, uniqueVar4),
+   rightofenemy(a, uniqueVar4),
+   !. // Flattened version of clause #3.
+
+flattened_left(underscore, -0.11706555489095441) :-  /* #neg=1,023 #pos=26 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visibleenemy(a, uniqueVar4)
+%   facingleft(a)
+%   samelevelasdiver(a, uniqueVar3)
+%   visiblediver(a, uniqueVar3)
+%   rightofenemy(a, uniqueVar4)

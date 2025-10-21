@@ -1,0 +1,182 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 100
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 9,184
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 19:04:36 10/20/25.  [Using 90,157,248 memory cells.]  %%%%%
+
+% FOR noop(A):
+%   if ( visibleenemysubmarine(A, B), belowofsubmarine(A, B) )
+%   then if ( diversnotfull(A), visibleenemy(A, C) )
+%   | then return -0.13555735860678547;  // std dev = 4.229, 2,860.000 (wgt'ed) examples reached here.  /* #neg=2,842 #pos=18 */
+%   | else return -0.07550035400001413;  // std dev = 7.231, 844.000 (wgt'ed) examples reached here.  /* #neg=788 #pos=56 */
+%   else if ( visibleenemy(A, D), belowofenemy(A, D) )
+%   | then return -0.10627488547280213;  // std dev = 6.661, 1,293.000 (wgt'ed) examples reached here.  /* #neg=1,247 #pos=46 */
+%   | else return 0.5490971080156763;  // std dev = 29.901, 4,187.000 (wgt'ed) examples reached here.  /* #neg=1,294 #pos=2,893 */
+
+
+% Clauses:
+
+noop(A, -0.13555735860678547) :- 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     diversnotfull(A), 
+     visibleenemy(A, C), 
+     !. // Clause #1.
+
+noop(A, -0.07550035400001413) :- 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     !. // Clause #2.
+
+noop(A, -0.10627488547280213) :- 
+     visibleenemy(A, B), 
+     belowofenemy(A, B), 
+     !. // Clause #3.
+
+noop(A, 0.5490971080156763) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_noop(a, -0.13555735860678547) :-  /* #neg=2,842 #pos=18 */ 
+   visibleenemysubmarine(a, uniqueVar1),
+   belowofsubmarine(a, uniqueVar1),
+   diversnotfull(a),
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_noop(a, -0.07550035400001413) :-  /* #neg=788 #pos=56 */ 
+   visibleenemysubmarine(a, uniqueVar2),
+   belowofsubmarine(a, uniqueVar2),
+   !. // Flattened version of clause #2.
+
+flattened_noop(a, -0.10627488547280213) :-  /* #neg=1,247 #pos=46 */ 
+   visibleenemy(a, uniqueVar3),
+   belowofenemy(a, uniqueVar3),
+   !. // Flattened version of clause #3.
+
+flattened_noop(underscore, 0.5490971080156763) :-  /* #neg=1,294 #pos=2,893 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   belowofsubmarine(a, uniqueVar2)
+%   visibleenemysubmarine(a, uniqueVar2)
+%   belowofsubmarine(a, uniqueVar1)
+%   visibleenemy(a, underscore)
+%   visibleenemy(a, uniqueVar3)
+%   belowofenemy(a, uniqueVar3)
+%   visibleenemysubmarine(a, uniqueVar1)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for noop.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+noop(D, Total) :- // A general accessor. 
+   noop(D, 1000000, Total), !.
+noop(D, Total) :- waitHere("This should not fail", noop(D, Total)).
+
+noop(D, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_noop_tree1(D, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+noop(D, TreesToUse, Total) :- waitHere("This should not fail", noop(D, TreesToUse, Total)).
+
+getScore_noop_tree1(D, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_noop_tree1(D, TreesToUse, Total1) :- noop_tree1(D, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(noop, 8, [
+   diversnotfull(a),
+   belowofsubmarine(a, uniqueVar2),
+   visibleenemysubmarine(a, uniqueVar2),
+   belowofsubmarine(a, uniqueVar1),
+   visibleenemy(a, underscore),
+   visibleenemy(a, uniqueVar3),
+   belowofenemy(a, uniqueVar3),
+   visibleenemysubmarine(a, uniqueVar1)]).
+
+%%%%%  WILL-Produced Tree Combined @ 19:04:38 10/20/25.  [Using 90,081,968 memory cells.]  %%%%%
+
+% FOR noop(A):
+%   if ( visibleenemysubmarine(A, B), belowofsubmarine(A, B) )
+%   then if ( diversnotfull(A), visibleenemy(A, C) )
+%   | then return -0.13555735860678547;  // std dev = 4.229, 2,860.000 (wgt'ed) examples reached here.  /* #neg=2,842 #pos=18 */
+%   | else return -0.07550035400001413;  // std dev = 7.231, 844.000 (wgt'ed) examples reached here.  /* #neg=788 #pos=56 */
+%   else if ( visibleenemy(A, D), belowofenemy(A, D) )
+%   | then return -0.10627488547280213;  // std dev = 6.661, 1,293.000 (wgt'ed) examples reached here.  /* #neg=1,247 #pos=46 */
+%   | else return 0.5490971080156763;  // std dev = 29.901, 4,187.000 (wgt'ed) examples reached here.  /* #neg=1,294 #pos=2,893 */
+
+
+% Clauses:
+
+noop(A, -0.13555735860678547) :- 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     diversnotfull(A), 
+     visibleenemy(A, C), 
+     !. // Clause #1.
+
+noop(A, -0.07550035400001413) :- 
+     visibleenemysubmarine(A, B), 
+     belowofsubmarine(A, B), 
+     !. // Clause #2.
+
+noop(A, -0.10627488547280213) :- 
+     visibleenemy(A, B), 
+     belowofenemy(A, B), 
+     !. // Clause #3.
+
+noop(A, 0.5490971080156763) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_noop(a, -0.13555735860678547) :-  /* #neg=2,842 #pos=18 */ 
+   visibleenemysubmarine(a, uniqueVar4),
+   belowofsubmarine(a, uniqueVar4),
+   diversnotfull(a),
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_noop(a, -0.07550035400001413) :-  /* #neg=788 #pos=56 */ 
+   visibleenemysubmarine(a, uniqueVar5),
+   belowofsubmarine(a, uniqueVar5),
+   !. // Flattened version of clause #2.
+
+flattened_noop(a, -0.10627488547280213) :-  /* #neg=1,247 #pos=46 */ 
+   visibleenemy(a, uniqueVar6),
+   belowofenemy(a, uniqueVar6),
+   !. // Flattened version of clause #3.
+
+flattened_noop(underscore, 0.5490971080156763) :-  /* #neg=1,294 #pos=2,893 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visibleenemysubmarine(a, uniqueVar4)
+%   diversnotfull(a)
+%   belowofsubmarine(a, uniqueVar4)
+%   belowofsubmarine(a, uniqueVar5)
+%   belowofenemy(a, uniqueVar6)
+%   visibleenemysubmarine(a, uniqueVar5)
+%   visibleenemy(a, uniqueVar6)
+%   visibleenemy(a, underscore)
