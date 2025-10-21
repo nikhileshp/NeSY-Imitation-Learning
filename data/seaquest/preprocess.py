@@ -72,6 +72,7 @@ parser = argparse.ArgumentParser(description="Process relationship file")
 parser.add_argument("--file", type=str, default="", help="Relationship file")
 parser.add_argument("--node_size", type=str, default=2, help="Node size for background")
 parser.add_argument("--max_tree_depth", type=str, default=3, help="Max tree depth for background")
+parser.add_argument("--remove_0_weights", action="store_true", help="Remove facts with 0.00 weights from train_facts.txt using fact_weights.tsv")
 args = parser.parse_args()
 
 print(args.file)
@@ -263,6 +264,54 @@ for pa in primitive_actions:
             rel = rel.lower()
             rel = rel.replace("_", "")
             f.write(rel + "\n")
+
+# Function to remove facts with 0 weights from train_facts.txt only
+def remove_zero_weight_facts(train_facts_file, weights_file):
+  """Remove facts with 0.00 weights from the train_facts file using the weights file"""
+  if not os.path.exists(weights_file):
+    print(f"Warning: {weights_file} not found. Skipping zero weight removal.")
+    return
+    
+  # Read weights and identify zero weight facts
+  zero_weight_facts = set()
+  with open(weights_file, 'r') as f:
+    for line in f:
+      line = line.strip()
+      if line and '\t' in line:
+        parts = line.split('\t')
+        if len(parts) >= 2:
+          fact = parts[0]  # fact without weight
+          weight = parts[1].replace('.', '')  # remove trailing dot
+          if weight == '0.00':
+            zero_weight_facts.add(fact)
+  
+  # Read original train facts
+  with open(train_facts_file, 'r') as f:
+    facts = f.read().splitlines()
+  
+  # Filter out zero weight facts
+  filtered_facts = []
+  removed_count = 0
+  for fact in facts:
+    fact_without_dot = fact.rstrip('.')  # remove trailing dot for comparison
+    if fact_without_dot not in zero_weight_facts:
+      filtered_facts.append(fact)
+    else:
+      removed_count += 1
+  
+  # Write filtered facts back to train_facts.txt only
+  with open(train_facts_file, 'w') as f:
+    f.write('\n'.join(filtered_facts))
+  
+  print(f"Removed {removed_count} facts with 0.00 weights from {train_facts_file}")
+
+# Remove zero weight facts if requested (only from train_facts.txt)
+if args.remove_0_weights:
+  print("Removing facts with 0.00 weights from train_facts.txt files...")
+  for pa in primitive_actions:
+    train_facts_file = f"data/seaquest/{pa}/train/train_facts.txt"
+    weights_file = f"data/seaquest/{pa}/train/fact_weights.tsv"
+    remove_zero_weight_facts(train_facts_file, weights_file)
 
 with open("data/seaquest/"+pa+"/train/"+'train_facts.txt', 'r') as f:
   train_facts = f.read().splitlines()

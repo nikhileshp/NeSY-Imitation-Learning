@@ -9,8 +9,14 @@ if [ "$ONLY_TEST" == "true" ]; then
     echo "Skipping preprocess as ONLY_TEST is set to true."
     
 else
+    echo ""
+    echo ""
     echo "Starting preprocess..."
-    python data/seaquest/preprocess.py --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
+    echo "Max tree depth: $MAX_DEPTH"
+    echo "Weighted: $WEIGHTED"  
+    echo "Abstraction: True"
+    echo "ONLY_TEST: $ONLY_TEST"
+    python data/seaquest/preprocess.py --remove_0_weights --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
     echo "Preprocess completed."
 fi
@@ -28,7 +34,7 @@ TRAIN_DIRS=("data/seaquest/fire/train" "data/seaquest/up/train" "data/seaquest/d
 if $WEIGHTED == "true"; then
     MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
 else
-    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_w_abstraction"
 fi
 
 MODELS=(
@@ -107,6 +113,7 @@ TEST_DIRS=("data/seaquest/fire/test" "data/seaquest/up/test" "data/seaquest/down
 
 LOG_FILES=(
 
+<<<<<<< Updated upstream
     "$MODEL_BASE/fire/fire_infer.log"
 
     "$MODEL_BASE/up/up_infer.log"
@@ -118,6 +125,19 @@ LOG_FILES=(
     "$MODEL_BASE/right/right_infer.log"
 
     "$MODEL_BASE/noop/noop_infer.log"
+=======
+    "${MODEL_BASE}/fire/fire_infer.log"
+
+    "${MODEL_BASE}/up/up_infer.log"
+
+    "${MODEL_BASE}/down/down_infer.log"
+
+    "${MODEL_BASE}/left/left_infer.log"
+
+    "${MODEL_BASE}/right/right_infer.log"
+
+    "${MODEL_BASE}/noop/noop_infer.log"
+>>>>>>> Stashed changes
 
 )
  
