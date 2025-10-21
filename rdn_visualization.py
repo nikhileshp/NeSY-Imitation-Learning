@@ -72,7 +72,7 @@ def parse_model_info(path):
 
 def collect_data():
     """Collect all metrics from the RDN models"""
-    base_dir = "/home/nikhilesh/Projects/NeSY-Imitation-Learning/rdn_models/seaquest"
+    base_dir = "rdn_models/seaquest"
     
     # Data structures to store results
     eval_data = []  # For weighted F1 from eval_report

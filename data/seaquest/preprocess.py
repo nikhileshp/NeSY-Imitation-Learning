@@ -59,14 +59,16 @@ bridgers = [bridger.lower() for bridger in bridgers]
 
 modes = [mode.lower() for mode in modes]
 
+base_dir = "data/seaquest/all"
+
 for action in primitive_actions:
   #delete the directory if it exists
-  if os.path.exists(f"data/seaquest/{action}"):
+  if os.path.exists(f"{base_dir}/{action}"):
     import shutil
-    shutil.rmtree(f"data/seaquest/{action}")
+    shutil.rmtree(f"{base_dir}/{action}")
   #create the directory
-  os.makedirs(f"data/seaquest/{action}/train", exist_ok=True)
-  os.makedirs(f"data/seaquest/{action}/test", exist_ok=True)
+  os.makedirs(f"{base_dir}/{action}/train", exist_ok=True)
+  os.makedirs(f"{base_dir}/{action}/test", exist_ok=True)
 
 parser = argparse.ArgumentParser(description="Process relationship file")
 parser.add_argument("--file", type=str, default="", help="Relationship file")
@@ -77,7 +79,7 @@ args = parser.parse_args()
 
 print(args.file)
 
-df = pd.read_csv(args.file)
+df = pd.read_csv(args.file, delimiter="\t")
 
 #remove rows with action greater than 5
 df = df[df['action'] <= 5]
@@ -165,9 +167,9 @@ for _, row in train.iterrows():
       train_action_files[pa][0].append(action_str)
     else:
       train_action_files[pa][1].append(action_str)
-    with open("data/seaquest/"+pa+"/train/"+f"train_pos.txt", "w") as f:
+    with open(f"{base_dir}/"+pa+"/train/"+f"train_pos.txt", "w") as f:
       f.write("\n".join(train_action_files[pa][0]))
-    with open("data/seaquest/"+pa+"/train/"+f"train_neg.txt", "w") as f:
+    with open(f"{base_dir}/"+pa+"/train/"+f"train_neg.txt", "w") as f:
       f.write("\n".join(train_action_files[pa][1]))
 
 # Remove rows which have action>5
@@ -191,14 +193,14 @@ for _, row in test.iterrows():
       test_action_files[pa][0].append(action_str)
     else:
       test_action_files[pa][1].append(action_str)
-    with open("data/seaquest/"+pa+"/test/"+f"test_pos.txt", "w") as f:
+    with open(f"{base_dir}/"+pa+"/test/"+f"test_pos.txt", "w") as f:
       f.write("\n".join(test_action_files[pa][0]))
-    with open("data/seaquest/"+pa+"/test/"+f"test_neg.txt", "w") as f:
+    with open(f"{base_dir}/"+pa+"/test/"+f"test_neg.txt", "w") as f:
       f.write("\n".join(test_action_files[pa][1]))
 
 #Script for writing facts
 for pa in primitive_actions:
-  with open("data/seaquest/"+pa+"/train/"+'train_facts.txt', 'w') as f:
+  with open(f"{base_dir}/"+pa+"/train/"+'train_facts.txt', 'w') as f:
     for _, row in train.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
@@ -219,7 +221,7 @@ for pa in primitive_actions:
             rel = rel.replace("_", "")
             f.write(rel + "\n")
   
-  with open("data/seaquest/"+pa+"/train/"+'fact_weights.tsv', 'w') as f:
+  with open(f"{base_dir}/"+pa+"/train/"+'fact_weights.tsv', 'w') as f:
     for _, row in train.iterrows():
     
       weights = str(row["distance_weights"])
@@ -244,7 +246,7 @@ for pa in primitive_actions:
       if weights_list:
         f.write("\n".join(weights_list) + "\n")
 
-  with open("data/seaquest/"+pa+"/test/"+'test_facts.txt', 'w') as f:
+  with open(f"{base_dir}/"+pa+"/test/"+'test_facts.txt', 'w') as f:
     for _, row in test.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
@@ -309,13 +311,13 @@ def remove_zero_weight_facts(train_facts_file, weights_file):
 if args.remove_0_weights:
   print("Removing facts with 0.00 weights from train_facts.txt files...")
   for pa in primitive_actions:
-    train_facts_file = f"data/seaquest/{pa}/train/train_facts.txt"
-    weights_file = f"data/seaquest/{pa}/train/fact_weights.tsv"
+    train_facts_file = f"{base_dir}/{pa}/train/train_facts.txt"
+    weights_file = f"{base_dir}/{pa}/train/fact_weights.tsv"
     remove_zero_weight_facts(train_facts_file, weights_file)
 
-with open("data/seaquest/"+pa+"/train/"+'train_facts.txt', 'r') as f:
+with open(f"{base_dir}/"+pa+"/train/"+'train_facts.txt', 'r') as f:
   train_facts = f.read().splitlines()
-with open("data/seaquest/"+pa+"/test/"+'test_facts.txt', 'r') as f:
+with open(f"{base_dir}/"+pa+"/test/"+'test_facts.txt', 'r') as f:
   test_facts = f.read().splitlines()
 
 train_dict = {}
@@ -345,10 +347,10 @@ for action in primitive_actions:
   train_dict[action].facts = train_facts
   test_dict[action].facts = test_facts
 
-  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=100,number_of_cycles=100, node_size=int(args.node_size), 
+  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=20,number_of_cycles=20, node_size=int(args.node_size), 
                                max_tree_depth=int(args.max_tree_depth))
   #write the background to file
-  with open("data/seaquest/"+action+"/train/"+f"train_bk.txt", "w") as f:
+  with open(f"{base_dir}/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))
-  with open("data/seaquest/"+action+"/test/"+f"test_bk.txt", "w") as f:
+  with open(f"{base_dir}/"+action+"/test/"+f"test_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))

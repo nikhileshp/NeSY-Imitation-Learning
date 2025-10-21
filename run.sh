@@ -2,8 +2,9 @@
 set -e  # stop if any command fails
 
 MAX_DEPTH=$1
-WEIGHTED=$2  # "true" or "false"
-ONLY_TEST=$3  # "true" or "false"
+NUM_TREES=$2
+WEIGHTED=$3  # "true" or "false"
+ONLY_TEST=$4  # "true" or "false"
 
 if [ "$ONLY_TEST" == "true" ]; then
     echo "Skipping preprocess as ONLY_TEST is set to true."
@@ -16,7 +17,7 @@ else
     echo "Weighted: $WEIGHTED"  
     echo "Abstraction: True"
     echo "ONLY_TEST: $ONLY_TEST"
-    python data/seaquest/preprocess.py --remove_0_weights --file data/seaquest/gaze_data_tmp/54_RZ_2461867_Aug-11-09-35-18_with_relationships_and_goals.txt --node_size 2 --max_tree_depth $MAX_DEPTH
+    python data/seaquest/preprocess.py --remove_0_weights --file relationships.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
     echo "Preprocess completed."
 fi
@@ -24,17 +25,17 @@ fi
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 
 AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
-TREES=1
+TREES=$NUM_TREES
 NEG_POS_RATIO=2
 # List of targets (actions)
 TARGETS=("fire" "up" "down" "left" "right" "noop")
 
-TRAIN_DIRS=("data/seaquest/fire/train" "data/seaquest/up/train" "data/seaquest/down/train" "data/seaquest/left/train" "data/seaquest/right/train" "data/seaquest/noop/train")
+TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/seaquest/all/down/train" "data/seaquest/all/left/train" "data/seaquest/all/right/train" "data/seaquest/all/noop/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
 if $WEIGHTED == "true"; then
-    MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+    MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
 else
-    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_w_abstraction"
+    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
 fi
 
 MODELS=(
@@ -106,7 +107,7 @@ fi
 echo "All runs finished successfully!"
 
 
-TEST_DIRS=("data/seaquest/fire/test" "data/seaquest/up/test" "data/seaquest/down/test" "data/seaquest/left/test" "data/seaquest/right/test" "data/seaquest/noop/test")
+TEST_DIRS=("data/seaquest/all/fire/test" "data/seaquest/all/up/test" "data/seaquest/all/down/test" "data/seaquest/all/left/test" "data/seaquest/all/right/test" "data/seaquest/all/noop/test")
  
  
 # Corresponding log files
