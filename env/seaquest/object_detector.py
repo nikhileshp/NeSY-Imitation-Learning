@@ -3,7 +3,7 @@ Seaquest-specific object detector implementation.
 """
 import numpy as np
 from typing import List, Dict
-from models.OC_Atari.ocatari.vision.utils import find_objects, facing_side
+from models.ocatari.ocatari.vision.utils import find_objects, facing_side
 
 from core.object_detector import BaseObjectDetector, GameConfig
 from core.game_object import GameObject

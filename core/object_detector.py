@@ -4,7 +4,7 @@ Core object detection module - game-agnostic base classes.
 import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Any, Protocol
-from models.OC_Atari.ocatari.vision.utils import find_objects
+from models.ocatari.ocatari.vision.utils import find_objects
 from .game_object import GameObject
 
 

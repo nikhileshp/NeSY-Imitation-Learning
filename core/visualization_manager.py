@@ -4,7 +4,7 @@ Visualization manager module for rendering game objects, relationships, and gaze
 import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Optional
-from models.OC_Atari.ocatari.vision.utils import mark_bb
+from models.ocatari.ocatari.vision.utils import mark_bb
 from core.game_object import GameObject, SpatialRelationship
 from .config import BASE_VISUALIZATION_COLORS, DEFAULT_OBJECT_COLORS
 
