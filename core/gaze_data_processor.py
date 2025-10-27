@@ -91,12 +91,15 @@ class GazeDataProcessor:
             'objects': "",
             'relationships': "",
             'goal': "",
-            'distance_weights': ""
+            'distance_weights': "",
+            'predicate_weights': "",
+            'example_weight': ""
         }
     
     def update_frame_data(self, gaze_df: pd.DataFrame, frame_id: str, 
                          objects_list: List[str], relationships_text: str, goal: str = "",
-                         distance_weights: str = "") -> None:
+                         distance_weights: str = "", predicate_weights: str = "", 
+                         example_weight: str = "") -> None:
         """
         Update gaze DataFrame with object and relationship information for a specific frame.
         
@@ -107,6 +110,8 @@ class GazeDataProcessor:
             relationships_text: Formatted relationships text
             goal: Detected goal for this frame
             distance_weights: Formatted distance weights text
+            predicate_weights: Formatted predicate weights text (for euclidean distance-based attention)
+            example_weight: Example weight (average of predicate weights)
         """
         if gaze_df.empty:
             return
@@ -128,6 +133,12 @@ class GazeDataProcessor:
         
         # Update distance weights column
         gaze_df.loc[frame_mask, 'distance_weights'] = distance_weights
+        
+        # Update predicate weights column
+        gaze_df.loc[frame_mask, 'predicate_weights'] = predicate_weights
+        
+        # Update example weight column
+        gaze_df.loc[frame_mask, 'example_weight'] = example_weight
     
     def get_gaze_positions_for_frame(self, gaze_df: pd.DataFrame, 
                                    frame_id: str) -> List[Tuple[int, int]]:

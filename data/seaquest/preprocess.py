@@ -59,7 +59,7 @@ bridgers = [bridger.lower() for bridger in bridgers]
 
 modes = [mode.lower() for mode in modes]
 
-base_dir = "data/seaquest/all"
+base_dir = "data/seaquest"
 
 for action in primitive_actions:
   #delete the directory if it exists
@@ -79,7 +79,7 @@ args = parser.parse_args()
 
 print(args.file)
 
-df = pd.read_csv(args.file, delimiter="\t")
+df = pd.read_csv(args.file)
 
 #remove rows with action greater than 5
 df = df[df['action'] <= 5]
@@ -147,6 +147,8 @@ actions = {
 primitive_actions = ["noop","fire","up","right","left","down"]
 train_action_files = {action: [[], []] for action in primitive_actions}
 test_action_files = {action: [[], []] for action in primitive_actions}
+train_pos_weights = {action: [] for action in primitive_actions}
+train_neg_weights = {action: [] for action in primitive_actions}
 
 for _, row in train.iterrows():
   # frame_id = str(row["frameid"]).split("_")[-1]
@@ -154,6 +156,7 @@ for _, row in train.iterrows():
   s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
+  example_weight = row.get('example_weights', 1.0)
   taken_actions = []
   if isinstance(action_name, tuple):
     taken_actions = list(action_name)
@@ -162,15 +165,22 @@ for _, row in train.iterrows():
   for pa in primitive_actions:
     action_str = pa + "(" + s_id + ")."
     action_str = action_str.lower()
+    weight_str = f"{action_str.rstrip('.')}: {example_weight:.2f}"
 
     if pa in taken_actions:
       train_action_files[pa][0].append(action_str)
+      train_pos_weights[pa].append(weight_str)
     else:
       train_action_files[pa][1].append(action_str)
+      train_neg_weights[pa].append(weight_str)
     with open(f"{base_dir}/"+pa+"/train/"+f"train_pos.txt", "w") as f:
       f.write("\n".join(train_action_files[pa][0]))
     with open(f"{base_dir}/"+pa+"/train/"+f"train_neg.txt", "w") as f:
       f.write("\n".join(train_action_files[pa][1]))
+    with open(f"{base_dir}/"+pa+"/train/"+f"train_pos_weights.txt", "w") as f:
+      f.write("\n".join(train_pos_weights[pa]))
+    with open(f"{base_dir}/"+pa+"/train/"+f"train_neg_weights.txt", "w") as f:
+      f.write("\n".join(train_neg_weights[pa]))
 
 # Remove rows which have action>5
 

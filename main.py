@@ -16,6 +16,7 @@ from core.visualization_manager import VisualizationManager
 from core.game_object import GameObject
 from core.goal_detector import GoalDetector
 from core.distance_weight_calculator import DistanceWeightCalculator
+from attention_weights import calculate_predicate_weights, calculate_example_weight
 
 # Import Seaquest-specific modules
 from env.seaquest.object_detector import SeaquestObjectDetector
@@ -47,11 +48,14 @@ class GameAnalysisApp:
         self.distance_weight_calculator = None  # Will be initialized when screen dimensions are known
         self.use_alternating_class_weights = False  # Default to standard reciprocal rank weights
         self.use_nearest_only_weights = False  # Default to standard reciprocal rank weights
+        self.use_euclidean_distance_weights = False  # Default to standard reciprocal rank weights
+        self.zero_second_object_weight = False  # Default to not zeroing second object weights
     
     def run(self, image_folder: str, output_video: str = "test_output.mp4", fps: int = 1, 
             start_frame: int = 0, no_visual: bool = False, process_all: bool = False, 
             save_rel: bool = False, verbose: int = 1, use_alternating_class_weights: bool = False,
-            use_nearest_only_weights: bool = False):
+            use_nearest_only_weights: bool = False, use_euclidean_distance_weights: bool = False,
+            zero_second_object_weight: bool = False):
         """
         Run the main analysis pipeline.
         
@@ -66,11 +70,15 @@ class GameAnalysisApp:
             verbose: Verbosity level (0=quiet, 1=minimal, 2=verbose)
             use_alternating_class_weights: Use alternating class weight calculation
             use_nearest_only_weights: Use nearest-only weight calculation
+            use_euclidean_distance_weights: Use euclidean distance-based attention weights
+            zero_second_object_weight: Set second object in each class to weight 0
         """
         # Store verbosity level and settings
         self.verbose = verbose
         self.use_alternating_class_weights = use_alternating_class_weights
         self.use_nearest_only_weights = use_nearest_only_weights
+        self.use_euclidean_distance_weights = use_euclidean_distance_weights
+        self.zero_second_object_weight = zero_second_object_weight
         
         # Validate input folder
         if not os.path.exists(image_folder):
@@ -202,6 +210,8 @@ class GameAnalysisApp:
         gaze_positions = []
         detected_goal = "unknown"
         distance_weights_text = ""  # Initialize outside the if block
+        predicate_weights_text = ""
+        example_weight_text = ""
         
         if not self.gaze_df.empty:
             gaze_positions = self.gaze_processor.get_gaze_positions_for_frame(self.gaze_df, frame_id)
@@ -217,26 +227,81 @@ class GameAnalysisApp:
             
             # Calculate distance weights for relationships involving spatial objects
             if self.distance_weight_calculator and gaze_positions:
-                distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
-                    relationships, gaze_positions, self.use_alternating_class_weights, self.use_nearest_only_weights
-                )
-                distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
-                    distance_weights
-                )
-                
-                if self.verbose >= 2 and distance_weights:
-                    print(f"\n  Distance weights for relationships:")
-                    for rel_identifier, weight in distance_weights.items():
-                        print(f"    {rel_identifier}: {weight:.3f}")
-                    print(f"  Formatted: {distance_weights_text}")
+                if self.use_euclidean_distance_weights:
+                    # Use euclidean distance-based attention weights
+                    # Get centroids from detected objects, tracking object types
+                    centroids = []
+                    object_types = []
+                    for obj_type, obj_list in detected_objects.items():
+                        for obj in obj_list:
+                            centroid = obj.center
+                            centroids.append(centroid)
+                            object_types.append(obj_type)
+                    
+                    if centroids and gaze_positions:
+                        # Use average gaze position if multiple positions
+                        avg_gaze = (
+                            sum(p[0] for p in gaze_positions) / len(gaze_positions),
+                            sum(p[1] for p in gaze_positions) / len(gaze_positions)
+                        )
+                        
+                        # Calculate predicate weights and example weight
+                        import numpy as np
+                        predicate_weights = calculate_predicate_weights(
+                            avg_gaze, centroids, width, height, k=0.075
+                        )
+                        
+                        # Apply zero-second-object weight if enabled
+                        if self.zero_second_object_weight:
+                            class_counters = {}
+                            for i, obj_type in enumerate(object_types):
+                                if obj_type not in class_counters:
+                                    class_counters[obj_type] = 0
+                                class_counters[obj_type] += 1
+                                # Set weight to 0 for second object in each class
+                                if class_counters[obj_type] == 2:
+                                    predicate_weights[i] = 0.0
+                        
+                        example_weight = calculate_example_weight(predicate_weights)
+                        
+                        # Format for dataframe
+                        predicate_weights_text = " ".join([f"{w:.4f}" for w in predicate_weights])
+                        example_weight_text = f"{example_weight:.4f}"
+                        
+                        if self.verbose >= 2:
+                            print(f"\n  Euclidean distance-based attention weights:")
+                            print(f"    Predicate weights: {predicate_weights_text}")
+                            print(f"    Example weight: {example_weight_text}")
+                else:
+                    # Use original distance weight calculation
+                    distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
+                        relationships, gaze_positions, self.use_alternating_class_weights, self.use_nearest_only_weights
+                    )
+                    distance_weights_text = self.distance_weight_calculator.format_distance_weights_for_dataframe(
+                        distance_weights
+                    )
+                    
+                    if self.verbose >= 2 and distance_weights:
+                        print(f"\n  Distance weights for relationships:")
+                        for rel_identifier, weight in distance_weights.items():
+                            print(f"    {rel_identifier}: {weight:.3f}")
+                        print(f"  Formatted: {distance_weights_text}")
             
             # Update gaze DataFrame with object, relationship, and goal information
             objects_list = self.object_detector.get_all_objects_as_list(detected_objects)
             relationships_text = self.relationship_analyzer.format_relationships_for_dataframe(relationships)
-            self.gaze_processor.update_frame_data(
-                self.gaze_df, frame_id, objects_list, relationships_text, detected_goal,
-                distance_weights_text
-            )
+            
+            # If using euclidean distance weights, add predicate and example weights
+            if self.use_euclidean_distance_weights:
+                self.gaze_processor.update_frame_data(
+                    self.gaze_df, frame_id, objects_list, relationships_text, detected_goal,
+                    distance_weights_text, predicate_weights_text, example_weight_text
+                )
+            else:
+                self.gaze_processor.update_frame_data(
+                    self.gaze_df, frame_id, objects_list, relationships_text, detected_goal,
+                    distance_weights_text
+                )
         
         # Create comprehensive visualization
         annotated_image = self.visualizer.create_comprehensive_visualization(
@@ -419,12 +484,18 @@ Examples:
                        help='Use alternating class weight calculation (first object of each class gets weight, second gets 0, etc.)')
     parser.add_argument('--nearest-only-weights', action='store_true',
                        help='Use nearest-only weight calculation (only the nearest object gets weight 1, all others get 0)')
+    parser.add_argument('--euclidean-distance-weights', action='store_true',
+                       help='Use euclidean distance-based Gaussian attention weights for predicates (saves predicate weights and example weight)')
+    parser.add_argument('--zero-second-object-weight', action='store_true',
+                       help='When using euclidean distance weights, set the second object in each class to weight 0')
     
     args = parser.parse_args()
     
     # Validate argument combinations
     if args.alternating_class_weights and args.nearest_only_weights:
         parser.error("--alternating-class-weights and --nearest-only-weights are mutually exclusive")
+    if args.euclidean_distance_weights and (args.alternating_class_weights or args.nearest_only_weights):
+        parser.error("--euclidean-distance-weights is mutually exclusive with other weight calculation methods")
     
     # Create and run the application
     try:
@@ -440,6 +511,8 @@ Examples:
         print(f"  All trajectories mode: {'yes' if args.all_trajectories else 'no'}")
         print(f"  Alternating class weights: {'enabled' if args.alternating_class_weights else 'disabled'}")
         print(f"  Nearest-only weights: {'enabled' if args.nearest_only_weights else 'disabled'}")
+        print(f"  Euclidean distance weights: {'enabled' if args.euclidean_distance_weights else 'disabled'}")
+        print(f"  Zero second object weight: {'enabled' if args.zero_second_object_weight else 'disabled'}")
         print(f"  Verbosity level: {args.verbose}")
         print()
         
@@ -464,7 +537,8 @@ Examples:
                     try:
                         app.run(traj_dir, args.output_video, args.fps, args.start_frame, 
                                 args.no_visual, args.process_all, args.save_rel, args.verbose, 
-                                args.alternating_class_weights, args.nearest_only_weights)
+                                args.alternating_class_weights, args.nearest_only_weights, 
+                                args.euclidean_distance_weights, args.zero_second_object_weight)
                         
                         # Add trajectory identifier to the gaze DataFrame
                         if not app.gaze_df.empty:
@@ -499,7 +573,8 @@ Examples:
             # Process a single trajectory folder
             app.run(args.data, args.output_video, args.fps, args.start_frame, 
                     args.no_visual, args.process_all, args.save_rel, args.verbose, 
-                    args.alternating_class_weights, args.nearest_only_weights)
+                    args.alternating_class_weights, args.nearest_only_weights, 
+                    args.euclidean_distance_weights, args.zero_second_object_weight)
             if args.verbose >= 1:
                 print("\nAnalysis completed successfully!")
         

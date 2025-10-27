@@ -17,7 +17,7 @@ else
     echo "Weighted: $WEIGHTED"  
     echo "Abstraction: True"
     echo "ONLY_TEST: $ONLY_TEST"
-    python data/seaquest/preprocess.py --remove_0_weights --file relationships.txt --node_size 2 --max_tree_depth $MAX_DEPTH
+    # python data/seaquest/preprocess.py --remove_0_weights --file relationships.txt --node_size 2 --max_tree_depth $MAX_DEPTH
 # Common parameters
     echo "Preprocess completed."
 fi
@@ -33,9 +33,9 @@ TARGETS=("fire" "up" "down" "left" "right" "noop")
 TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/seaquest/all/down/train" "data/seaquest/all/left/train" "data/seaquest/all/right/train" "data/seaquest/all/noop/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
 if $WEIGHTED == "true"; then
-    MODEL_BASE="rdn_models/seaquest/weighted_1object_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
+    MODEL_BASE="rdn_models/seaquest/weighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_example_w"
 else
-    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
+    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
 fi
 
 MODELS=(
@@ -48,12 +48,12 @@ MODELS=(
 )
  
 WEIGHTS=(
-    "data/seaquest/fire/train/fact_weights.tsv"
-    "data/seaquest/up/train/fact_weights.tsv"
-    "data/seaquest/down/train/fact_weights.tsv"
-    "data/seaquest/left/train/fact_weights.tsv"
-    "data/seaquest/right/train/fact_weights.tsv"
-    "data/seaquest/noop/train/fact_weights.tsv"
+    "data/seaquest/all/fire/train/fact_weights.tsv"
+    "data/seaquest/all/up/train/fact_weights.tsv"
+    "data/seaquest/all/down/train/fact_weights.tsv"
+    "data/seaquest/all/left/train/fact_weights.tsv"
+    "data/seaquest/all/right/train/fact_weights.tsv"
+    "data/seaquest/all/noop/train/fact_weights.tsv"
 )
 # Loop through each target/model 
 if [ $WEIGHTED == "true" ] && [ $ONLY_TEST == "false" ]; then
@@ -73,7 +73,6 @@ if [ $WEIGHTED == "true" ] && [ $ONLY_TEST == "false" ]; then
             -trees "$TREES" \
             -aucJarPath "$AUC_JAR" \
             -negPosRatio "$NEG_POS_RATIO" \
-            -factWeights "${WEIGHTS[$i]}" \
             -model "$MODEL" \
 
         echo "✅ Completed training for $TARGET"

@@ -63,7 +63,18 @@ for action in primitive_actions:
         dict_action_prob[action][state_id] = pred_prob[action][1][i]
 
 
+# Method 1: Direct argmax (original method)
 max_prob_index = {state_id: np.argmax(probs) for state_id, probs in state_id_action_probs.items()}
+
+# Method 2: Softmax normalized probabilities
+def softmax(x):
+    exp_x = np.exp(x - np.max(x))  # subtract max for numerical stability
+    return exp_x / np.sum(exp_x)
+
+max_prob_index_normalized = {}
+for state_id, probs in state_id_action_probs.items():
+    normalized_probs = softmax(np.array(probs))
+    max_prob_index_normalized[state_id] = np.argmax(normalized_probs)
 
 test_df = pd.read_csv("test.csv")
 test_df['state_id'] = test_df['frameid'].apply(lambda x: "s" + str(x).lower().replace("_",""))
@@ -71,21 +82,51 @@ print(test_df.head())
 state_ids = sorted(list(test_df['state_id']))
 print(state_id_list[0:10])
 print('sRZ80297210013' in state_id_list)
+
+# Predict using both methods
 test_df['predicted_action'] = test_df['state_id'].apply(lambda x: max_prob_index[x])
+test_df['predicted_action_normalized'] = test_df['state_id'].apply(lambda x: max_prob_index_normalized[x])
 
 
-#Compute weighted f1 score from test_df
-
-
+# Compare results
+print("\n" + "="*80)
+print("METHOD 1: Direct argmax (non-normalized probabilities)")
+print("="*80)
 print(classification_report(test_df['action'], test_df['predicted_action'], target_names=primitive_actions))
+print("\nConfusion Matrix:")
 print(confusion_matrix(test_df['action'], test_df['predicted_action']))
+
+print("\n" + "="*80)
+print("METHOD 2: Softmax normalized probabilities")
+print("="*80)
+print(classification_report(test_df['action'], test_df['predicted_action_normalized'], target_names=primitive_actions))
+print("\nConfusion Matrix:")
+print(confusion_matrix(test_df['action'], test_df['predicted_action_normalized']))
+
+# Check if predictions differ
+num_different = (test_df['predicted_action'] != test_df['predicted_action_normalized']).sum()
+print(f"\n{'='*80}")
+print(f"Number of states where predictions differ: {num_different} / {len(test_df)}")
+print(f"Percentage of different predictions: {100 * num_different / len(test_df):.2f}%")
+print("="*80)
 
 #write the classification report to a file
 with open(f"{args.model_dir}/eval_report.txt", "w") as f:
-
+    f.write("METHOD 1: Direct argmax (non-normalized probabilities)\n")
+    f.write("="*80 + "\n")
     f.write(classification_report(test_df['action'], test_df['predicted_action'], target_names=primitive_actions))
     f.write("\n")
+    f.write("Confusion Matrix:\n")
     f.write(str(confusion_matrix(test_df['action'], test_df['predicted_action'])))
+    f.write("\n\n")
+    f.write("METHOD 2: Softmax normalized probabilities\n")
+    f.write("="*80 + "\n")
+    f.write(classification_report(test_df['action'], test_df['predicted_action_normalized'], target_names=primitive_actions))
+    f.write("\n")
+    f.write("Confusion Matrix:\n")
+    f.write(str(confusion_matrix(test_df['action'], test_df['predicted_action_normalized'])))
+    f.write(f"\n\nNumber of states where predictions differ: {num_different} / {len(test_df)}\n")
+    f.write(f"Percentage of different predictions: {100 * num_different / len(test_df):.2f}%\n")
 
 
 # test_file = f"data/seaquest/noop/test/test_pos.txt"

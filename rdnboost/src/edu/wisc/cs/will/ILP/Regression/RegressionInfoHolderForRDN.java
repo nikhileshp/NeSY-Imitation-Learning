@@ -9,7 +9,6 @@ import edu.wisc.cs.will.DataSetUtils.RegressionExample;
 import edu.wisc.cs.will.ILP.LearnOneClause;
 import edu.wisc.cs.will.ILP.SingleClauseNode;
 import edu.wisc.cs.will.Utils.ProbDistribution;
-import edu.wisc.cs.will.Utils.FactWeights;
 import edu.wisc.cs.will.Utils.Utils;
 import edu.wisc.cs.will.stdAIsearch.SearchInterrupted;
 
@@ -94,20 +93,8 @@ public class RegressionInfoHolderForRDN extends RegressionInfoHolder {
 		if (prob.isHasDistribution()) {
 			Utils.error("Expected single probability value but contains distribution");
 		}
-falseStats.addNumOutput(numGrndg, output, weight, prob.getProbOfBeingTrue());
-}
-
-// Optional weighted variant for false branch accumulation.
-public void addFailureExampleWeighted(SingleClauseNode caller, Example eg) {
-		double baseW = eg.getWeightOnExample();
-		double output =  ((RegressionExample) eg).getOutputValue();
-		ProbDistribution prob   = ((RegressionRDNExample)eg).getProbOfExample();
-		double p = prob.isHasDistribution() ? prob.getProbOfBeingTrue() : 0.5;
-		double phi = FactWeights.getInstance().weightForLastLiteral(caller, eg);
-		double wEff = baseW * phi;
-		double nEff = phi;
-		falseStats.addWeighted(nEff, output, wEff, p);
-}
+		falseStats.addNumOutput(numGrndg, output, weight, prob.getProbOfBeingTrue());
+	}
 
 	@Override
 	public double variance() {
@@ -125,12 +112,8 @@ public void addFailureExampleWeighted(SingleClauseNode caller, Example eg) {
 			if (prob.isHasDistribution()) {
 				Utils.error("Expected single probability value but contains distribution");
 			}
-if (!caller.posExampleAlreadyExcluded(posEx)) {
-				// Apply optional fact weighting using last-literal grounding.
-				double phi = FactWeights.getInstance().weightForLastLiteral(caller, posEx);
-				double wEff = weight * phi;
-				double nEff = phi;
-				trueStats.addWeighted(nEff, output, wEff, prob.getProbOfBeingTrue());
+			if (!caller.posExampleAlreadyExcluded(posEx)) {
+				trueStats.addNumOutput(1, output, weight, prob.getProbOfBeingTrue());		
 			}
 		}
 		RegressionInfoHolder totalFalseStats = caller.getTotalFalseBranchHolder() ;

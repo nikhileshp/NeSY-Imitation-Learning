@@ -87,6 +87,11 @@ public final class WILLSetup {
 	private Map<String, List<RegressionRDNExample>> hiddenExamples = null; // Holds the list of hidden literals.	
 	private HiddenLiteralSamples lastSampledWorlds = null;
 	
+	// Map from example string representation to weight
+	private Map<String, Double> exampleWeights = new HashMap<String, Double>();
+	private String trainDirectory = null;
+	private String trainPrefix = null;
+	
 	private double weightOnPosExamples = 1.0;
 	private double weightOnNegExamples = 1.0; // 0.2; // TODO This should be 1.0 but I (JWS) am manually setting it for now. 
 
@@ -138,13 +143,17 @@ public final class WILLSetup {
 			throw new IllegalArgumentException("Unable to find task directory: " + directory + ".");
 		}
 
-		directory     = dir.getPath();
-		String prefix = dir.getName();
+	directory     = dir.getPath();
+	String prefix = dir.getName();
 
-		// Slice the '/' off the prefix if it was passed in with one ...
-		if ( prefix.endsWith("/" ) ) {
-			prefix = prefix.substring(0, prefix.length() - 1);
-		}
+	// Slice the '/' off the prefix if it was passed in with one ...
+	if ( prefix.endsWith("/" ) ) {
+		prefix = prefix.substring(0, prefix.length() - 1);
+	}
+	
+	// Store for weight loading
+	this.trainDirectory = directory;
+	this.trainPrefix = prefix;
 
 		String[] newArgList = new String[4];
 		newArgList[0] = directory + "/" + prefix + "_" + cmdArgs.getStringForTestsetPos()   + fileExtensionWithPeriod;
@@ -1173,6 +1182,10 @@ public final class WILLSetup {
 		String prefix = null;
 		if (forLearning) {
 			if (debugLevel > 1) { Utils.println("\n% Morphing task.");}
+			// Load example weights before morphing
+			loadExampleWeightsIfAvailable();
+			applyWeightsToExamples(newPosEg);
+			applyWeightsToExamples(newNegEg);
 			if (multiclassHandler.isMultiClassPredicate(predicate)) {
 				Utils.println("Morphing to regression vector");
 				getOuterLooper().setLearnMultiValPredicates(true);
@@ -1279,6 +1292,9 @@ public final class WILLSetup {
 	public HashMap<String,List<RegressionRDNExample>> getJointExamples(Set<String> targets) {
 		HashMap<String,List<RegressionRDNExample>> result = new HashMap<String,List<RegressionRDNExample>>();
 		
+		// Load example weights if available
+		loadExampleWeightsIfAvailable();
+		
 		// TODO Currently assuming they are marked as examples already.
 		int counterPos = 0, counterNeg = 0;
 		for (String pred : targets) {
@@ -1296,6 +1312,8 @@ public final class WILLSetup {
 					}
 				}
 				rex.setOriginalTruthValue(true);
+				// Apply custom weight if available
+				applyExampleWeight(rex);
 				String target = ex.predicateName.name;
 				if (targets.contains(target)) { 
 					if (!result.containsKey(target)) {
@@ -1311,6 +1329,8 @@ public final class WILLSetup {
 			if (lookupNeg != null) for (Example ex  : lookupNeg) {
 				RegressionRDNExample rex = new RegressionRDNExample(getHandler(), ex.extractLiteral(), 0, ex.provenance, ex.extraLabel);
 				rex.setOriginalTruthValue(false);
+				// Apply custom weight if available
+				applyExampleWeight(rex);
 				if (cmdArgs.isLearnRegression()) {
 					if (ex instanceof RegressionExample) {
 						rex.originalRegressionOrProbValue = ((RegressionExample)ex).getOutputValue();
@@ -1337,6 +1357,138 @@ public final class WILLSetup {
 	
 	public void addAllExamplesToFacts() {
 		prepareFactsForJoint(backupPosExamples, backupNegExamples, null, null, true, false);
+	}
+	
+	/**
+	 * Load example weights from weight files if they exist.
+	 * Looks for files named like "train_pos_weights.txt" and "train_neg_weights.txt"
+	 */
+	private void loadExampleWeightsIfAvailable() {
+		if (!exampleWeights.isEmpty()) {
+			return; // Already loaded
+		}
+		
+		if (trainDirectory == null || trainPrefix == null) {
+			Utils.println("% Weight loading skipped: trainDirectory or trainPrefix is null");
+			return;
+		}
+		
+		// Try to load positive example weights
+		String posWeightsFile = trainDirectory + "/" + trainPrefix + "_" + cmdArgs.getStringForTestsetPos() + "_weights.txt";
+		Utils.println("% Trying to load weights from: " + posWeightsFile);
+		loadWeightsFromFile(posWeightsFile);
+		
+		// Try to load negative example weights
+		String negWeightsFile = trainDirectory + "/" + trainPrefix + "_" + cmdArgs.getStringForTestsetNeg() + "_weights.txt";
+		loadWeightsFromFile(negWeightsFile);
+		
+		if (!exampleWeights.isEmpty()) {
+			Utils.println("% Loaded " + exampleWeights.size() + " custom example weights.");
+		}
+	}
+	
+	/**
+	 * Load weights from a file in format: ExampleLiteral: weight
+	 */
+	private void loadWeightsFromFile(String filename) {
+		File file = new File(filename);
+		if (!file.exists()) {
+			return;
+		}
+		
+		try {
+			java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file));
+			String line;
+			int lineNum = 0;
+			
+			while ((line = reader.readLine()) != null) {
+				lineNum++;
+				line = line.trim();
+				
+				// Skip empty lines and comments
+				if (line.isEmpty() || line.startsWith("%") || line.startsWith("//")) {
+					continue;
+				}
+				
+				// Parse format: "ExampleLiteral: weight" or "ExampleLiteral. weight"
+				int colonIdx = line.lastIndexOf(':');
+				if (colonIdx > 0 && colonIdx < line.length() - 1) {
+					String exampleStr = line.substring(0, colonIdx).trim();
+					String weightStr = line.substring(colonIdx + 1).trim();
+					
+					try {
+						double weight = Double.parseDouble(weightStr);
+						// Normalize example string (remove trailing period if present)
+						if (exampleStr.endsWith(".")) {
+							exampleStr = exampleStr.substring(0, exampleStr.length() - 1);
+						}
+						exampleWeights.put(exampleStr, weight);
+					} catch (NumberFormatException e) {
+						Utils.println("% Warning: Invalid weight format at line " + lineNum + " in " + filename);
+					}
+				}
+			}
+			
+			reader.close();
+		} catch (IOException e) {
+			Utils.println("% Warning: Could not read weights file: " + filename);
+		}
+	}
+	
+	/**
+	 * Apply weights to a list of regular examples
+	 */
+	private void applyWeightsToExamples(List<Example> examples) {
+		if (exampleWeights.isEmpty() || examples == null) {
+			return;
+		}
+		
+		for (Example ex : examples) {
+			String exampleStr = ex.toString();
+			Double weight = lookupWeight(exampleStr);
+			
+			if (weight != null) {
+				ex.setWeightOnExample(weight);
+			}
+		}
+	}
+	
+	/**
+	 * Apply custom weight to a regression RDN example if one is defined
+	 */
+	private void applyExampleWeight(RegressionRDNExample rex) {
+		if (exampleWeights.isEmpty()) {
+			return;
+		}
+		
+		// Get normalized string representation of the example
+		String exampleStr = rex.asLiteral().toString();
+		Double weight = lookupWeight(exampleStr);
+		
+		if (weight != null) {
+			rex.setWeightOnExample(weight);
+		}
+	}
+	
+	/**
+	 * Look up weight trying multiple format variations
+	 */
+	private Double lookupWeight(String exampleStr) {
+		// Try with and without spaces after commas
+		Double weight = exampleWeights.get(exampleStr);
+		
+		if (weight == null) {
+			// Try alternate formats (with/without spaces)
+			exampleStr = exampleStr.replace(", ", ",");
+			weight = exampleWeights.get(exampleStr);
+		}
+		
+		if (weight == null) {
+			exampleStr = exampleStr.replace(",", ", ");
+			weight = exampleWeights.get(exampleStr);
+		}
+		
+		return weight;
 	}
 	private void prepareFactsForJoint(Map<String,List<Example>> posEg,
 									  Map<String,List<Example>> negEg, 

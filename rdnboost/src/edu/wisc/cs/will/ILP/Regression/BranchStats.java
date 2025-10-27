@@ -20,7 +20,9 @@ public class BranchStats {
 	double numPositiveOutputs = 0;
 	
 	
-public void addNumOutput(long num, double output, double weight,double prob) {
+	private static int debugCount = 0; // Track how many times we print
+	
+	public void addNumOutput(long num, double output, double weight,double prob) {
 		 double deno   = prob * (1-prob);
          if (deno < 0.1) {
          	deno = 0.1; 
@@ -30,6 +32,16 @@ public void addNumOutput(long num, double output, double weight,double prob) {
       //  sumOfOutput += output;
         sumOfOutputAndNumGrounding += num*output*weight;
         sumOfOutputSquared += output * output*weight;
+        
+        // DEBUG: Show first few examples being added
+        if (debugCount < 15 && numExamples < 8) {
+        	System.out.println("    [Adding example #" + (int)(numExamples+1) + "]: num=" + num + ", output=" + output + ", weight=" + weight);
+        	System.out.println("      Contributes: output²×weight = " + (output*output*weight) + 
+        	                   ", num×output×weight = " + (num*output*weight) +
+        	                   ", num²×weight = " + (num*num*weight));
+        	debugCount++;
+        }
+        
         if (output > 0 ) {
         	numPositiveOutputs+=weight; 
         } else {
@@ -37,19 +49,6 @@ public void addNumOutput(long num, double output, double weight,double prob) {
         }
         numExamples+=weight;
         sumOfNumGroundingSquaredWithProb = num*num*weight*deno;
-	}
-	/**
-	 * Add weighted contribution allowing fractional num (effective groundings) and weights.
-	 */
-	public void addWeighted(double num, double output, double weight, double prob) {
-		double deno = prob * (1 - prob);
-		if (deno < 0.1) { deno = 0.1; }
-		sumOfNumGroundingSquared += (num * num) * weight;
-		sumOfOutputAndNumGrounding += num * output * weight;
-		sumOfOutputSquared += output * output * weight;
-		if (output > 0) { numPositiveOutputs += weight; } else { numNegativeOutputs += weight; }
-		numExamples += weight;
-		sumOfNumGroundingSquaredWithProb += (num * num) * weight * deno;
 	}
 	public BranchStats add(BranchStats other) {
 		BranchStats newStats = new BranchStats();
@@ -105,7 +104,26 @@ public void addNumOutput(long num, double output, double weight,double prob) {
 		if (sumOfNumGroundingSquared == 0) {
 			return 0;
 		}
-		return sumOfOutputSquared - (Math.pow(sumOfOutputAndNumGrounding, 2)/sumOfNumGroundingSquared); 
+		double term1 = sumOfOutputSquared;
+		double term2_numerator = Math.pow(sumOfOutputAndNumGrounding, 2);
+		double term2_denominator = sumOfNumGroundingSquared;
+		double term2 = term2_numerator / term2_denominator;
+		double variance = term1 - term2;
+		
+		// DEBUG: Show detailed calculation (first few)
+		if (numExamples > 0 && numExamples < 100 && variance < 20) {
+			System.out.println("  [VARIANCE CALC]");
+			System.out.println("    #examples = " + numExamples);
+			System.out.println("    sumOfOutputSquared = " + sumOfOutputSquared);
+			System.out.println("    sumOfOutputAndNumGrounding = " + sumOfOutputAndNumGrounding);
+			System.out.println("    sumOfNumGroundingSquared = " + sumOfNumGroundingSquared);
+			System.out.println("    term2 = (" + sumOfOutputAndNumGrounding + ")² / " + sumOfNumGroundingSquared);
+			System.out.println("          = " + term2_numerator + " / " + term2_denominator);
+			System.out.println("          = " + term2);
+			System.out.println("    weighted_variance = " + term1 + " - " + term2 + " = " + variance);
+		}
+		
+		return variance;
 	}
 	
 	public String toAttrString() {

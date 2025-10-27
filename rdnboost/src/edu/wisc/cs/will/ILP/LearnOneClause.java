@@ -160,7 +160,7 @@ import edu.wisc.cs.will.stdAIsearch.StateBasedSearchTask;
  */
 
 public class LearnOneClause extends StateBasedSearchTask {
-	protected final static int    debugLevel = 1; // Used to control output from this project (0 = no output, 1=some, 2=much, 3=all).
+	protected final static int    debugLevel = 0; // Used to control output from this project (0 = no output, 1=some, 2=much, 3=all).
 	
 	public    boolean             needToCheckTheAdviceProcessor     = true;    // Added (7/18/10) by JWS so that we can have advice persist across all the calls of outer looper to this (ie, the inner looper).
 	

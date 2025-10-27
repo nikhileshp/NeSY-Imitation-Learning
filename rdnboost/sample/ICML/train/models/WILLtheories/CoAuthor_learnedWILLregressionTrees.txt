@@ -1,0 +1,581 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 5
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 1
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 12
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 318
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 19:45:35 10/22/25.  [Using 3,786,944 memory cells.]  %%%%%
+
+% FOR CoAuthor(A, B):
+%   if ( ResearchTopic(B, "Artificial_neural_network") )
+%   then if ( ResearchTopic(A, "Artificial_neural_network") )
+%   | then if ( ResearchTopic(A, "Computer_vision") )
+%   | | then if ( ResearchTopic(A, "Reinforcement_learning") )
+%   | | | then return 0.35814893509951223;  // std dev = 1.225, 6.000 (wgt'ed) examples reached here.  /* #neg=3 #pos=3 */
+%   | | | else return -0.14185106490048777;  // std dev = 0.000, 4.000 (wgt'ed) examples reached here.  /* #neg=4 */
+%   | | else if ( ResearchTopic(B, "Deep_learning") )
+%   | | | then return 0.19148226843284552;  // std dev = 1.155, 6.000 (wgt'ed) examples reached here.  /* #neg=4 #pos=2 */
+%   | | | else return 0.6323424834866084;  // std dev = 0.418, 31.000 (wgt'ed) examples reached here.  /* #neg=7 #pos=24 */
+%   | else if ( ResearchTopic(B, "Inference") )
+%   | | then return 0.8581489350995123;  // std dev = 0.000, 7.000 (wgt'ed) examples reached here.  /* #pos=7 */
+%   | | else if ( ResearchTopic(B, "Feature_extraction") )
+%   | | | then return 0.35814893509951234;  // std dev = 0.500, 12.000 (wgt'ed) examples reached here.  /* #neg=6 #pos=6 */
+%   | | | else return 0.02481560176617902;  // std dev = 0.373, 48.000 (wgt'ed) examples reached here.  /* #neg=40 #pos=8 */
+%   else if ( ResearchTopic(A, "Cluster_analysis") )
+%   | then if ( ResearchTopic(A, "Theoretical_computer_science") )
+%   | | then if ( ResearchTopic(B, "Computer_science") )
+%   | | | then return 0.4581489350995122;  // std dev = 1.095, 5.000 (wgt'ed) examples reached here.  /* #neg=2 #pos=3 */
+%   | | | else return -0.14185106490048777;  // std dev = 0.000, 3.000 (wgt'ed) examples reached here.  /* #neg=3 */
+%   | | else return 0.7672398441904213;  // std dev = 0.287, 11.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=10 */
+%   | else if ( ResearchTopic(B, "Support_vector_machine") )
+%   | | then if ( ResearchTopic(B, "Mathematics") )
+%   | | | then return 0.6359267128772901;  // std dev = 0.416, 9.000 (wgt'ed) examples reached here.  /* #neg=2 #pos=7 */
+%   | | | else return 0.0581489350995122;  // std dev = 0.894, 5.000 (wgt'ed) examples reached here.  /* #neg=4 #pos=1 */
+%   | | else return 0.0803711573217333;  // std dev = 0.416, 171.000 (wgt'ed) examples reached here.  /* #neg=133 #pos=38 */
+
+
+% Clauses:
+
+CoAuthor(A, B, 0.35814893509951223) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     ResearchTopic(A, "Computer_vision"), 
+     ResearchTopic(A, "Reinforcement_learning"), 
+     !. // Clause #1.
+
+CoAuthor(A, B, -0.14185106490048777) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     ResearchTopic(A, "Computer_vision"), 
+     !. // Clause #2.
+
+CoAuthor(A, B, 0.19148226843284552) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     ResearchTopic(B, "Deep_learning"), 
+     !. // Clause #3.
+
+CoAuthor(A, B, 0.6323424834866084) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     !. // Clause #4.
+
+CoAuthor(A, B, 0.8581489350995123) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(B, "Inference"), 
+     !. // Clause #5.
+
+CoAuthor(A, B, 0.35814893509951234) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(B, "Feature_extraction"), 
+     !. // Clause #6.
+
+CoAuthor(A, B, 0.02481560176617902) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     !. // Clause #7.
+
+CoAuthor(A, B, 0.4581489350995122) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(A, "Theoretical_computer_science"), 
+     ResearchTopic(B, "Computer_science"), 
+     !. // Clause #8.
+
+CoAuthor(A, B, -0.14185106490048777) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(A, "Theoretical_computer_science"), 
+     !. // Clause #9.
+
+CoAuthor(A, B, 0.7672398441904213) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     !. // Clause #10.
+
+CoAuthor(A, B, 0.6359267128772901) :- 
+     ResearchTopic(B, "Support_vector_machine"), 
+     ResearchTopic(B, "Mathematics"), 
+     !. // Clause #11.
+
+CoAuthor(A, B, 0.0581489350995122) :- 
+     ResearchTopic(B, "Support_vector_machine"), 
+     !. // Clause #12.
+
+CoAuthor(A, B, 0.0803711573217333) :- !. // Clause #13.
+
+
+% The flattened versions of these clauses:
+
+flattened_CoAuthor(a, b, 0.35814893509951223) :-  /* #neg=3 #pos=3 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Computer_vision"),
+   ResearchTopic(a, "Reinforcement_learning"),
+   !. // Flattened version of clause #1.
+
+flattened_CoAuthor(a, b, -0.14185106490048777) :-  /* #neg=4 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Computer_vision"),
+   !. // Flattened version of clause #2.
+
+flattened_CoAuthor(a, b, 0.19148226843284552) :-  /* #neg=4 #pos=2 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(b, "Deep_learning"),
+   !. // Flattened version of clause #3.
+
+flattened_CoAuthor(a, b, 0.6323424834866084) :-  /* #neg=7 #pos=24 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #4.
+
+flattened_CoAuthor(underscore, a, 0.8581489350995123) :-  /* #pos=7 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Inference"),
+   !. // Flattened version of clause #5.
+
+flattened_CoAuthor(underscore, a, 0.35814893509951234) :-  /* #neg=6 #pos=6 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Feature_extraction"),
+   !. // Flattened version of clause #6.
+
+flattened_CoAuthor(underscore, a, 0.02481560176617902) :-  /* #neg=40 #pos=8 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #7.
+
+flattened_CoAuthor(a, b, 0.4581489350995122) :-  /* #neg=2 #pos=3 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(a, "Theoretical_computer_science"),
+   ResearchTopic(b, "Computer_science"),
+   !. // Flattened version of clause #8.
+
+flattened_CoAuthor(a, underscore, -0.14185106490048777) :-  /* #neg=3 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(a, "Theoretical_computer_science"),
+   !. // Flattened version of clause #9.
+
+flattened_CoAuthor(a, underscore, 0.7672398441904213) :-  /* #neg=1 #pos=10 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   !. // Flattened version of clause #10.
+
+flattened_CoAuthor(underscore, a, 0.6359267128772901) :-  /* #neg=2 #pos=7 */ 
+   ResearchTopic(a, "Support_vector_machine"),
+   ResearchTopic(a, "Mathematics"),
+   !. // Flattened version of clause #11.
+
+flattened_CoAuthor(underscore, a, 0.0581489350995122) :-  /* #neg=4 #pos=1 */ 
+   ResearchTopic(a, "Support_vector_machine"),
+   !. // Flattened version of clause #12.
+
+flattened_CoAuthor(underscore, underscore, 0.0803711573217333) :-  /* #neg=133 #pos=38 */ 
+   !. // Flattened version of clause #13.
+
+
+% The unique flattened literals:
+%   ResearchTopic(b, "Computer_science")
+%   ResearchTopic(a, "Theoretical_computer_science")
+%   ResearchTopic(a, "Reinforcement_learning")
+%   ResearchTopic(a, "Mathematics")
+%   ResearchTopic(b, "Artificial_neural_network")
+%   ResearchTopic(a, "Inference")
+%   ResearchTopic(b, "Deep_learning")
+%   ResearchTopic(a, "Cluster_analysis")
+%   ResearchTopic(a, "Support_vector_machine")
+%   ResearchTopic(a, "Artificial_neural_network")
+%   ResearchTopic(a, "Computer_vision")
+%   ResearchTopic(a, "Feature_extraction")
+
+%%%%%  WILL-Produced Tree #2 @ 19:45:37 10/22/25.  [Using 3,646,760 memory cells.]  %%%%%
+
+% FOR CoAuthor(A, B):
+%   if ( ResearchTopic(A, "Cluster_analysis") )
+%   then if ( ResearchTopic(B, "Training_set") )
+%   | then return 0.7720494759652562;  // std dev = 0.104, 5.000 (wgt'ed) examples reached here.  /* #pos=5 */
+%   | else if ( ResearchTopic(A, "Theoretical_computer_science") )
+%   | | then if ( ResearchTopic(B, "Artificial_intelligence") )
+%   | | | then return -0.2072058164229512;  // std dev = 0.000, 4.000 (wgt'ed) examples reached here.  /* #neg=4 */
+%   | | | else return 0.4867145762085687;  // std dev = 0.750, 3.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=2 */
+%   | | else if ( ResearchTopic(B, "Mathematical_optimization") )
+%   | | | then return 0.7374506595744976;  // std dev = 0.000, 5.000 (wgt'ed) examples reached here.  /* #pos=5 */
+%   | | | else if ( ResearchTopic(B, "Object_detection") )
+%   | | | | then return 0.7254658279988022;  // std dev = 0.015, 3.000 (wgt'ed) examples reached here.  /* #pos=3 */
+%   | | | | else return -0.015489117245005818;  // std dev = 0.850, 5.000 (wgt'ed) examples reached here.  /* #neg=4 #pos=1 */
+%   else if ( Affiliation(B, "Google") )
+%   | then if ( ResearchTopic(A, "Controller") )
+%   | | then return 0.7960081819448354;  // std dev = 0.080, 7.000 (wgt'ed) examples reached here.  /* #pos=7 */
+%   | | else return 0.1641259729523915;  // std dev = 0.733, 3.000 (wgt'ed) examples reached here.  /* #neg=2 #pos=1 */
+%   | else if ( ResearchTopic(B, "Orders_of_magnitude") )
+%   | | then return 0.6970067610414392;  // std dev = 0.269, 11.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=10 */
+%   | | else if ( ResearchTopic(B, "Adversarial_system") )
+%   | | | then return -0.06482755158657699;  // std dev = 0.297, 46.000 (wgt'ed) examples reached here.  /* #neg=41 #pos=5 */
+%   | | | else if ( ResearchTopic(B, "Gait") )
+%   | | | | then return 0.7780612718350962;  // std dev = 0.038, 3.000 (wgt'ed) examples reached here.  /* #pos=3 */
+%   | | | | else if ( ResearchTopic(A, "Artificial_neural_network") )
+%   | | | | | then return 0.041951172199110404;  // std dev = 3.228, 66.000 (wgt'ed) examples reached here.  /* #neg=52 #pos=14 */
+%   | | | | | else return 0.15843790422393764;  // std dev = 5.891, 164.000 (wgt'ed) examples reached here.  /* #neg=111 #pos=53 */
+
+
+% Clauses:
+
+CoAuthor(A, B, 0.7720494759652562) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(B, "Training_set"), 
+     !. // Clause #1.
+
+CoAuthor(A, B, -0.2072058164229512) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(A, "Theoretical_computer_science"), 
+     ResearchTopic(B, "Artificial_intelligence"), 
+     !. // Clause #2.
+
+CoAuthor(A, B, 0.4867145762085687) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(A, "Theoretical_computer_science"), 
+     !. // Clause #3.
+
+CoAuthor(A, B, 0.7374506595744976) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(B, "Mathematical_optimization"), 
+     !. // Clause #4.
+
+CoAuthor(A, B, 0.7254658279988022) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     ResearchTopic(B, "Object_detection"), 
+     !. // Clause #5.
+
+CoAuthor(A, B, -0.015489117245005818) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     !. // Clause #6.
+
+CoAuthor(A, B, 0.7960081819448354) :- 
+     Affiliation(B, "Google"), 
+     ResearchTopic(A, "Controller"), 
+     !. // Clause #7.
+
+CoAuthor(A, B, 0.1641259729523915) :- 
+     Affiliation(B, "Google"), 
+     !. // Clause #8.
+
+CoAuthor(A, B, 0.6970067610414392) :- 
+     ResearchTopic(B, "Orders_of_magnitude"), 
+     !. // Clause #9.
+
+CoAuthor(A, B, -0.06482755158657699) :- 
+     ResearchTopic(B, "Adversarial_system"), 
+     !. // Clause #10.
+
+CoAuthor(A, B, 0.7780612718350962) :- 
+     ResearchTopic(B, "Gait"), 
+     !. // Clause #11.
+
+CoAuthor(A, B, 0.041951172199110404) :- 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     !. // Clause #12.
+
+CoAuthor(A, B, 0.15843790422393764) :- !. // Clause #13.
+
+
+% The flattened versions of these clauses:
+
+flattened_CoAuthor(a, b, 0.7720494759652562) :-  /* #pos=5 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(b, "Training_set"),
+   !. // Flattened version of clause #1.
+
+flattened_CoAuthor(a, b, -0.2072058164229512) :-  /* #neg=4 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(a, "Theoretical_computer_science"),
+   ResearchTopic(b, "Artificial_intelligence"),
+   !. // Flattened version of clause #2.
+
+flattened_CoAuthor(a, underscore, 0.4867145762085687) :-  /* #neg=1 #pos=2 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(a, "Theoretical_computer_science"),
+   !. // Flattened version of clause #3.
+
+flattened_CoAuthor(a, b, 0.7374506595744976) :-  /* #pos=5 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(b, "Mathematical_optimization"),
+   !. // Flattened version of clause #4.
+
+flattened_CoAuthor(a, b, 0.7254658279988022) :-  /* #pos=3 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   ResearchTopic(b, "Object_detection"),
+   !. // Flattened version of clause #5.
+
+flattened_CoAuthor(a, underscore, -0.015489117245005818) :-  /* #neg=4 #pos=1 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   !. // Flattened version of clause #6.
+
+flattened_CoAuthor(a, b, 0.7960081819448354) :-  /* #pos=7 */ 
+   Affiliation(b, "Google"),
+   ResearchTopic(a, "Controller"),
+   !. // Flattened version of clause #7.
+
+flattened_CoAuthor(underscore, a, 0.1641259729523915) :-  /* #neg=2 #pos=1 */ 
+   Affiliation(a, "Google"),
+   !. // Flattened version of clause #8.
+
+flattened_CoAuthor(underscore, a, 0.6970067610414392) :-  /* #neg=1 #pos=10 */ 
+   ResearchTopic(a, "Orders_of_magnitude"),
+   !. // Flattened version of clause #9.
+
+flattened_CoAuthor(underscore, a, -0.06482755158657699) :-  /* #neg=41 #pos=5 */ 
+   ResearchTopic(a, "Adversarial_system"),
+   !. // Flattened version of clause #10.
+
+flattened_CoAuthor(underscore, a, 0.7780612718350962) :-  /* #pos=3 */ 
+   ResearchTopic(a, "Gait"),
+   !. // Flattened version of clause #11.
+
+flattened_CoAuthor(a, underscore, 0.041951172199110404) :-  /* #neg=52 #pos=14 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #12.
+
+flattened_CoAuthor(underscore, underscore, 0.15843790422393764) :-  /* #neg=111 #pos=53 */ 
+   !. // Flattened version of clause #13.
+
+
+% The unique flattened literals:
+%   ResearchTopic(a, "Adversarial_system")
+%   ResearchTopic(b, "Training_set")
+%   Affiliation(b, "Google")
+%   ResearchTopic(a, "Controller")
+%   ResearchTopic(a, "Orders_of_magnitude")
+%   ResearchTopic(a, "Cluster_analysis")
+%   Affiliation(a, "Google")
+%   ResearchTopic(a, "Theoretical_computer_science")
+%   ResearchTopic(a, "Gait")
+%   ResearchTopic(b, "Mathematical_optimization")
+%   ResearchTopic(b, "Object_detection")
+%   ResearchTopic(b, "Artificial_intelligence")
+%   ResearchTopic(a, "Artificial_neural_network")
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for CoAuthor.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+stepLength_tree2(1.0).
+
+logPrior(-1.8).
+CoAuthor(D, E, Total) :- // A general accessor. 
+   CoAuthor(D, E, 1000000, Total), !.
+CoAuthor(D, E, Total) :- waitHere("This should not fail", CoAuthor(D, E, Total)).
+
+CoAuthor(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_CoAuthor_tree1(D, E, TreesToUse, Total1),
+   getScore_CoAuthor_tree2(D, E, TreesToUse, Total2),
+   Total is LogPrior + Total1 + Total2,
+   !.
+CoAuthor(D, E, TreesToUse, Total) :- waitHere("This should not fail", CoAuthor(D, E, TreesToUse, Total)).
+
+getScore_CoAuthor_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_CoAuthor_tree1(D, E, TreesToUse, Total1) :- CoAuthor_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+getScore_CoAuthor_tree2(D, E, TreesToUse, 0.0) :- 2 > TreesToUse, !.
+getScore_CoAuthor_tree2(D, E, TreesToUse, Total2) :- CoAuthor_tree2(D, E, Total), stepLength_tree2(StepLen), Total2 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(CoAuthor, 22, [
+   ResearchTopic(a, "Adversarial_system"),
+   ResearchTopic(b, "Computer_science"),
+   ResearchTopic(a, "Reinforcement_learning"),
+   ResearchTopic(a, "Mathematics"),
+   ResearchTopic(b, "Training_set"),
+   Affiliation(b, "Google"),
+   ResearchTopic(a, "Controller"),
+   ResearchTopic(a, "Orders_of_magnitude"),
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Cluster_analysis"),
+   Affiliation(a, "Google"),
+   ResearchTopic(a, "Theoretical_computer_science"),
+   ResearchTopic(a, "Gait"),
+   ResearchTopic(a, "Inference"),
+   ResearchTopic(b, "Deep_learning"),
+   ResearchTopic(a, "Support_vector_machine"),
+   ResearchTopic(b, "Mathematical_optimization"),
+   ResearchTopic(b, "Object_detection"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Computer_vision"),
+   ResearchTopic(b, "Artificial_intelligence"),
+   ResearchTopic(a, "Feature_extraction")]).
+
+%%%%%  WILL-Produced Tree Combined @ 19:45:38 10/22/25.  [Using 4,123,336 memory cells.]  %%%%%
+
+% FOR CoAuthor(A, B):
+%   if ( ResearchTopic(B, "Artificial_neural_network") )
+%   then if ( ResearchTopic(A, "Mathematical_optimization") )
+%   | then if ( ResearchTopic(B, "Algorithm") )
+%   | | then return 1.5110119046080341;  // std dev = 0.524, 11.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=10 */
+%   | | else if ( ResearchTopic(A, "Artificial_neural_network") )
+%   | | | then if ( ResearchTopic(B, "Deep_learning") )
+%   | | | | then return -0.14185106490048777;  // std dev = 0.000, 5.000 (wgt'ed) examples reached here.  /* #neg=5 */
+%   | | | | else return 1.1859424144851083;  // std dev = 0.767, 16.000 (wgt'ed) examples reached here.  /* #neg=4 #pos=12 */
+%   | | | else return -0.009583879345799014;  // std dev = 0.458, 26.000 (wgt'ed) examples reached here.  /* #neg=24 #pos=2 */
+%   | else if ( ResearchTopic(B, "Mathematical_optimization") )
+%   | | then return 0.48028587857945115;  // std dev = 0.842, 17.000 (wgt'ed) examples reached here.  /* #neg=11 #pos=6 */
+%   | | else return 1.2605486067327747;  // std dev = 0.732, 89.000 (wgt'ed) examples reached here.  /* #neg=19 #pos=70 */
+%   else if ( ResearchTopic(A, "Artificial_neural_network") )
+%   | then return 0.27473380484557447;  // std dev = 0.783, 77.000 (wgt'ed) examples reached here.  /* #neg=59 #pos=18 */
+%   | else if ( ResearchTopic(B, "Inference") )
+%   | | then if ( ResearchTopic(A, "Inference") )
+%   | | | then return 1.4422183831791695;  // std dev = 0.647, 7.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=6 */
+%   | | | else return -0.03474921174368771;  // std dev = 0.507, 26.000 (wgt'ed) examples reached here.  /* #neg=24 #pos=2 */
+%   | | else if ( ResearchTopic(A, "Cluster_analysis") )
+%   | | | then return 1.4107485619809248;  // std dev = 0.549, 27.000 (wgt'ed) examples reached here.  /* #neg=3 #pos=24 */
+%   | | | else if ( ResearchTopic(B, "Statistics") )
+%   | | | | then return 1.3396232086835544;  // std dev = 0.687, 17.000 (wgt'ed) examples reached here.  /* #neg=3 #pos=14 */
+%   | | | | else if ( ResearchTopic(A, "Recurrent_neural_network") )
+%   | | | | | then return 1.2022078607428575;  // std dev = 3.861, 22.000 (wgt'ed) examples reached here.  /* #neg=6 #pos=16 */
+%   | | | | | else return 0.5874829473212609;  // std dev = 8.839, 95.000 (wgt'ed) examples reached here.  /* #neg=57 #pos=38 */
+
+
+% Clauses:
+
+CoAuthor(A, B, 1.5110119046080341) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Mathematical_optimization"), 
+     ResearchTopic(B, "Algorithm"), 
+     !. // Clause #1.
+
+CoAuthor(A, B, -0.14185106490048777) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Mathematical_optimization"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     ResearchTopic(B, "Deep_learning"), 
+     !. // Clause #2.
+
+CoAuthor(A, B, 1.1859424144851083) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Mathematical_optimization"), 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     !. // Clause #3.
+
+CoAuthor(A, B, -0.009583879345799014) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(A, "Mathematical_optimization"), 
+     !. // Clause #4.
+
+CoAuthor(A, B, 0.48028587857945115) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     ResearchTopic(B, "Mathematical_optimization"), 
+     !. // Clause #5.
+
+CoAuthor(A, B, 1.2605486067327747) :- 
+     ResearchTopic(B, "Artificial_neural_network"), 
+     !. // Clause #6.
+
+CoAuthor(A, B, 0.27473380484557447) :- 
+     ResearchTopic(A, "Artificial_neural_network"), 
+     !. // Clause #7.
+
+CoAuthor(A, B, 1.4422183831791695) :- 
+     ResearchTopic(B, "Inference"), 
+     ResearchTopic(A, "Inference"), 
+     !. // Clause #8.
+
+CoAuthor(A, B, -0.03474921174368771) :- 
+     ResearchTopic(B, "Inference"), 
+     !. // Clause #9.
+
+CoAuthor(A, B, 1.4107485619809248) :- 
+     ResearchTopic(A, "Cluster_analysis"), 
+     !. // Clause #10.
+
+CoAuthor(A, B, 1.3396232086835544) :- 
+     ResearchTopic(B, "Statistics"), 
+     !. // Clause #11.
+
+CoAuthor(A, B, 1.2022078607428575) :- 
+     ResearchTopic(A, "Recurrent_neural_network"), 
+     !. // Clause #12.
+
+CoAuthor(A, B, 0.5874829473212609) :- !. // Clause #13.
+
+
+% The flattened versions of these clauses:
+
+flattened_CoAuthor(a, b, 1.5110119046080341) :-  /* #neg=1 #pos=10 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Mathematical_optimization"),
+   ResearchTopic(b, "Algorithm"),
+   !. // Flattened version of clause #1.
+
+flattened_CoAuthor(a, b, -0.14185106490048777) :-  /* #neg=5 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Mathematical_optimization"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(b, "Deep_learning"),
+   !. // Flattened version of clause #2.
+
+flattened_CoAuthor(a, b, 1.1859424144851083) :-  /* #neg=4 #pos=12 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Mathematical_optimization"),
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #3.
+
+flattened_CoAuthor(a, b, -0.009583879345799014) :-  /* #neg=24 #pos=2 */ 
+   ResearchTopic(b, "Artificial_neural_network"),
+   ResearchTopic(a, "Mathematical_optimization"),
+   !. // Flattened version of clause #4.
+
+flattened_CoAuthor(underscore, a, 0.48028587857945115) :-  /* #neg=11 #pos=6 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   ResearchTopic(a, "Mathematical_optimization"),
+   !. // Flattened version of clause #5.
+
+flattened_CoAuthor(underscore, a, 1.2605486067327747) :-  /* #neg=19 #pos=70 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #6.
+
+flattened_CoAuthor(a, underscore, 0.27473380484557447) :-  /* #neg=59 #pos=18 */ 
+   ResearchTopic(a, "Artificial_neural_network"),
+   !. // Flattened version of clause #7.
+
+flattened_CoAuthor(a, b, 1.4422183831791695) :-  /* #neg=1 #pos=6 */ 
+   ResearchTopic(b, "Inference"),
+   ResearchTopic(a, "Inference"),
+   !. // Flattened version of clause #8.
+
+flattened_CoAuthor(underscore, a, -0.03474921174368771) :-  /* #neg=24 #pos=2 */ 
+   ResearchTopic(a, "Inference"),
+   !. // Flattened version of clause #9.
+
+flattened_CoAuthor(a, underscore, 1.4107485619809248) :-  /* #neg=3 #pos=24 */ 
+   ResearchTopic(a, "Cluster_analysis"),
+   !. // Flattened version of clause #10.
+
+flattened_CoAuthor(underscore, a, 1.3396232086835544) :-  /* #neg=3 #pos=14 */ 
+   ResearchTopic(a, "Statistics"),
+   !. // Flattened version of clause #11.
+
+flattened_CoAuthor(a, underscore, 1.2022078607428575) :-  /* #neg=6 #pos=16 */ 
+   ResearchTopic(a, "Recurrent_neural_network"),
+   !. // Flattened version of clause #12.
+
+flattened_CoAuthor(underscore, underscore, 0.5874829473212609) :-  /* #neg=57 #pos=38 */ 
+   !. // Flattened version of clause #13.
+
+
+% The unique flattened literals:
+%   ResearchTopic(a, "Mathematical_optimization")
+%   ResearchTopic(b, "Algorithm")
+%   ResearchTopic(a, "Recurrent_neural_network")
+%   ResearchTopic(b, "Artificial_neural_network")
+%   ResearchTopic(a, "Inference")
+%   ResearchTopic(b, "Deep_learning")
+%   ResearchTopic(a, "Statistics")
+%   ResearchTopic(a, "Cluster_analysis")
+%   ResearchTopic(a, "Artificial_neural_network")
+%   ResearchTopic(b, "Inference")

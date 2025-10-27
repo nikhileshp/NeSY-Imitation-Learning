@@ -478,17 +478,10 @@ public class RunBoostedRDN extends RunBoostedModels {
 		args = Utils.chopCommentFromArgs(args);
 		boolean disc_flag = false;
 		
-CommandLineArguments cmd = RunBoostedModels.parseArgs(args);
+		CommandLineArguments cmd = RunBoostedModels.parseArgs(args);
 		if (cmd == null) {
 			Utils.error(CommandLineArguments.getUsageString());
 		}
-		// Set fact-weights override (optional)
-		try {
-			String fw = cmd.getFactWeightsPath();
-			if (fw != null && fw.trim().length() > 0) {
-				edu.wisc.cs.will.Utils.FactWeights.getInstance().setOverridePath(fw);
-			}
-		} catch (Throwable t) { /* ignore */ }
 		disc discObj= new disc();
 		
 		/*Check for discretization*/

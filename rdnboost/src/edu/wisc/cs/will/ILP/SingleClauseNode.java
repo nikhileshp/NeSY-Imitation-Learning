@@ -38,7 +38,6 @@ import edu.wisc.cs.will.ILP.Regression.BranchStats;
 import edu.wisc.cs.will.ILP.Regression.RegressionInfoHolder;
 import edu.wisc.cs.will.ResThmProver.HornClauseProver;
 import edu.wisc.cs.will.Utils.Utils;
-import edu.wisc.cs.will.Utils.FactWeights;
 import edu.wisc.cs.will.stdAIsearch.SearchInterrupted;
 import edu.wisc.cs.will.stdAIsearch.SearchNode;
 import edu.wisc.cs.will.stdAIsearch.StateBasedSearchTask;
@@ -815,12 +814,7 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 							}				   		
 
 							if (!theILPtask.mlnRegressionTask) { // Example counting for MLN tasks later
-if (cachedLocalRegressionInfoHolder.cachedFalseStats instanceof edu.wisc.cs.will.ILP.Regression.RegressionInfoHolderForRDN) {
-								((edu.wisc.cs.will.ILP.Regression.RegressionInfoHolderForRDN)cachedLocalRegressionInfoHolder.cachedFalseStats)
-										.addFailureExampleWeighted(this, posEx);
-							} else {
 								cachedLocalRegressionInfoHolder.getFalseStats().addFailureExample(posEx, 1, posEx.getWeightOnExample());
-							}
 							}
 
 						}
@@ -1519,7 +1513,23 @@ if (cachedLocalRegressionInfoHolder.cachedFalseStats instanceof edu.wisc.cs.will
 		}
 		
 		
-		return getRegressionInfoHolder().weightedVarianceAtSuccess() + getRegressionInfoHolder().weightedVarianceAtFailure();
+		double varTrue = getRegressionInfoHolder().weightedVarianceAtSuccess();
+		double varFalse = getRegressionInfoHolder().weightedVarianceAtFailure();
+		double numTrue = getRegressionInfoHolder().totalExampleWeightAtSuccess();
+		double numFalse = getRegressionInfoHolder().totalExampleWeightAtFailure();
+		double score = varTrue + varFalse;
+		
+		// DEBUG OUTPUT (Always show first 5 splits)
+		if (true) {
+			Utils.println("\n=== SPLIT SCORE DEBUG ===");
+			Utils.println("Clause: " + this.getClause(true));
+			Utils.println("TRUE branch:  #examples=" + numTrue + ", weighted_variance=" + varTrue);
+			Utils.println("FALSE branch: #examples=" + numFalse + ", weighted_variance=" + varFalse);
+			Utils.println("TOTAL SCORE: " + score + " (lower is better)");
+			Utils.println("========================\n");
+		}
+		
+		return score;
 		/*
 		RegressionNodeInfoHolder holder = getRegressionNodeInfoHolder();
 		// Utils.println("Regression score for " + this.getClause(true));
@@ -2277,19 +2287,4 @@ if (cachedLocalRegressionInfoHolder.cachedFalseStats instanceof edu.wisc.cs.will
 //	}
 //
 
-	/**
-	 * Compute a per-example weight for the last added literal by grounding it with the example's head bindings
-	 * and looking up an optional fact weight. Defaults to 1.0 if not found or not ground.
-	 */
-	public double computeLastLiteralWeightForExample(Example eg) {
-		try {
-			LearnOneClause learnClause = ((LearnOneClause)task);
-			BindingList theta = learnClause.unifier.unify(this.getClauseHead(), eg.extractLiteral());
-			if (theta == null) { return 1.0; }
-			Literal groundedLast = this.literalAdded.applyTheta(theta);
-			return FactWeights.getInstance().weightOfLiteral(groundedLast);
-		} catch (Throwable t) {
-			return 1.0;
-		}
-	}
 }

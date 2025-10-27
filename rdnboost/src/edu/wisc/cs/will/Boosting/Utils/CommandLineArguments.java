@@ -217,12 +217,8 @@ public class CommandLineArguments {
 	public static final String treelearner = "yapTree";
 	private String treelearnerVal = "/u/t/u/tushar/code/tildecrf_20091116/treelearner/treelearner.pl" ;
 	
-public static final String aucPath = "aucJarPath";
-private String aucPathVal = null;
-
-// Fact weights file (optional)
-public static final String factWeightsFlag = "factWeights";
-private String factWeightsPath = null;
+	public static final String aucPath = "aucJarPath";
+	private String aucPathVal = null;
 	
 	public static final String modelName = "modelSuffix";
 	public String modelFileVal = null;
@@ -828,10 +824,6 @@ private String factWeightsPath = null;
 				continue;
 			}
 				
-if (argMatches(args[i], factWeightsFlag)) {
-				factWeightsPath = args[++i];
-				continue;
-			}
 			if (argMatches(args[i], aucPath)) {
 				aucPathVal = args[++i];
 				continue;
@@ -908,9 +900,7 @@ if (argMatches(args[i], factWeightsFlag)) {
 		
 		result += argPrefix + stepLen + " <Step Length>: Default step length for functional gradient.\n";
 		
-result += argPrefix + testNegsToPosRatio + " <Negative/Positive ratio>: Ratio of negatives to positive for testing.\n";
-		
-		result += argPrefix + factWeightsFlag + " <Fact weights file>: Optional TSV mapping grounded facts to weights in [0,1].\n";
+		result += argPrefix + testNegsToPosRatio + " <Negative/Positive ratio>: Ratio of negatives to positive for testing.\n";
 		
 		return result;
 	}
@@ -1168,14 +1158,6 @@ result += argPrefix + testNegsToPosRatio + " <Negative/Positive ratio>: Ratio of
 		if (!Utils.fileExists(fileName)) {
 			Utils.waitHere("This specified advice file does not exist: \n  " + adviceFileVal);
 		}
-	}
-
-	// Fact weights path getter/setter
-	public String getFactWeightsPath() {
-		return factWeightsPath;
-	}
-	public void setFactWeightsPath(String path) {
-		this.factWeightsPath = path;
 	}
 	
 	public boolean isNoTargetModesInitially() {
