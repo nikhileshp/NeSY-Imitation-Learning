@@ -12,11 +12,11 @@ parser.add_argument("--model_dir", type=str, default="", help="Model directory p
 
 args = parser.parse_args()
 
-primitive_actions = ["noop","fire","up","right","left","down"]
+primitive_actions = ["horizontal_left", "horizontal_right", "vertical_up", "vertical_down", "fire_fire"]
 
 state_ids = {action: [[],[]] for action in primitive_actions}
 for action in primitive_actions:
-  test_query_file = f"data/seaquest/all/{action}/test/query_{action}.db"
+  test_query_file = f"data/seaquest/{action.replace("_","/")}/test/query_{action}.db"
   
   with open(test_query_file, "r") as f:
     lines = f.read().splitlines()
@@ -30,7 +30,7 @@ for action in primitive_actions:
 
 pred_prob = {action: [[],[]] for action in primitive_actions}
 for action in primitive_actions:
-  auc_file = f"data/seaquest/all/{action}/test/AUC/aucTemp.txt"
+  auc_file = f"data/seaquest/{action.replace("_","/")}/test/AUC/aucTemp.txt"
   with open(auc_file, "r") as f:
     lines = f.read().splitlines()
     for i,line in enumerate(lines):

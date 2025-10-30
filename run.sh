@@ -28,35 +28,26 @@ AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
 TREES=$NUM_TREES
 NEG_POS_RATIO=2
 # List of targets (actions)
-TARGETS=("fire" "up" "down" "left" "right" "noop")
+TARGETS=("horizontal_left" "horizontal_right" "vertical_up" "vertical_down" "fire_fire")
 
-TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/seaquest/all/down/train" "data/seaquest/all/left/train" "data/seaquest/all/right/train" "data/seaquest/all/noop/train")
+TRAIN_DIRS=("data/seaquest/horizontal/left/train" "data/seaquest/horizontal/right/train" "data/seaquest/vertical/up/train"  "data/seaquest/vertical/down/train" "data/seaquest/fire/fire/train")
 # Corresponding model output directories (match 1-to-1 with TARGETS)
 if $WEIGHTED == "true"; then
-    MODEL_BASE="rdn_models/seaquest/weighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_example_w"
+    MODEL_BASE="rdn_models/seaquest/3class_weighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_example_w"
 else
-    MODEL_BASE="rdn_models/seaquest/unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+    MODEL_BASE="rdn_models/seaquest/3class_unweighted_negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
 fi
 
 MODELS=(
-    "$MODEL_BASE/fire"
-    "$MODEL_BASE/up"
-    "$MODEL_BASE/down"
-    "$MODEL_BASE/left"
-    "$MODEL_BASE/right"
-    "$MODEL_BASE/noop"
+    "$MODEL_BASE/horizontal/left"
+    "$MODEL_BASE/horizontal/right"
+    "$MODEL_BASE/vertical/up"
+    "$MODEL_BASE/vertical/down"
+    "$MODEL_BASE/fire/fire"
 )
- 
-WEIGHTS=(
-    "data/seaquest/all/fire/train/fact_weights.tsv"
-    "data/seaquest/all/up/train/fact_weights.tsv"
-    "data/seaquest/all/down/train/fact_weights.tsv"
-    "data/seaquest/all/left/train/fact_weights.tsv"
-    "data/seaquest/all/right/train/fact_weights.tsv"
-    "data/seaquest/all/noop/train/fact_weights.tsv"
-)
+echo "🚀 Starting BoostSRL runs for all targets..."
 # Loop through each target/model 
-if [ $WEIGHTED == "true" ] && [ $ONLY_TEST == "false" ]; then
+if [ $ONLY_TEST == "false" ]; then
 
     for i in "${!TARGETS[@]}"; do
         TARGET="${TARGETS[$i]}"
@@ -78,52 +69,47 @@ if [ $WEIGHTED == "true" ] && [ $ONLY_TEST == "false" ]; then
         echo "✅ Completed training for $TARGET"
         echo ""
     done
-# If only testing is false and not weighted
-elif [ $ONLY_TEST == "false" ]; then
-
-    for i in "${!TARGETS[@]}"; do
-        TARGET="${TARGETS[$i]}"
-        MODEL="${MODELS[$i]}"
-        TRAIN_DIR="${TRAIN_DIRS[$i]}"
-        echo "======================================"
-        echo "Running BoostSRL for target: $TARGET"
-        echo "Saving model to: $MODEL"
-        echo "======================================"
-        java -jar "$JAR" \
-            -l \
-            -train "$TRAIN_DIR" \
-            -target "$TARGET" \
-            -trees "$TREES" \
-            -aucJarPath "$AUC_JAR" \
-            -negPosRatio "$NEG_POS_RATIO" \
-            -model "$MODEL" \
-
-        echo "✅ Completed training for $TARGET"
-        echo ""
-    done
-
 fi
-echo "All runs finished successfully!"
+# If only testing is false and not weighted
+# elif [ $ONLY_TEST == "false" ]; then
+
+#     for i in "${!TARGETS[@]}"; do
+#         TARGET="${TARGETS[$i]}"
+#         MODEL="${MODELS[$i]}"
+#         TRAIN_DIR="${TRAIN_DIRS[$i]}"
+#         echo "======================================"
+#         echo "Running BoostSRL for target: $TARGET"
+#         echo "Saving model to: $MODEL"
+#         echo "======================================"
+#         java -jar "$JAR" \
+#             -l \
+#             -train "$TRAIN_DIR" \
+#             -target "$TARGET" \
+#             -trees "$TREES" \
+#             -aucJarPath "$AUC_JAR" \
+#             -negPosRatio "$NEG_POS_RATIO" \
+#             -model "$MODEL" \
+
+#         echo "✅ Completed training for $TARGET"
+#         echo ""
+#     done
+
+# fi
+# echo "All runs finished successfully!"
 
 
-TEST_DIRS=("data/seaquest/all/fire/test" "data/seaquest/all/up/test" "data/seaquest/all/down/test" "data/seaquest/all/left/test" "data/seaquest/all/right/test" "data/seaquest/all/noop/test")
+TEST_DIRS=("data/seaquest/horizontal/left/test" "data/seaquest/horizontal/right/test" "data/seaquest/vertical/up/test" "data/seaquest/vertical/down/test" "data/seaquest/fire/fire/test")
  
  
 # Corresponding log files
 
 LOG_FILES=(
 
-    "${MODEL_BASE}/fire/fire_infer.log"
-
-    "${MODEL_BASE}/up/up_infer.log"
-
-    "${MODEL_BASE}/down/down_infer.log"
-
-    "${MODEL_BASE}/left/left_infer.log"
-
-    "${MODEL_BASE}/right/right_infer.log"
-
-    "${MODEL_BASE}/noop/noop_infer.log"
+    "${MODEL_BASE}/horizontal/left/left_infer.log"
+    "${MODEL_BASE}/horizontal/right/right_infer.log"
+    "${MODEL_BASE}/vertical/up/up_infer.log"
+    "${MODEL_BASE}/vertical/down/down_infer.log"
+    "${MODEL_BASE}/fire//fire/fire_infer.log"
 
 )
  
@@ -191,4 +177,4 @@ for i in "${!TARGETS[@]}"; do
 
 done
 
-python eval.py --model_dir "$MODEL_BASE"
+# python eval.py --model_dir "$MODEL_BASE"
