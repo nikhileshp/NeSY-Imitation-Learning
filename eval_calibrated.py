@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import LogisticRegression
 import argparse
+import gzip
 
 parser = argparse.ArgumentParser(description="Evaluate with calibrated probabilities")
 parser.add_argument("--model_dir", type=str, default="", help="Model directory path")
@@ -51,9 +52,9 @@ for action in primitive_actions:
 # Load training predictions from train_infer directories
 train_state_ids = {action: [[],[]] for action in primitive_actions}
 for action in primitive_actions:
-    train_query_file = f"data/seaquest/all/{action}/train/train_infer/query_{action}.db"
+    train_query_file = f"data/seaquest/all/{action}/train/train_infer/query_{action}.db.gz"
     
-    with open(train_query_file, "r") as f:
+    with gzip.open(train_query_file, "rt") as f:
         lines = f.read().splitlines()
         for line in lines:
             state_id = line.split("(")[1].split(")")[0]
