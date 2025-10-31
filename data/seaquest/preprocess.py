@@ -59,7 +59,7 @@ bridgers = [bridger.lower() for bridger in bridgers]
 
 modes = [mode.lower() for mode in modes]
 
-base_dir = "data/seaquest"
+base_dir = "data/seaquest/all"
 
 for action in primitive_actions:
   #delete the directory if it exists
@@ -79,44 +79,10 @@ args = parser.parse_args()
 
 print(args.file)
 
-df = pd.read_csv(args.file)
+df = pd.read_csv(args.file, delimiter="\t")
 
 #remove rows with action greater than 5
 df = df[df['action'] <= 5]
-
-# # Create a new column in df that combines the strings in objects and relationships. Call it OR
-# df['OR'] = df['objects'] + df['relationships']
-
-# # # For each unique element in df["OR"] list the set of actions
-# # # Count the number of unique elements in df["OR"] that has only one corresponding action
-# count = 0
-# for element in df['OR'].unique():
-#     # print(element)
-#     if len(df[df['OR'] == element]['action'].unique()) == 1:
-#         count += 1
-#         # print(df[df['OR'] == element]['action'].unique())
-#     # print()
-
-
-# # For each unique element in df["OR"] which has only one corresponding action remove duplicates
-# dframe_unique = df.copy()
-# for element in df['OR'].unique():
-#     if len(df[df['OR'] == element]['action'].unique()) == 1 :
-#       #Remove all other occurrences of element from dframe_unique except 1
-#       dframe_unique = dframe_unique[dframe_unique['OR'] != element]
-
-#       # Add that example back so there is a sinlge example for that action
-#       dframe_unique = pd.concat([dframe_unique, df[df['OR'] == element].iloc[[0]]])
-
-# #Number of rows that have action greater than 5
-# count = 0
-# for row in dframe_unique.iterrows():
-#   if row[1]['action'] > 5:
-#     count += 1
-# print(count)
-
-# #Remove rows that have action greater than 5
-# dframe_unique = dframe_unique[dframe_unique['action'] <= 5]
 
 train, test = train_test_split(df, test_size=0.2, random_state=42)
 
