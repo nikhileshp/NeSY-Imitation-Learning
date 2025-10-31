@@ -29,9 +29,9 @@ TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/se
 
 # Set model base directory
 if [ "$WEIGHTED" == "true" ]; then
-    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_per_example_weight"
+    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_per_example_weight_all"
 else
-    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}"
+    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
 fi
 
 MODELS=(
@@ -43,14 +43,7 @@ MODELS=(
     "$MODEL_BASE/noop"
 )
 
-WEIGHTS=(
-    "data/seaquest/all/fire/train/fact_weights.tsv"
-    "data/seaquest/all/up/train/fact_weights.tsv"
-    "data/seaquest/all/down/train/fact_weights.tsv"
-    "data/seaquest/all/left/train/fact_weights.tsv"
-    "data/seaquest/all/right/train/fact_weights.tsv"
-    "data/seaquest/all/noop/train/fact_weights.tsv"
-)
+python change_bk.py --max_depth "$MAX_DEPTH"
 
 # ============================================================================
 # STEP 1: TRAINING
