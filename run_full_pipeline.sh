@@ -17,7 +17,8 @@ else
     echo "ONLY_TEST: $ONLY_TEST"
 fi
 
-JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
+# JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
+JAR="rdnboost/target/boostsrl-occ.jar"
 AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
 TREES=$NUM_TREES
 NEG_POS_RATIO=2
@@ -31,7 +32,7 @@ TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/se
 if [ "$WEIGHTED" == "true" ]; then
     MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_per_example_weight_all"
 else
-    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all"
+    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all_occ"
 fi
 
 MODELS=(
@@ -81,7 +82,9 @@ if [ "$WEIGHTED" == "true" ] && [ "$ONLY_TEST" == "false" ]; then
             -trees "$TREES" \
             -aucJarPath "$AUC_JAR" \
             -negPosRatio "$NEG_POS_RATIO" \
-            -model "$MODEL"
+            -model "$MODEL" 
+            
+            
         echo "✅ Completed training for $TARGET"
     done
 
@@ -118,7 +121,8 @@ elif [ "$ONLY_TEST" == "false" ]; then
             -trees "$TREES" \
             -aucJarPath "$AUC_JAR" \
             -negPosRatio "$NEG_POS_RATIO" \
-            -model "$MODEL"
+            -model "$MODEL" 
+            
         echo "✅ Completed training for $TARGET"
     done
 fi

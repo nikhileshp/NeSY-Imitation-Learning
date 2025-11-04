@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
+#plot the outputs in results folder 
 
 def parse_infer_log(log_path: str) -> Dict:
     """
@@ -200,19 +201,28 @@ def process_model_directory(model_dir: Path, results: Dict, actions: List[str],
         results[config_key]['overall'] = eval_metrics
     
     # Parse individual action inference logs
+    # it can be noop_infer.log or noop_test_infer.log 
     for action in actions:
         action_dir = model_dir / action
         infer_log = action_dir / f"{action}_infer.log"
-        
+        test_infer_log = action_dir / f"{action}_test_infer.log"
+
+        if infer_log.exists():
+            action_metrics = parse_infer_log(str(infer_log))
+            results[config_key][action] = action_metrics
+        elif test_infer_log.exists():
+            action_metrics = parse_infer_log(str(test_infer_log))
+            results[config_key][action] = action_metrics
         if infer_log.exists():
             action_metrics = parse_infer_log(str(infer_log))
             results[config_key][action] = action_metrics
 
 
-def plot_depth_vs_f1(results: Dict, output_path: str = 'depth_vs_f1.png'):
+def plot_depth_vs_f1(results: Dict, output_path: str = 'results/depth_vs_f1.png'):
     """
     Plot depth on x-axis vs weighted F1 score on y-axis for train and test on same plot.
     Train uses dotted lines, test uses solid lines.
+
     """
     fig, ax = plt.subplots(1, 1, figsize=(12, 8))
     
@@ -267,7 +277,7 @@ def plot_depth_vs_f1(results: Dict, output_path: str = 'depth_vs_f1.png'):
     plt.close()
 
 
-def plot_action_f1_comparison(results: Dict, output_path: str = 'action_f1_comparison.png'):
+def plot_action_f1_comparison(results: Dict, output_path: str = 'results/action_f1_comparison.png'):
     """
     Compare F1 scores for each action across different configurations.
     """
@@ -315,7 +325,7 @@ def plot_action_f1_comparison(results: Dict, output_path: str = 'action_f1_compa
     plt.close()
 
 
-def plot_action_f1_by_depth(results: Dict, output_path: str = 'action_f1_by_depth.png'):
+def plot_action_f1_by_depth(results: Dict, output_path: str = 'results/action_f1_by_depth.png'):
     """
     Create line charts of F1 scores for each action by depth.
     """
