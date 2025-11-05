@@ -113,6 +113,7 @@ for _, row in train.iterrows():
   s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
+  example_weight = row.get('example_weight', 1.0)
   taken_actions = []
   if isinstance(action_name, tuple):
     taken_actions = list(action_name)

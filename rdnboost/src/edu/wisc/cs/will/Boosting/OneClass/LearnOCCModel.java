@@ -19,6 +19,7 @@ import edu.wisc.cs.will.Boosting.Utils.CommandLineArguments;
 import edu.wisc.cs.will.FOPC.Theory;
 import edu.wisc.cs.will.FOPC.TreeStructuredTheory;
 import edu.wisc.cs.will.ILP.ILPouterLoop;
+import edu.wisc.cs.will.Utils.ProbDistribution;
 import edu.wisc.cs.will.Utils.Utils;
 import edu.wisc.cs.will.Utils.condor.CondorFileWriter;
 import edu.wisc.cs.will.stdAIsearch.SearchInterrupted;
@@ -227,6 +228,14 @@ public class LearnOCCModel {
 	public void getSampledPosNegEx(List<RegressionRDNExample> all_exs) {
 		setup.prepareExamplesForTarget(targetPredicate);
 		all_exs.addAll(BoostingUtils.castToListOfRegressionRDNExamples(setup.getOuterLooper().getPosExamples()));
+		
+		// Initialize probability for each example (required for OCC scoring)
+		for (RegressionRDNExample rex : all_exs) {
+			// For OCC, initialize with uniform probability (0.5)
+			// This will be updated during tree learning
+			rex.setProbOfExample(new ProbDistribution(0.5));
+		}
+		
 		Utils.println("% Dataset size: " + Utils.comma(all_exs));
 	}
 
