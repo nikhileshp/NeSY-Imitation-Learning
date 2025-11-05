@@ -5,8 +5,6 @@ from srlearn import Database, Background
 import string
 import os
 
-
-
 modes=["aboveOfDiver(+state, +diver).",
 "aboveOfEnemy(+state, +enemy).",
 "aboveOfMissile(+state, +missile). ",
@@ -45,7 +43,6 @@ modes=["aboveOfDiver(+state, +diver).",
 "visibleEnemy(+state, -enemy).",
 "visibleEnemySubmarine(+state, -submarine).",
 "visibleMissile(+state, -missile)."
-
 ]
 
 bridgers = ["vissibleMissile/2",
@@ -56,17 +53,14 @@ bridgers = ["vissibleMissile/2",
 primitive_actions = ["noop","fire","up","right","left","down"]
 
 bridgers = [bridger.lower() for bridger in bridgers]
-
 modes = [mode.lower() for mode in modes]
 
-base_dir = "data/seaquest/all"
+base_dir = "data/seaquest"
 
 for action in primitive_actions:
-  #delete the directory if it exists
   if os.path.exists(f"{base_dir}/{action}"):
     import shutil
     shutil.rmtree(f"{base_dir}/{action}")
-  #create the directory
   os.makedirs(f"{base_dir}/{action}/train", exist_ok=True)
   os.makedirs(f"{base_dir}/{action}/test", exist_ok=True)
 
@@ -79,9 +73,7 @@ args = parser.parse_args()
 
 print(args.file)
 
-df = pd.read_csv(args.file, delimiter="\t")
-
-#remove rows with action greater than 5
+df = pd.read_csv(args.file)
 df = df[df['action'] <= 5]
 
 train, test = train_test_split(df, test_size=0.2, random_state=42)
@@ -116,43 +108,39 @@ test_action_files = {action: [[], []] for action in primitive_actions}
 train_pos_weights = {action: [] for action in primitive_actions}
 train_neg_weights = {action: [] for action in primitive_actions}
 
+# Script for writing train action files
 for _, row in train.iterrows():
-  # frame_id = str(row["frameid"]).split("_")[-1]
-  # s_id = "s" + str(frame_id)
   s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
-  example_weight = row.get('example_weights', 1.0)
   taken_actions = []
   if isinstance(action_name, tuple):
     taken_actions = list(action_name)
   else:
     taken_actions = [action_name]
+  
   for pa in primitive_actions:
     action_str = pa + "(" + s_id + ")."
     action_str = action_str.lower()
-    weight_str = f"{action_str.rstrip('.')}: {example_weight:.2f}"
-
+    
     if pa in taken_actions:
       train_action_files[pa][0].append(action_str)
-      train_pos_weights[pa].append(weight_str)
     else:
-      train_action_files[pa][1].append(action_str)
-      train_neg_weights[pa].append(weight_str)
-    with open(f"{base_dir}/"+pa+"/train/"+f"train_pos.txt", "w") as f:
-      f.write("\n".join(train_action_files[pa][0]))
-    with open(f"{base_dir}/"+pa+"/train/"+f"train_neg.txt", "w") as f:
-      f.write("\n".join(train_action_files[pa][1]))
-    with open(f"{base_dir}/"+pa+"/train/"+f"train_pos_weights.txt", "w") as f:
-      f.write("\n".join(train_pos_weights[pa]))
-    with open(f"{base_dir}/"+pa+"/train/"+f"train_neg_weights.txt", "w") as f:
-      f.write("\n".join(train_neg_weights[pa]))
+      for other_action in primitive_actions:
+        if other_action != pa:
+          other_action_str = other_action + "(" + s_id + ")."
+          other_action_str = other_action_str.lower()
+          train_action_files[pa][1].append(other_action_str)
 
-# Remove rows which have action>5
+# Write train files
+for pa in primitive_actions:
+  with open(f"{base_dir}/"+pa+"/train/"+f"train_pos.txt", "w") as f:
+    f.write("\n".join(train_action_files[pa][0]))
+  with open(f"{base_dir}/"+pa+"/train/"+f"train_neg.txt", "w") as f:
+    f.write("\n".join(train_action_files[pa][1]))
 
+# Script for writing test action files
 for _, row in test.iterrows():
-  # frame_id = str(row["frameid"]).split("_")[-1]
-  # s_id = "s" + str(frame_id)
   s_id = "s" + str(row["frameid"].replace("_",""))
   action_code = row['action']
   action_name = actions.get(action_code)
@@ -161,27 +149,33 @@ for _, row in test.iterrows():
     taken_actions = list(action_name)
   else:
     taken_actions = [action_name]
+  
   for pa in primitive_actions:
     action_str = pa + "(" + s_id + ")."
     action_str = action_str.lower()
-
+    
     if pa in taken_actions:
       test_action_files[pa][0].append(action_str)
     else:
-      test_action_files[pa][1].append(action_str)
-    with open(f"{base_dir}/"+pa+"/test/"+f"test_pos.txt", "w") as f:
-      f.write("\n".join(test_action_files[pa][0]))
-    with open(f"{base_dir}/"+pa+"/test/"+f"test_neg.txt", "w") as f:
-      f.write("\n".join(test_action_files[pa][1]))
+      for other_action in primitive_actions:
+        if other_action != pa:
+          other_action_str = other_action + "(" + s_id + ")."
+          other_action_str = other_action_str.lower()
+          test_action_files[pa][1].append(other_action_str)
 
-#Script for writing facts
+# Write test files
+for pa in primitive_actions:
+  with open(f"{base_dir}/"+pa+"/test/"+f"test_pos.txt", "w") as f:
+    f.write("\n".join(test_action_files[pa][0]))
+  with open(f"{base_dir}/"+pa+"/test/"+f"test_neg.txt", "w") as f:
+    f.write("\n".join(test_action_files[pa][1]))
+
+# Script for writing facts
 for pa in primitive_actions:
   with open(f"{base_dir}/"+pa+"/train/"+'train_facts.txt', 'w') as f:
     for _, row in train.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
-        # frame_id = str(row["frameid"]).split("_")[-1]
-        # # s_id = "s" + str(frame_id)
         s_id = "s" + str(row["frameid"].replace("_",""))
         for rel in rels.split(" , "):
           rel = rel.strip()
@@ -192,14 +186,12 @@ for pa in primitive_actions:
             rel = rel.replace(",)", ")")
             if not rel.endswith("."):
               rel += "."
-
             rel = rel.lower()
             rel = rel.replace("_", "")
             f.write(rel + "\n")
   
   with open(f"{base_dir}/"+pa+"/train/"+'fact_weights.tsv', 'w') as f:
     for _, row in train.iterrows():
-    
       weights = str(row["distance_weights"])
       weights_list = []
       if weights != "nan":
@@ -226,8 +218,6 @@ for pa in primitive_actions:
     for _, row in test.iterrows():
       rels = str(row["relationships"])
       if rels != "nan":
-        # frame_id = str(row["frameid"]).split("_")[-1]
-        # # s_id = "s" + str(frame_id)
         s_id = "s" + str(row["frameid"].replace("_",""))
         for rel in rels.split(" , "):
           rel = rel.strip()
@@ -238,7 +228,6 @@ for pa in primitive_actions:
             rel = rel.replace(",)", ")")
             if not rel.endswith("."):
               rel += "."
-
             rel = rel.lower()
             rel = rel.replace("_", "")
             f.write(rel + "\n")
@@ -250,7 +239,6 @@ def remove_zero_weight_facts(train_facts_file, weights_file):
     print(f"Warning: {weights_file} not found. Skipping zero weight removal.")
     return
     
-  # Read weights and identify zero weight facts
   zero_weight_facts = set()
   with open(weights_file, 'r') as f:
     for line in f:
@@ -258,32 +246,29 @@ def remove_zero_weight_facts(train_facts_file, weights_file):
       if line and '\t' in line:
         parts = line.split('\t')
         if len(parts) >= 2:
-          fact = parts[0]  # fact without weight
-          weight = parts[1].replace('.', '')  # remove trailing dot
+          fact = parts[0]
+          weight = parts[1].replace('.', '')
           if weight == '0.00':
             zero_weight_facts.add(fact)
   
-  # Read original train facts
   with open(train_facts_file, 'r') as f:
     facts = f.read().splitlines()
   
-  # Filter out zero weight facts
   filtered_facts = []
   removed_count = 0
   for fact in facts:
-    fact_without_dot = fact.rstrip('.')  # remove trailing dot for comparison
+    fact_without_dot = fact.rstrip('.')
     if fact_without_dot not in zero_weight_facts:
       filtered_facts.append(fact)
     else:
       removed_count += 1
   
-  # Write filtered facts back to train_facts.txt only
   with open(train_facts_file, 'w') as f:
     f.write('\n'.join(filtered_facts))
   
   print(f"Removed {removed_count} facts with 0.00 weights from {train_facts_file}")
 
-# Remove zero weight facts if requested (only from train_facts.txt)
+# Remove zero weight facts if requested
 if args.remove_0_weights:
   print("Removing facts with 0.00 weights from train_facts.txt files...")
   for pa in primitive_actions:
@@ -315,7 +300,6 @@ for action in primitive_actions:
   train_facts = [s.translate({ord(c):None for c in string.whitespace}) for s in train_facts]
   test_facts = [s.translate({ord(c):None for c in string.whitespace}) for s in test_facts]
 
-
   train_dict[action].pos = train_action_files[action][0]
   train_dict[action].neg = train_action_files[action][1]
   test_dict[action].pos = test_action_files[action][0]
@@ -325,7 +309,6 @@ for action in primitive_actions:
 
   bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=20,number_of_cycles=20, node_size=int(args.node_size), 
                                max_tree_depth=int(args.max_tree_depth))
-  #write the background to file
   with open(f"{base_dir}/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))
   with open(f"{base_dir}/"+action+"/test/"+f"test_bk.txt", "w") as f:
