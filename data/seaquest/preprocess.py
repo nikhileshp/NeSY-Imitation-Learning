@@ -42,7 +42,8 @@ modes=["aboveOfDiver(+state, +diver).",
 "visibleDiver(+state, -diver).",
 "visibleEnemy(+state, -enemy).",
 "visibleEnemySubmarine(+state, -submarine).",
-"visibleMissile(+state, -missile)."
+"visibleMissile(+state, -missile).",
+"action(+state, #name)."
 ]
 
 bridgers = ["vissibleMissile/2",
@@ -55,7 +56,7 @@ primitive_actions = ["noop","fire","up","right","left","down"]
 bridgers = [bridger.lower() for bridger in bridgers]
 modes = [mode.lower() for mode in modes]
 
-base_dir = "data/seaquest"
+base_dir = "data/seaquest/all"
 
 for action in primitive_actions:
   if os.path.exists(f"{base_dir}/{action}"):
@@ -73,7 +74,8 @@ args = parser.parse_args()
 
 print(args.file)
 
-df = pd.read_csv(args.file)
+# df = pd.read_csv(args.file)
+df = pd.read_csv(args.file, delimiter="\t")
 df = df[df['action'] <= 5]
 
 train, test = train_test_split(df, test_size=0.2, random_state=42)
@@ -121,7 +123,7 @@ for _, row in train.iterrows():
     taken_actions = [action_name]
   
   for pa in primitive_actions:
-    action_str = pa + "(" + s_id + ")."
+    action_str = "action(" + s_id + f", {pa})."
     action_str = action_str.lower()
     
     if pa in taken_actions:
@@ -129,7 +131,7 @@ for _, row in train.iterrows():
     else:
       for other_action in primitive_actions:
         if other_action != pa:
-          other_action_str = other_action + "(" + s_id + ")."
+          other_action_str = "action(" + s_id + f", {other_action})."
           other_action_str = other_action_str.lower()
           train_action_files[pa][1].append(other_action_str)
 
@@ -152,17 +154,18 @@ for _, row in test.iterrows():
     taken_actions = [action_name]
   
   for pa in primitive_actions:
-    action_str = pa + "(" + s_id + ")."
+    action_str = "action(" + s_id + f", {pa})."
     action_str = action_str.lower()
     
     if pa in taken_actions:
       test_action_files[pa][0].append(action_str)
     else:
-      for other_action in primitive_actions:
-        if other_action != pa:
-          other_action_str = other_action + "(" + s_id + ")."
-          other_action_str = other_action_str.lower()
-          test_action_files[pa][1].append(other_action_str)
+      test_action_files[pa][1].append(action_str)
+      # for other_action in primitive_actions:
+      #   if other_action != pa:
+      #     other_action_str = "action(" + s_id + f", {other_action})."
+      #     other_action_str = other_action_str.lower()
+      #     test_action_files[pa][1].append(other_action_str)
 
 # Write test files
 for pa in primitive_actions:
@@ -291,8 +294,6 @@ for action in primitive_actions:
   test_dict[action]= Database()
   bk_dict[action] = Background()
   mode = modes.copy()
-
-  mode.append(f"{action}(+state).")
 
   train_action_files[action][0] = [s.translate({ord(c):None for c in string.whitespace}) for s in train_action_files[action][0]]
   train_action_files[action][1] = [s.translate({ord(c):None for c in string.whitespace}) for s in train_action_files[action][1]]

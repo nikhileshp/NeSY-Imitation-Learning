@@ -17,14 +17,15 @@ else
     echo "ONLY_TEST: $ONLY_TEST"
 fi
 
-# JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
-JAR="rdnboost/target/boostsrl-occ.jar"
+JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
+# JAR="rdnboost/target/boostsrl-occ.jar"
 AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
 TREES=$NUM_TREES
 NEG_POS_RATIO=2
 
 # List of targets (actions)
-TARGETS=("fire" "up" "down" "left" "right" "noop")
+# TARGETS=("fire" "up" "down" "left" "right" "noop")
+TARGETS=("action" "action" "action" "action" "action" "action")
 
 TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/seaquest/all/down/train" "data/seaquest/all/left/train" "data/seaquest/all/right/train" "data/seaquest/all/noop/train")
 
@@ -32,7 +33,7 @@ TRAIN_DIRS=("data/seaquest/all/fire/train" "data/seaquest/all/up/train" "data/se
 if [ "$WEIGHTED" == "true" ]; then
     MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_per_example_weight_all"
 else
-    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_all_occ"
+    MODEL_BASE="rdn_models/seaquest/negpos_${NEG_POS_RATIO}_trees_${TREES}_depth_${MAX_DEPTH}_new_all"
 fi
 
 MODELS=(
@@ -142,7 +143,7 @@ for i in "${!TARGETS[@]}"; do
     TARGET="${TARGETS[$i]}"
     MODEL="${MODELS[$i]}"
     TEST_DIR="${TEST_DIRS[$i]}"
-    LOG_FILE="${MODEL}/${TARGET}_test_infer.log"
+    LOG_FILE="${MODEL}/${TARGET}_test_infer_2to1.log"
     
     # Create model directory if it doesn't exist
     mkdir -p "$MODEL"
@@ -161,6 +162,7 @@ for i in "${!TARGETS[@]}"; do
             -test "$TEST_DIR" \
             -target "$TARGET" \
             -trees "$TREES" \
+            -testNegPosRatio $NEG_POS_RATIO \
             -aucJarPath "$AUC_JAR"
             
         echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Target: $TARGET (Test)"
@@ -235,6 +237,7 @@ for i in "${!TARGETS[@]}"; do
             -test "$TRAIN_INFER_DIR" \
             -target "$TARGET" \
             -trees "$TREES" \
+            -testNegPosRatio $NEG_POS_RATIO \
             -aucJarPath "$AUC_JAR"
             
         echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Target: $TARGET (Train Inference)"
@@ -247,6 +250,37 @@ for i in "${!TARGETS[@]}"; do
     else
         echo "⚠️  Warning: No AUC file generated for $TARGET"
     fi
+done
+
+for i in "${!TARGETS[@]}"; do
+    TARGET="${TARGETS[$i]}"
+    MODEL="${MODELS[$i]}"
+    TEST_DIR="${TEST_DIRS[$i]}"
+    LOG_FILE="${MODEL}/${TARGET}_test_infer.log"
+    
+    # Create model directory if it doesn't exist
+    mkdir -p "$MODEL"
+    
+    # Clear previous log if exists
+    > "$LOG_FILE"
+    
+    echo "Testing $TARGET..."
+    
+    # Run inference and save to the target-specific log
+    {
+        echo "[START] $(date '+%Y-%m-%d %H:%M:%S') - Target: $TARGET (Test)"
+        java -jar "$JAR" \
+            -i \
+            -model "$MODEL" \
+            -test "$TEST_DIR" \
+            -target "$TARGET" \
+            -trees "$TREES" \
+            -aucJarPath "$AUC_JAR"
+            
+        echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Target: $TARGET (Test)"
+    } >> "$LOG_FILE" 2>&1
+    
+    echo "✅ Completed test inference for $TARGET"
 done
 
 # ============================================================================
