@@ -209,6 +209,15 @@ public abstract class RunBoostedModels {
 		if (cmd == null) {
 			Utils.error(CommandLineArguments.getUsageString());
 		}
+		
+		// Set the debug scoring flag from command-line argument
+		edu.wisc.cs.will.ILP.Regression.BranchStats.ENABLE_DETAILED_DEBUG = cmd.isEnableDebugScoring();
+		if (cmd.isEnableDebugScoring()) {
+			Utils.println("\n% ========================================");
+			Utils.println("% DEBUG SCORING MODE ENABLED");
+			Utils.println("% ========================================\n");
+		}
+		
 		boolean disc_flag=false;
 		disc discObj= new disc();
 		

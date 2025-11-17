@@ -1513,23 +1513,7 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 		}
 		
 		
-		double varTrue = getRegressionInfoHolder().weightedVarianceAtSuccess();
-		double varFalse = getRegressionInfoHolder().weightedVarianceAtFailure();
-		double numTrue = getRegressionInfoHolder().totalExampleWeightAtSuccess();
-		double numFalse = getRegressionInfoHolder().totalExampleWeightAtFailure();
-		double score = varTrue + varFalse;
-		
-		// DEBUG OUTPUT (Always show first 5 splits)
-		if (true) {
-			Utils.println("\n=== SPLIT SCORE DEBUG ===");
-			Utils.println("Clause: " + this.getClause(true));
-			Utils.println("TRUE branch:  #examples=" + numTrue + ", weighted_variance=" + varTrue);
-			Utils.println("FALSE branch: #examples=" + numFalse + ", weighted_variance=" + varFalse);
-			Utils.println("TOTAL SCORE: " + score + " (lower is better)");
-			Utils.println("========================\n");
-		}
-		
-		return score;
+		return getRegressionInfoHolder().weightedVarianceAtSuccess() + getRegressionInfoHolder().weightedVarianceAtFailure();
 		/*
 		RegressionNodeInfoHolder holder = getRegressionNodeInfoHolder();
 		// Utils.println("Regression score for " + this.getClause(true));

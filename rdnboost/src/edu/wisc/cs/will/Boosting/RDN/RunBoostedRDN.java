@@ -482,6 +482,15 @@ public class RunBoostedRDN extends RunBoostedModels {
 		if (cmd == null) {
 			Utils.error(CommandLineArguments.getUsageString());
 		}
+		
+		// Set the debug scoring flag from command-line argument
+		edu.wisc.cs.will.ILP.Regression.BranchStats.ENABLE_DETAILED_DEBUG = cmd.isEnableDebugScoring();
+		if (cmd.isEnableDebugScoring()) {
+			Utils.println("\n% ========================================");
+			Utils.println("% DEBUG SCORING MODE ENABLED");
+			Utils.println("% ========================================\n");
+		}
+		
 		disc discObj= new disc();
 		
 		/*Check for discretization*/

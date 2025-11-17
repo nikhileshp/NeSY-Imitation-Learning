@@ -250,6 +250,12 @@ public class CommandLineArguments {
 	public static final String thresholdSwitch = "threshold"; // change by MD for threshold
 	private double threshold = -1.0;
 	
+	public static final String debugScoringFlag = "debugScoring";
+	private boolean enableDebugScoring = false;
+	
+	public static final String useDistanceWeights = "use-distance-weights";
+	private boolean useDistanceWeightsFlag = false;
+	
 	public void setkbpllFiles(String files) {
 		kbpllAdviceFile = files;
 	}
@@ -844,6 +850,20 @@ public class CommandLineArguments {
 				this.threshold=Double.parseDouble(args[++i]);
 				continue;
 			}
+			if (argMatches(args[i], debugScoringFlag)) {
+				enableDebugScoring = true;
+				if (isArgumentNotAFlag(args, i+1)) {
+					enableDebugScoring = Utils.parseBoolean(args[++i]);
+				}
+				continue;
+			}
+			if (argMatches(args[i], useDistanceWeights)) {
+				useDistanceWeightsFlag = true;
+				if (isArgumentNotAFlag(args, i+1)) {
+					useDistanceWeightsFlag = Utils.parseBoolean(args[++i]);
+				}
+				continue;
+			}
 			Utils.println("Unknown argument: " + args[i]);
 			return false;
 		}
@@ -901,6 +921,8 @@ public class CommandLineArguments {
 		result += argPrefix + stepLen + " <Step Length>: Default step length for functional gradient.\n";
 		
 		result += argPrefix + testNegsToPosRatio + " <Negative/Positive ratio>: Ratio of negatives to positive for testing.\n";
+		
+		result += argPrefix + debugScoringFlag + " : Enable detailed debug output for RDN tree scoring (shows clause, examples, and step-by-step variance calculations).\n";
 		
 		return result;
 	}
@@ -1325,6 +1347,34 @@ public class CommandLineArguments {
 	public void setRdnIterationStep(int rdnIterationStep) {
 		this.rdnIterationStep = rdnIterationStep;
 	}
+	/**
+	 * @return the enableDebugScoring
+	 */
+	public boolean isEnableDebugScoring() {
+		return enableDebugScoring;
+	}
+
+	/**
+	 * @param enableDebugScoring the enableDebugScoring to set
+	 */
+	public void setEnableDebugScoring(boolean enableDebugScoring) {
+		this.enableDebugScoring = enableDebugScoring;
+	}
+	
+	/**
+	 * @return the useDistanceWeightsFlag
+	 */
+	public boolean isUseDistanceWeights() {
+		return useDistanceWeightsFlag;
+	}
+	
+	/**
+	 * @param useDistanceWeightsFlag the useDistanceWeightsFlag to set
+	 */
+	public void setUseDistanceWeights(boolean useDistanceWeightsFlag) {
+		this.useDistanceWeightsFlag = useDistanceWeightsFlag;
+	}
+
 	/**
 	 * @return the treelearnerVal
 	 */

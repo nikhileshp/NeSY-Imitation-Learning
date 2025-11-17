@@ -50,6 +50,7 @@ import edu.wisc.cs.will.FOPC.TreeStructuredTheoryLeaf;
 import edu.wisc.cs.will.FOPC.TreeStructuredTheoryNode;
 import edu.wisc.cs.will.FOPC_MLN_ILP_Parser.FileParser;
 import edu.wisc.cs.will.ILP.Regression.BranchStats;
+import edu.wisc.cs.will.ILP.Regression.FactWeightLoader;
 import edu.wisc.cs.will.ResThmProver.DefaultHornClauseContext;
 import edu.wisc.cs.will.ResThmProver.HornClauseContext;
 import edu.wisc.cs.will.Utils.MessageType;
@@ -193,6 +194,9 @@ public class ILPouterLoop implements GleanerFileNameProvider {
     public boolean waitWhenBodyModesAreEmpty = true;
 
     private ActiveAdvice createdActiveAdvice = null;
+    
+    // Distance weights feature (Step 4)
+    private FactWeightLoader factWeightLoader = null;
 
 	public ILPouterLoop(String workingDir, String[] args, SearchStrategy strategy, ScoreSingleClause scorer) throws IOException {
 		this(workingDir, null, args, strategy, scorer, new Gleaner(), new DefaultHornClauseContext(new HandleFOPCstrings()), false, false);
@@ -770,6 +774,31 @@ public class ILPouterLoop implements GleanerFileNameProvider {
                             interiorNode.setNodeTestFromFullNodeTest(newClause);
                             // Set the task used to learn this node.
                             bestNode.setStartingNodeForReset(innerLoopTask.currentStartingNode);
+                            // Write clause evaluations to file and print comparison if debug mode is enabled
+                            int currentDepth = interiorNode.getLevel();
+                            if (BranchStats.ENABLE_DETAILED_DEBUG && !BranchStats.evaluatedClauses.isEmpty()) {
+                                // Determine branch name (true or false) from parent path
+                                String branchName = "root";
+                                if (currentDepth > 0) {
+                                    // Get the last boolean in path to determine if this is true or false branch
+                                    List<Boolean> path = interiorNode.returnBoolPath();
+                                    if (path != null && !path.isEmpty()) {
+                                        branchName = path.get(path.size() - 1) ? "true" : "false";
+                                    }
+                                }
+                                
+                                // Write clause evaluations to file
+                                String modelDir = workingDirectory != null ? workingDirectory : ".";
+                                String outputPath = modelDir + "/node_" + currentDepth + "_" + branchName + ".txt";
+                                BranchStats.writeClausesToFile(outputPath, currentDepth, branchName);
+                                
+                                // Print clause comparison to console
+                                BranchStats.printClauseComparison();
+                                
+                                // Clear for next node
+                                BranchStats.clearClauseTracking();
+                            }
+                            
                             if (LearnOneClause.debugLevel > -1) {
                                 Utils.println("\n% Expanding node at Level " + interiorNode.getLevel() + " with score = " + Utils.truncate(currentTask.getScore(), 3) + ".\n% Will extend: " + interiorNode.getSearchNodeThatLearnedTheClause());
                             }
@@ -2438,6 +2467,22 @@ public class ILPouterLoop implements GleanerFileNameProvider {
 	 */
 	public void setMaxTreeDepth(int maxTreeDepth) {
 		this.maxTreeDepthInInteriorNodes = Math.max(1, maxTreeDepth);
+	}
+
+	/**
+	 * Get the FactWeightLoader for distance-based weights
+	 * @return the factWeightLoader
+	 */
+	public FactWeightLoader getFactWeightLoader() {
+		return factWeightLoader;
+	}
+
+	/**
+	 * Set the FactWeightLoader for distance-based weights
+	 * @param factWeightLoader the factWeightLoader to set
+	 */
+	public void setFactWeightLoader(FactWeightLoader factWeightLoader) {
+		this.factWeightLoader = factWeightLoader;
 	}
 
 
