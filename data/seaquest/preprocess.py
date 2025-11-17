@@ -56,7 +56,27 @@ primitive_actions = ["noop","fire","up","right","left","down"]
 bridgers = [bridger.lower() for bridger in bridgers]
 modes = [mode.lower() for mode in modes]
 
-base_dir = "data/seaquest/all"
+
+
+
+parser = argparse.ArgumentParser(description="Process relationship file")
+parser.add_argument("--file", type=str, default="", help="Relationship file")
+parser.add_argument("--node_size", type=str, default=2, help="Node size for background")
+parser.add_argument("--max_tree_depth", type=str, default=3, help="Max tree depth for background")
+parser.add_argument("--remove_0_weights", action="store_true", help="Remove facts with 0.00 weights from train_facts.txt using fact_weights.tsv")
+parser.add_argument("--all", type=bool, default=False, help="Process all actions together")
+
+
+args = parser.parse_args()
+if args.all:
+    base_dir = "data/seaquest/all"
+else:
+    file = args.file.split("/")[-1]
+    file = file.split("_")[0] + "_" + file.split("_")[1] + "_" + file.split("_")[2]
+    base_dir = "data/seaquest/single_t/"+file
+print(args.file)
+
+
 
 for action in primitive_actions:
   if os.path.exists(f"{base_dir}/{action}"):
@@ -64,18 +84,11 @@ for action in primitive_actions:
     shutil.rmtree(f"{base_dir}/{action}")
   os.makedirs(f"{base_dir}/{action}/train", exist_ok=True)
   os.makedirs(f"{base_dir}/{action}/test", exist_ok=True)
-
-parser = argparse.ArgumentParser(description="Process relationship file")
-parser.add_argument("--file", type=str, default="", help="Relationship file")
-parser.add_argument("--node_size", type=str, default=2, help="Node size for background")
-parser.add_argument("--max_tree_depth", type=str, default=3, help="Max tree depth for background")
-parser.add_argument("--remove_0_weights", action="store_true", help="Remove facts with 0.00 weights from train_facts.txt using fact_weights.tsv")
-args = parser.parse_args()
-
-print(args.file)
-
 # df = pd.read_csv(args.file)
-df = pd.read_csv(args.file, delimiter="\t")
+if args.all:
+  df = pd.read_csv(args.file, delimiter="\t")
+else:
+  df = pd.read_csv(args.file)
 df = df[df['action'] <= 5]
 
 train, test = train_test_split(df, test_size=0.2, random_state=42)
@@ -175,49 +188,39 @@ for pa in primitive_actions:
     f.write("\n".join(test_action_files[pa][1]))
 
 # Script for writing facts
+# Fact weights file should be formatted as ground_fact(state, args). weight \n for each fact. Facts are the r
 for pa in primitive_actions:
   with open(f"{base_dir}/"+pa+"/train/"+'train_facts.txt', 'w') as f:
-    for _, row in train.iterrows():
-      rels = str(row["relationships"])
-      if rels != "nan":
-        s_id = "s" + str(row["frameid"].replace("_",""))
-        for rel in rels.split(" , "):
-          rel = rel.strip()
-          if rel:
-            if "(" not in rel:
-              rel = rel+"()"
-            rel = rel.replace("(","(" + s_id + ",")
-            rel = rel.replace(",)", ")")
-            if not rel.endswith("."):
-              rel += "."
-            rel = rel.lower()
-            rel = rel.replace("_", "")
-            f.write(rel + "\n")
-  
-  with open(f"{base_dir}/"+pa+"/train/"+'fact_weights.tsv', 'w') as f:
-    for _, row in train.iterrows():
-      weights = str(row["distance_weights"])
-      weights_list = []
-      if weights != "nan":
-        state_weights = weights.split(" , ")
-        for sw in state_weights:
-          frame_id = str(row["frameid"]).replace("_","").lower()
-          s_id = "s" + str(frame_id)
-          sw = sw.strip()
-          if sw:
-            if "(" not in sw:
-              sw = sw+"()"
-            sw = sw.replace("(","(" + s_id + ",")
-            sw = sw.replace(",)", ")")
-            if not sw.endswith("."):
-              sw += "."
-            sw = sw.lower()
-            sw = sw.replace("_", "")
-            sw = sw.replace(" ","\t")
-            weights_list.append(sw)
-      if weights_list:
-        f.write("\n".join(weights_list) + "\n")
+    with open(f"{base_dir}/"+pa+"/train/"+'fact_weights.txt', 'w') as f2:
+      
 
+      for _, row in train.iterrows():
+        rels = str(row["relationships"])
+        weights = str(row["predicate_weights"])
+        weights_list = []
+        if weights != "nan":
+          weights_list = weights.split(" ")
+  
+        if weights_list:
+          if rels != "nan":
+            s_id = "s" + str(row["frameid"].replace("_",""))
+            rels = rels.split(" , ")
+            for (rel, w) in zip(rels, weights_list):
+              rel = rel.strip()
+              if rel:
+                if "(" not in rel:
+                  rel = rel+"()"
+                rel = rel.replace("(","(" + s_id + ",")
+                rel = rel.replace(",)", ")")
+                if not rel.endswith("."):
+                  rel += "."
+                rel = rel.lower()
+                rel = rel.replace("_", "")
+                f.write(rel + "\n")
+                f2.write(rel + " " + w + "\n")
+
+         
+  
   with open(f"{base_dir}/"+pa+"/test/"+'test_facts.txt', 'w') as f:
     for _, row in test.iterrows():
       rels = str(row["relationships"])

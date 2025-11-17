@@ -1,5 +1,12 @@
 package edu.wisc.cs.will.ILP;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.wisc.cs.will.DataSetUtils.Example;
+import edu.wisc.cs.will.FOPC.Clause;
+import edu.wisc.cs.will.FOPC.Literal;
+import edu.wisc.cs.will.ILP.Regression.FactWeightLoader;
 import edu.wisc.cs.will.Utils.Utils;
 import edu.wisc.cs.will.stdAIsearch.SearchInterrupted;
 import edu.wisc.cs.will.stdAIsearch.SearchNode;
@@ -12,12 +19,25 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	private   final static double bonusForBridgers = 10000.0; // Seems this should suffice, though for some uses of regression it might not.  Don't want to lose the true score, since that'll help sort.
 	private boolean forMLNs = false; 			// Score regression node for MLN's
 	
+	// Distance weights feature (Step 5)
+	private FactWeightLoader weightLoader = null;
+	private boolean useDistanceWeights = false;
+	
 	public ScoreRegressionNode() {
 		this(false);
 	}
 	public ScoreRegressionNode(boolean useMLNs) {
 		super();
 		forMLNs = useMLNs;
+	}
+	
+	/**
+	 * Set the FactWeightLoader for distance-based weighting
+	 * @param loader the FactWeightLoader instance
+	 */
+	public void setWeightLoader(FactWeightLoader loader) {
+		this.weightLoader = loader;
+		this.useDistanceWeights = (loader != null);
 	}
 	
 	
@@ -34,6 +54,12 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		if (!Double.isNaN(node.score)) { return node.score; }
 		double fit     = (forMLNs ? node.regressionFitForMLNs() : node.regressionFit());
 		double penalty = scalingPenalties * (getPenalties(node, true, true)); // + 0.01*node.penaltyForNonDiscrNode());
+		
+		// Apply distance weight multiplier if enabled (Step 6)
+		if (useDistanceWeights && weightLoader != null) {
+			double weightMultiplier = computeWeightedAverage(node);
+			fit = fit * weightMultiplier;
+		}
 		
 		double score   = fit + penalty; // Add small penalties as a function of length and the number of singleton variables (so shorter better if accuracy the same).
 		// Uncomment this for debugging TempEval (TVK)

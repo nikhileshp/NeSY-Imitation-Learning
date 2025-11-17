@@ -16,7 +16,7 @@ from core.visualization_manager import VisualizationManager
 from core.game_object import GameObject
 from core.goal_detector import GoalDetector
 from core.distance_weight_calculator import DistanceWeightCalculator
-from attention_weights import calculate_predicate_weights, calculate_example_weight
+from attention_weights import calculate_predicate_weights, calculate_example_weight, create_object_weight_mapping
 
 # Import Seaquest-specific modules
 from env.seaquest.object_detector import SeaquestObjectDetector
@@ -227,51 +227,42 @@ class GameAnalysisApp:
             
             # Calculate distance weights for relationships involving spatial objects
             if self.distance_weight_calculator and gaze_positions:
+                predicate_weights_text = ""
                 if self.use_euclidean_distance_weights:
+                    if len(gaze_positions) > 1:
+                        avg_gaze_x = int(sum([pos[0] for pos in gaze_positions]) / len(gaze_positions))
+                        avg_gaze_y = int(sum([pos[1] for pos in gaze_positions]) / len(gaze_positions))
+                        eye_pos = (avg_gaze_x, avg_gaze_y)
+                    else:
+                        eye_pos = gaze_positions[0]
                     # Use euclidean distance-based attention weights
-                    # Get centroids from detected objects, tracking object types
-                    centroids = []
-                    object_types = []
-                    for obj_type, obj_list in detected_objects.items():
-                        for obj in obj_list:
-                            centroid = obj.center
-                            centroids.append(centroid)
-                            object_types.append(obj_type)
-                    
-                    if centroids and gaze_positions:
-                        # Use average gaze position if multiple positions
-                        avg_gaze = (
-                            sum(p[0] for p in gaze_positions) / len(gaze_positions),
-                            sum(p[1] for p in gaze_positions) / len(gaze_positions)
-                        )
+                    # First, list all the relationships in relationships_text
+                    object_types_no_arg = ['facing_side', 'water_surface', 'diver_state', 'oxygen_state', 'visibility_state']
+                    centroids = [(None, (0,0))]  # Placeholder for obj2 centroid
+                    for rel in relationships:
+                        obj2 = rel.obj2
+                        # print(rel)
+                        if obj2.object_type not in object_types_no_arg:
                         
-                        # Calculate predicate weights and example weight
-                        import numpy as np
-                        predicate_weights = calculate_predicate_weights(
-                            avg_gaze, centroids, width, height, k=0.075
-                        )
-                        
-                        # Apply zero-second-object weight if enabled
-                        if self.zero_second_object_weight:
-                            class_counters = {}
-                            for i, obj_type in enumerate(object_types):
-                                if obj_type not in class_counters:
-                                    class_counters[obj_type] = 0
-                                class_counters[obj_type] += 1
-                                # Set weight to 0 for second object in each class
-                                if class_counters[obj_type] == 2:
-                                    predicate_weights[i] = 0.0
-                        
-                        example_weight = calculate_example_weight(predicate_weights)
-                        
-                        # Format for dataframe
-                        predicate_weights_text = " ".join([f"{w:.4f}" for w in predicate_weights])
-                        example_weight_text = f"{example_weight:.4f}"
-                        
-                        if self.verbose >= 2:
-                            print(f"\n  Euclidean distance-based attention weights:")
-                            print(f"    Predicate weights: {predicate_weights_text}")
-                            print(f"    Example weight: {example_weight_text}")
+                            # Get centroid for game object
+                            centroid_obj = obj2.center
+                            
+                            centroids[0] = (obj2.object_id, centroid_obj)
+                            predicate_weight = calculate_predicate_weights(
+                        eye_pos, centroids, width, height, k=0.075
+                    )
+                            
+                            rel_text = self.relationship_analyzer.format_relationships_for_dataframe([rel])
+                            predicate_weights_text += f"{predicate_weight[0]:.3f} "
+                        else:
+                            rel_text = self.relationship_analyzer.format_relationships_for_dataframe([rel])
+                            predicate_weights_text += f"1.000 "
+
+                            
+                            
+                    # Relationships
+                    relationships_text = self.relationship_analyzer.format_relationships_for_dataframe(relationships)                 
+
                 else:
                     # Use original distance weight calculation
                     distance_weights = self.distance_weight_calculator.calculate_relationship_distance_weights(
@@ -290,8 +281,11 @@ class GameAnalysisApp:
             # Update gaze DataFrame with object, relationship, and goal information
             objects_list = self.object_detector.get_all_objects_as_list(detected_objects)
             relationships_text = self.relationship_analyzer.format_relationships_for_dataframe(relationships)
+
+            # print(relationships_text)
             
             # If using euclidean distance weights, add predicate and example weights
+            # print(predicate_weights_text)
             if self.use_euclidean_distance_weights:
                 self.gaze_processor.update_frame_data(
                     self.gaze_df, frame_id, objects_list, relationships_text, detected_goal,
@@ -366,6 +360,43 @@ class GameAnalysisApp:
             for description in descriptions:
                 print(description)
             print()
+    
+    def _compute_relationship_predicate_weights(self, relationships, object_weight_map):
+        """
+        Compute predicate weight for each relationship.
+        
+        Args:
+            relationships: List of SpatialRelationship objects
+            object_weight_map: Dictionary mapping object_id to attention weight
+            
+        Returns:
+            Tuple of (list of weights, ordered list of weights matching relationship order)
+        """
+        weights = []
+        
+        for rel in relationships:
+            # Determine if this relationship has groundings
+            obj1_type = rel.obj1.object_type
+            obj2_type = rel.obj2.object_type
+            
+            # Relationships with no grounding objects (virtual objects) get weight 1.0
+            # These are relationships where NEITHER object is a real game object
+            if obj2_type in ['facing_side', 'water_surface', 'diver_state', 'oxygen_state']:
+                weight = 1.0
+            elif obj2_type == 'visibility_state':
+                # Visibility relationships: visibleDiver(diver_0), visibleEnemy(enemy_1)
+                # These are grounded to obj1 (the visible object), not obj2
+                obj1_id = rel.obj1.object_id
+                weight = object_weight_map.get(obj1_id, 1.0)
+            else:
+                # Spatial relationships with actual object groundings
+                # Use the weight of obj2 (the grounded object)
+                obj2_id = rel.obj2.object_id
+                weight = object_weight_map.get(obj2_id, 1.0)
+            
+            weights.append(weight)
+        
+        return weights
     
     def process_single_image_file(self, image_path: str, 
                                 gaze_data_path: Optional[str] = None) -> Dict:
