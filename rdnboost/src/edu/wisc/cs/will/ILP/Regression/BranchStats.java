@@ -31,12 +31,18 @@ public class BranchStats {
 		public double falseSumOutputSquared;
 		public double falseSumOutputAndNumGrounding;
 		public double falseSumNumGroundingSquared;
+		// Penalty breakdown
+		public double totalPenalty;
+		public double lengthPenalty;
+		public double singletonPenalty;
+		public double groundingPenalty;
 		
 		public ClauseEvaluation(String clause, int trueCount, int falseCount, 
 				int truePosGrad, int trueNegGrad, int falsePosGrad, int falseNegGrad,
 				double trueVar, double falseVar, double combined, double score,
 				double trueSumOutSq, double trueSumOutAndNum, double trueSumNumSq,
-				double falseSumOutSq, double falseSumOutAndNum, double falseSumNumSq) {
+				double falseSumOutSq, double falseSumOutAndNum, double falseSumNumSq,
+				double totalPen, double lengthPen, double singletonPen, double groundingPen) {
 			this.clause = clause;
 			this.trueCount = trueCount;
 			this.falseCount = falseCount;
@@ -54,6 +60,10 @@ public class BranchStats {
 			this.falseSumOutputSquared = falseSumOutSq;
 			this.falseSumOutputAndNumGrounding = falseSumOutAndNum;
 			this.falseSumNumGroundingSquared = falseSumNumSq;
+			this.totalPenalty = totalPen;
+			this.lengthPenalty = lengthPen;
+			this.singletonPenalty = singletonPen;
+			this.groundingPenalty = groundingPen;
 		}
 	}
 	
@@ -377,6 +387,17 @@ public class BranchStats {
 							   eval.trueCount + " + " + eval.falseCount + ")");
 				writer.println("         = " + String.format("%.6f", eval.combinedVariance));
 				writer.println();
+				
+				// Add penalty information
+				if (eval.totalPenalty > 0.0 || eval.groundingPenalty != 0.0) {
+					writer.println("Penalties:");
+					writer.println("  Total penalty:           " + String.format("%.6f", eval.totalPenalty));
+					writer.println("    Length/Singleton:      " + String.format("%.6f", eval.lengthPenalty));
+					if (eval.groundingPenalty != 0.0) {
+						writer.println("    Grounding penalty:     " + String.format("%.6f", eval.groundingPenalty));
+					}
+					writer.println();
+				}
 			}
 			
 			writer.println(separator100);
@@ -419,28 +440,28 @@ public class BranchStats {
 			}
 		});
 		
-		// Print header
-		Utils.println(String.format("%-4s | %-10s | %-50s | %8s | %8s | %12s", 
-				"Rank", "Split", "Clause (truncated)", "TRUE", "FALSE", "Variance"));
+		// Print header with penalty columns
+		Utils.println(String.format("%-4s | %-10s | %-40s | %8s | %8s | %12s | %10s | %10s", 
+				"Rank", "Split", "Clause (truncated)", "TRUE", "FALSE", "Variance", "TotalPen", "GroundPen"));
 		// Create dashes for separator line
-		StringBuilder dashes = new StringBuilder(50);
-		for (int i = 0; i < 50; i++) dashes.append("-");
-		Utils.println(String.format("%-4s-+-%-10s-+-%-50s-+-%-8s-+-%-8s-+-%-12s", 
-				"----", "----------", dashes.toString(), "--------", "--------", "------------"));
+		StringBuilder dashes = new StringBuilder(40);
+		for (int i = 0; i < 40; i++) dashes.append("-");
+		Utils.println(String.format("%-4s-+-%-10s-+-%-40s-+-%-8s-+-%-8s-+-%-12s-+-%-10s-+-%-10s", 
+				"----", "----------", dashes.toString(), "--------", "--------", "------------", "----------", "----------"));
 		
 		for (int i = 0; i < sorted.size(); i++) {
 			ClauseEvaluation eval = sorted.get(i);
 			String truncClause = eval.clause;
-			if (truncClause.length() > 50) {
-				truncClause = truncClause.substring(0, 47) + "...";
+			if (truncClause.length() > 40) {
+				truncClause = truncClause.substring(0, 37) + "...";
 			}
 			
 			String splitInfo = eval.trueCount + "/" + eval.falseCount;
 			String marker = (i == 0) ? " ***" : "";
 			
-			Utils.println(String.format("%4d | %-10s | %-50s | %8d | %8d | %12.6f%s",
+			Utils.println(String.format("%4d | %-10s | %-40s | %8d | %8d | %12.6f | %10.6f | %10.6f%s",
 					(i+1), splitInfo, truncClause, eval.trueCount, eval.falseCount, 
-					eval.combinedVariance, marker));
+					eval.combinedVariance, eval.totalPenalty, eval.groundingPenalty, marker));
 		}
 		
 		Utils.println("");
@@ -457,6 +478,14 @@ public class BranchStats {
 			Utils.println("  TRUE branch:  " + best.trueCount + " examples, variance = " + best.trueVariance);
 			Utils.println("  FALSE branch: " + best.falseCount + " examples, variance = " + best.falseVariance);
 			Utils.println("  Combined variance: " + best.combinedVariance + " (LOWEST - this clause was chosen)");
+			if (best.totalPenalty > 0.0 || best.groundingPenalty != 0.0) {
+				Utils.println("\nPenalties:");
+				Utils.println("  Total penalty:      " + String.format("%.6f", best.totalPenalty));
+				Utils.println("  Length/Singleton:   " + String.format("%.6f", best.lengthPenalty));
+				if (best.groundingPenalty != 0.0) {
+					Utils.println("  Grounding penalty:  " + String.format("%.6f", best.groundingPenalty));
+				}
+			}
 		}
 		
 		Utils.println(separator + "\n\n");

@@ -18,6 +18,9 @@ import edu.wisc.cs.will.stdAIsearch.SearchInterrupted;
  */
 public class RegressionInfoHolderForRDN extends RegressionInfoHolder {
 	
+	// Store caller node for accessing penalty information
+	private SingleClauseNode callerNode = null;
+	
 	public RegressionInfoHolderForRDN() {
 		trueStats = new BranchStats();
 		falseStats = new BranchStats();
@@ -111,6 +114,9 @@ public class RegressionInfoHolderForRDN extends RegressionInfoHolder {
 		if (!task.regressionTask) { Utils.error("Should call this when NOT doing regression."); }
 		if (caller.getPosCoverage() < 0.0) { caller.computeCoverage(); }
 		
+		// Store caller for later penalty access
+		this.callerNode = caller;
+		
 		// Set the current clause on both branches for debug output
 		String clauseStr = (caller.getClause() != null) ? caller.getClause().toString() : "";
 		trueStats.setCurrentClause(clauseStr);
@@ -200,6 +206,12 @@ public class RegressionInfoHolderForRDN extends RegressionInfoHolder {
 		int[] trueGradCounts = trueStats.getGradientCounts();
 		int[] falseGradCounts = falseStats.getGradientCounts();
 		
+		// Get penalty information from caller node if available
+		double totalPenalty = (callerNode != null) ? callerNode.lastTotalPenalty : 0.0;
+		double lengthSingletonPenalty = (callerNode != null) ? callerNode.lastLengthSingletonPenalty : 0.0;
+		double singletonPenalty = 0.0;  // Would need to separate this from lengthPenalty if needed
+		double groundingPenalty = (callerNode != null) ? callerNode.lastGroundingPenalty : 0.0;
+		
 		// Record this evaluation for later comparison with all details
 		BranchStats.ClauseEvaluation eval = new BranchStats.ClauseEvaluation(
 			clauseStr, trueCount, falseCount,
@@ -211,7 +223,8 @@ public class RegressionInfoHolderForRDN extends RegressionInfoHolder {
 			trueStats.getSumOfNumGroundingSquared(),
 			falseStats.getSumOfOutputSquared(),
 			falseStats.getSumOfOutputAndNumGrounding(),
-			falseStats.getSumOfNumGroundingSquared());
+			falseStats.getSumOfNumGroundingSquared(),
+			totalPenalty, lengthSingletonPenalty, singletonPenalty, groundingPenalty);
 		BranchStats.evaluatedClauses.add(eval);
 	}
 

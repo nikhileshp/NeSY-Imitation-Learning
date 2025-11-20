@@ -146,6 +146,92 @@ public class FactWeightLoader {
 	}
 	
 	/**
+	 * Get all matching fact weights where anonymous variables (anon*) are treated as wildcards.
+	 * For example, "visiblediver(srz123,anon456)" will match all facts like:
+	 * - visiblediver(srz123,diver0)
+	 * - visiblediver(srz123,diver1)
+	 * 
+	 * @param factPattern Fact pattern with possible anon* variables
+	 * @return List of weights for all matching facts (empty if none found)
+	 */
+	public java.util.List<Double> getMatchingWeights(String factPattern) {
+		java.util.List<Double> matches = new java.util.ArrayList<Double>();
+		
+		// Normalize the pattern
+		String normalized = normalizeFact(factPattern);
+		
+		// Check if pattern contains anonymous variables
+		if (!normalized.contains("anon")) {
+			// No wildcards, just do direct lookup
+			Double weight = factWeights.get(normalized);
+			if (weight != null) {
+				matches.add(weight);
+			}
+			return matches;
+		}
+		
+		// Extract predicate name and arguments
+		int openParen = normalized.indexOf('(');
+		int closeParen = normalized.lastIndexOf(')');
+		if (openParen < 0 || closeParen < 0) {
+			return matches;
+		}
+		
+		String predName = normalized.substring(0, openParen);
+		String argsStr = normalized.substring(openParen + 1, closeParen);
+		String[] patternArgs = argsStr.split(",");
+		
+		// Find all facts with same predicate name and matching non-anon arguments
+		for (Map.Entry<String, Double> entry : factWeights.entrySet()) {
+			String factKey = entry.getKey();
+			
+			// Check if same predicate
+			if (!factKey.startsWith(predName + "(")) {
+				continue;
+			}
+			
+			// Extract arguments from fact
+			int factOpenParen = factKey.indexOf('(');
+			int factCloseParen = factKey.lastIndexOf(')');
+			if (factOpenParen < 0 || factCloseParen < 0) {
+				continue;
+			}
+			
+			String factArgsStr = factKey.substring(factOpenParen + 1, factCloseParen);
+			String[] factArgs = factArgsStr.split(",");
+			
+			// Check if argument counts match
+			if (factArgs.length != patternArgs.length) {
+				continue;
+			}
+			
+			// Check if all non-anon arguments match
+			boolean allMatch = true;
+			for (int i = 0; i < patternArgs.length; i++) {
+				String patternArg = patternArgs[i].trim();
+				String factArg = factArgs[i].trim();
+				
+				// If pattern has anon*, it's a wildcard - any value matches
+				if (patternArg.startsWith("anon")) {
+					continue;
+				}
+				
+				// Otherwise, must match exactly
+				if (!patternArg.equals(factArg)) {
+					allMatch = false;
+					break;
+				}
+			}
+			
+			if (allMatch) {
+				matches.add(entry.getValue());
+			}
+		}
+		
+		return matches;
+	}
+	
+	/**
 	 * Check if weights were successfully loaded
 	 * 
 	 * @return true if weights loaded

@@ -197,6 +197,10 @@ public class ILPouterLoop implements GleanerFileNameProvider {
     
     // Distance weights feature (Step 4)
     private FactWeightLoader factWeightLoader = null;
+    
+    // Node ID tracking for file naming
+    private int nextNodeId = 0;
+    private java.util.Map<TreeStructuredTheoryInteriorNode, Integer> nodeIdMap = new java.util.HashMap<TreeStructuredTheoryInteriorNode, Integer>();
 
 	public ILPouterLoop(String workingDir, String[] args, SearchStrategy strategy, ScoreSingleClause scorer) throws IOException {
 		this(workingDir, null, args, strategy, scorer, new Gleaner(), new DefaultHornClauseContext(new HandleFOPCstrings()), false, false);
@@ -777,20 +781,37 @@ public class ILPouterLoop implements GleanerFileNameProvider {
                             // Write clause evaluations to file and print comparison if debug mode is enabled
                             int currentDepth = interiorNode.getLevel();
                             if (BranchStats.ENABLE_DETAILED_DEBUG && !BranchStats.evaluatedClauses.isEmpty()) {
-                                // Determine branch name (true or false) from parent path
-                                String branchName = "root";
-                                if (currentDepth > 0) {
-                                    // Get the last boolean in path to determine if this is true or false branch
-                                    List<Boolean> path = interiorNode.returnBoolPath();
-                                    if (path != null && !path.isEmpty()) {
-                                        branchName = path.get(path.size() - 1) ? "true" : "false";
-                                    }
-                                }
-                                
-                                // Write clause evaluations to file
-                                String modelDir = workingDirectory != null ? workingDirectory : ".";
-                                String outputPath = modelDir + "/node_" + currentDepth + "_" + branchName + ".txt";
-                                BranchStats.writeClausesToFile(outputPath, currentDepth, branchName);
+						// Determine branch name and node numbering
+						// Assign node ID if not already assigned
+						if (!nodeIdMap.containsKey(interiorNode)) {
+							nodeIdMap.put(interiorNode, nextNodeId++);
+						}
+						int nodeId = nodeIdMap.get(interiorNode);
+						String branchName;
+						String filename;
+						
+						if (currentDepth == 0) {
+							// Root node
+							branchName = "base";
+							filename = "node_0_base.txt";
+						} else {
+							// Get parent node ID and branch direction
+							TreeStructuredTheoryInteriorNode parent = interiorNode.getParent();
+							Integer parentIdObj = (parent != null) ? nodeIdMap.get(parent) : null;
+							int parentId = (parentIdObj != null) ? parentIdObj : 0;
+							
+							// Determine if this is true or false branch from path
+							List<Boolean> path = interiorNode.returnBoolPath();
+							boolean isTrueBranch = (path != null && !path.isEmpty()) ? path.get(path.size() - 1) : true;
+							branchName = isTrueBranch ? "true" : "false";
+							
+							filename = "node_" + nodeId + "_from_node_" + parentId + "_" + branchName + ".txt";
+						}
+						
+						// Write clause evaluations to file
+						String modelDir = workingDirectory != null ? workingDirectory : ".";
+						String outputPath = modelDir + "/" + filename;
+						BranchStats.writeClausesToFile(outputPath, nodeId, branchName);
                                 
                                 // Print clause comparison to console
                                 BranchStats.printClauseComparison();

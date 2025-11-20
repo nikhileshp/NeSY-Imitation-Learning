@@ -570,6 +570,33 @@ public final class WILLSetup {
 				// Pass loader to outer loop
 				getOuterLooper().setFactWeightLoader(factWeightLoader);
 				Utils.println("% Distance weights enabled with " + factWeightLoader.getWeightCount() + " fact weights.");
+				
+				// Also configure grounding penalty on the scorer if it's a ScoreRegressionNode
+				ScoreSingleClause scorer = (ScoreSingleClause) getInnerLooper().scorer;
+				if (scorer instanceof ScoreRegressionNode) {
+					ScoreRegressionNode regScorer = (ScoreRegressionNode) scorer;
+					regScorer.setWeightLoader(factWeightLoader);
+					
+					// Read grounding penalty parameters from system properties
+					double threshold = 0.5;
+					double alpha = 0.1;
+					double beta = 0.5;
+					String aggStrategy = "min";
+					
+					String thresholdStr = System.getProperty("grounding.penalty.threshold");
+					String alphaStr = System.getProperty("grounding.penalty.alpha");
+					String betaStr = System.getProperty("grounding.penalty.beta");
+					String strategyStr = System.getProperty("grounding.penalty.strategy");
+					
+					if (thresholdStr != null) threshold = Double.parseDouble(thresholdStr);
+					if (alphaStr != null) alpha = Double.parseDouble(alphaStr);
+					if (betaStr != null) beta = Double.parseDouble(betaStr);
+					if (strategyStr != null) aggStrategy = strategyStr;
+					
+					regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy);
+					Utils.println("% Grounding penalty configured: threshold=" + threshold + 
+						" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy);
+				}
 			} else {
 				Utils.println("% Distance weights flag set but weights not loaded. Using default weight 1.0.");
 			}
@@ -1613,6 +1640,35 @@ public final class WILLSetup {
 		try {
 			SearchStrategy         strategy = new BestFirstSearch();
 			ScoreSingleClause        scorer = (cmdArgs.isLearnOCC() ? new ScoreOCCNode() :  new ScoreRegressionNode(cmdArgs.isLearnMLN()));
+			
+			// Configure grounding penalty if fact weights are loaded
+			if (factWeightLoader != null && scorer instanceof ScoreRegressionNode) {
+				ScoreRegressionNode regScorer = (ScoreRegressionNode) scorer;
+				regScorer.setWeightLoader(factWeightLoader);
+				
+			// Enable grounding penalty with configurable parameters
+			// These can be set via command-line or environment variables
+			double threshold = 0.5;  // Default threshold
+			double alpha = 0.1;      // Default reward per high-attention grounding
+			double beta = 0.5;       // Default penalty per low-attention grounding
+			String aggStrategy = "min"; // Default aggregation strategy
+			
+			// Read from system properties if set
+			String thresholdStr = System.getProperty("grounding.penalty.threshold");
+			String alphaStr = System.getProperty("grounding.penalty.alpha");
+			String betaStr = System.getProperty("grounding.penalty.beta");
+			String strategyStr = System.getProperty("grounding.penalty.strategy");
+			
+			if (thresholdStr != null) threshold = Double.parseDouble(thresholdStr);
+			if (alphaStr != null) alpha = Double.parseDouble(alphaStr);
+			if (betaStr != null) beta = Double.parseDouble(betaStr);
+			if (strategyStr != null) aggStrategy = strategyStr;
+			
+			regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy);
+			Utils.println("% Grounding penalty configured: threshold=" + threshold + 
+				" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy);
+			}
+			
 			// We're (sometimes) using A SMALL INDEX HERE, since the memory needs are already very large (i.e., trade off time for space).
 			// We need to keep all the literals related to a specific proof (i.e., test of a hypothesis) around, but are willing to redo between proofs.
 			// if (runningLargeTask) { // TODO - add 'runningLargeTask' to the passed-in arguments.

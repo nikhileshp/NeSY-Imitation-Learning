@@ -56,6 +56,10 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 	protected double  score           = Double.NaN; // Cache these to save recomputing (recomputing fast except for regression?).
 	private double  posCoverage     = -1.0;     //   Also, each child node only stores the extensions to the clause body.
 	protected double  negCoverage     = -1.0; // Everything is done with WEIGHTED examples (including the seeds).
+	// Penalty tracking for debug output
+	public double lastLengthSingletonPenalty = 0.0;
+	public double lastGroundingPenalty = 0.0;
+	public double lastTotalPenalty = 0.0;
 	protected int     numberOfNewVars = 0;    // There is a max number of new (i.e., output) variables in a clause.  This is the total all the way to the root.
 	protected PredicateSpec enabler; // This is the mode that was used to create this node.  Used (at least) when dropping a literal in a clause (so can tell if the later literals are still 'legally' present).  Not clear it is worth the space just for that, but might be useful somewhere down the road.  
 	protected List<Type>                 typesPresent = null; // Keep track of the different types of terms added by this node.  If there is a need to reduce the size of nodes, could compute this when needed from the map below.
@@ -2035,6 +2039,14 @@ public class SingleClauseNode extends SearchNode implements Serializable{
     
     public HashMap<Example, Set<BindingList>> cachedBindingLists = new HashMap<Example, Set<BindingList>>();
     private boolean cacheBLs = false;
+    
+	/**
+	 * Enable caching of binding lists for grounding penalty calculation
+	 */
+	public void enableBindingListCaching() {
+		this.cacheBLs = true;
+	}
+	
 	public void resetGroundingCache() {
 		cachedBindingLists = null;
 	}
@@ -2073,13 +2085,13 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 				num += getNumberOfGroundingsForRegressionEx(eg, bl2, true);
 			}
 		} else {
-			num = getNumberOfGroundingsForRegressionEx(eg, theta, false);
-		}
-		if (num < 10) {
-			// Easy to recompute the bindings.
-			cachedBindingLists.remove(eg);
-		}
-		if (num == 0) {
+		num = getNumberOfGroundingsForRegressionEx(eg, theta, false);
+	}
+	if (num < 10 && !cacheBLs) {
+		// Easy to recompute the bindings (but keep them if explicitly caching)
+		cachedBindingLists.remove(eg);
+	}
+	if (num == 0) {
 			Utils.waitHere("Number of groundings = 0 for " + eg + " with " + getClause() + " BL: " + theta + " Lit: " + literalAdded);
 		}
 		
@@ -2142,23 +2154,32 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 		long neg_num = learnClause.numberOfGroundings(clause, blSet);
 		num = pos_num - neg_num;
 		*/
-		Set<BindingList> blSet = null;
-		if (cacheBLs) { blSet = new HashSet<BindingList>();}
-		//num = learnClause.numberOfGroundings(clause, blSet);
-		num = groundingsCalc.countGroundingsForConjunction(new_body, new ArrayList<Literal>(), blSet);
-		if (num <= 0) {
-			// Utils.waitHere("Number of groundings: " + num + " for " + eg + " in " + this.getClause());
+	Set<BindingList> blSet = null;
+	if (cacheBLs) { blSet = new HashSet<BindingList>();}
+	//num = learnClause.numberOfGroundings(clause, blSet);
+	num = groundingsCalc.countGroundingsForConjunction(new_body, new ArrayList<Literal>(), blSet);
+	if (num <= 0) {
+		// Utils.waitHere("Number of groundings: " + num + " for " + eg + " in " + this.getClause());
+	}
+	// Utils.println("%         SingleClauseNode: cacheBLs=" + cacheBLs + " blSet=" + (blSet == null ? "null" : "size " + blSet.size()) + " num=" + num);
+	if (cacheBLs) {
+		// If blSet is empty but we have exactly 1 grounding, add theta as the single binding
+		// If num > 1, we can't reconstruct the bindings so skip caching for this example
+		if (blSet.isEmpty() && num == 1) {
+			blSet.add(theta);
+			// Utils.println("%         SingleClauseNode: blSet was empty, added theta binding for single grounding");
 		}
-		if (cacheBLs) {
-			for (BindingList new_bl : blSet) {
-				new_bl.addBindings(theta);
-			}
+		// Note: if num > 1 and blSet is empty, bindings won't be cached for this example
 		
-			if (!cachedBindingLists.containsKey(eg)) {
-				if (!blSet.isEmpty()) {
-					cachedBindingLists.put(eg, blSet);
-				}
-			} else {
+		for (BindingList new_bl : blSet) {
+			new_bl.addBindings(theta);
+		}
+	
+		if (!cachedBindingLists.containsKey(eg)) {
+			if (!blSet.isEmpty()) {
+				cachedBindingLists.put(eg, blSet);
+			}
+		} else {
 				if (!isPartial) {
 					Set<BindingList> cachedbl = cachedBindingLists.get(eg);
 						for (BindingList bindingList : cachedbl) {
