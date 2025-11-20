@@ -36,9 +36,9 @@ MODEL_BASE="rdn_models/seaquest/single_t/54_RZ_2461867/negpos_${NEG_POS_RATIO}_t
 
 # Grounding penalty parameters
 GROUNDING_THRESHOLD=0.7
-GROUNDING_ALPHA=0.1
-GROUNDING_BETA=0.5
-GROUNDING_STRATEGY="min"
+GROUNDING_ALPHA=1
+GROUNDING_BETA=0
+GROUNDING_STRATEGY="max"
 
 # Debug flag for Java
 if [ "$DEBUG_MODE" == "true" ]; then

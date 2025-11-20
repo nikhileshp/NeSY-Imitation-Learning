@@ -83,7 +83,8 @@ if [ "$WEIGHTED" == "true" ] && [ "$ONLY_TEST" == "false" ]; then
             -trees "$TREES" \
             -aucJarPath "$AUC_JAR" \
             -negPosRatio "$NEG_POS_RATIO" \
-            -model "$MODEL" 
+            -model "$MODEL" \
+            -debugScoring
             
             
         echo "✅ Completed training for $TARGET"
@@ -122,7 +123,8 @@ elif [ "$ONLY_TEST" == "false" ]; then
             -trees "$TREES" \
             -aucJarPath "$AUC_JAR" \
             -negPosRatio "$NEG_POS_RATIO" \
-            -model "$MODEL" 
+            -model "$MODEL" \
+            -debugScoring
             
         echo "✅ Completed training for $TARGET"
     done

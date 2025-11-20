@@ -286,8 +286,10 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	}
 	
 	/**
-	 * Aggregate weights of multiple grounded predicates using configured strategy.
-	 * Only considers multi-argument predicates that reference game objects.
+	 * Aggregate weights of multiple grounded predicates using Cartesian product.
+	 * For each unique anonymous variable, collect its possible weights.
+	 * Then compute all combinations (Cartesian product) and aggregate using min across predicates.
+	 * Finally, apply the strategy (min/max) across all combinations.
 	 * 
 	 * @param groundedLiterals List of grounded literals in the clause body (after applyTheta)
 	 * @param originalLiterals List of original literals (before applyTheta)
@@ -299,23 +301,10 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 			return 1.0;  // Default: no penalty
 		}
 		
-		List<Double> weights = new ArrayList<Double>();
-		int sampleCount = 0;
+		// Map: anonVar -> List of (predicate, weights) pairs
+		java.util.Map<String, java.util.List<java.util.List<Double>>> anonVarWeightsMap = new java.util.HashMap<>();
 		
-		// Debug: Print first few grounded literals to see their actual content
-		// if (sampleCount == 0 && groundedLiterals != null && !groundedLiterals.isEmpty()) {
-		// 	Utils.println("%           DEBUG: Grounded literals (" + groundedLiterals.size() + " total):");
-		// 	for (int debugIdx = 0; debugIdx < Math.min(2, groundedLiterals.size()); debugIdx++) {
-		// 		Literal glit = groundedLiterals.get(debugIdx);
-		// 		Utils.println("%             [" + debugIdx + "] " + glit + " (args=" + glit.numberArgs() + ")");
-		// 		for (int argIdx = 0; argIdx < glit.numberArgs(); argIdx++) {
-		// 			Term arg = glit.getArgument(argIdx);
-		// 			Utils.println("%               arg[" + argIdx + "] = " + arg + " (type: " + arg.getClass().getSimpleName() + ")");
-		// 		}
-		// 	}
-		// }
-		
-		// Process each grounded literal directly
+		// Collect weights for each anonymous variable in each predicate
 		for (int i = 0; i < groundedLiterals.size(); i++) {
 			Literal groundedLit = groundedLiterals.get(i);
 			
@@ -324,94 +313,196 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 				continue;
 			}
 			
-			// Construct fact string from the grounded literal
-			StringBuilder factBuilder = new StringBuilder();
-			factBuilder.append(groundedLit.predicateName.name.toLowerCase());
-			factBuilder.append("(");
-			
-			for (int argIdx = 0; argIdx < groundedLit.numberArgs(); argIdx++) {
-				if (argIdx > 0) {
-					factBuilder.append(",");
-				}
+			// Typically first arg is state, second is the object (possibly anon)
+			if (groundedLit.numberArgs() >= 2) {
+				Term firstArg = groundedLit.getArgument(0);
+				Term secondArg = groundedLit.getArgument(1);
 				
-				Term arg = groundedLit.getArgument(argIdx);
-				factBuilder.append(arg.toString().toLowerCase());
-			}
-			factBuilder.append(")");
-			
-			String factPattern = factBuilder.toString();
-			
-			// Get all matching weights (handles anon* wildcards)
-			java.util.List<Double> matchingWeights = weightLoader.getMatchingWeights(factPattern);
-			
-			// Debug: print first few
-			// if (sampleCount < 3) {
-			// 	Utils.println("%           DEBUG: pattern=" + factPattern + " matches=" + matchingWeights.size());
-			// 	if (!matchingWeights.isEmpty()) {
-			// 		Utils.println("%                  weights: " + matchingWeights);
-			// 	}
-			// 	sampleCount++;
-			// }
-			
-			// Add all matching weights
-			weights.addAll(matchingWeights);
-			
-			// If no matches found, use default of 1.0
-			if (matchingWeights.isEmpty()) {
-				weights.add(1.0);
+				String state = firstArg.toString().toLowerCase();
+				String secondArgStr = secondArg.toString().toLowerCase();
+				
+				// Check if second argument is an anonymous variable
+				if (secondArgStr.startsWith("anon")) {
+					String anonVar = secondArgStr;
+					String predicate = groundedLit.predicateName.name.toLowerCase();
+					
+					// Infer object type from predicate name
+					String objectType = inferObjectTypeFromPredicate(predicate);
+					
+					if (objectType != null) {
+						// Register this anon variable with its state and type
+						weightLoader.registerAnonVariable(anonVar, state, objectType + "0");
+						
+						// Get cached weights for this anon variable
+						java.util.List<Double> anonWeights = weightLoader.getWeightsForAnonVar(anonVar);
+						
+						if (anonWeights.isEmpty()) {
+							anonWeights = new java.util.ArrayList<>();
+							anonWeights.add(1.0);
+						}
+						
+						// Store these weights for this anon variable
+						if (!anonVarWeightsMap.containsKey(anonVar)) {
+							anonVarWeightsMap.put(anonVar, new java.util.ArrayList<>());
+						}
+						anonVarWeightsMap.get(anonVar).add(anonWeights);
+					}
+				}
 			}
 		}
 		
-		if (weights.isEmpty()) {
-			// No multi-argument predicates, so no object-based attention to evaluate
-			// Return -1 as a special value to indicate this grounding should be skipped
+		if (anonVarWeightsMap.isEmpty()) {
+			// No anonymous variables, skip this grounding
 			return -1.0;
 		}
 		
-		// Apply aggregation strategy
+		// Compute Cartesian product of grounding weights
+		java.util.List<Double> allGroundingWeights = new java.util.ArrayList<>();
+		computeCartesianProduct(anonVarWeightsMap, allGroundingWeights);
+		
+		if (allGroundingWeights.isEmpty()) {
+			return -1.0;
+		}
+		
+		// Apply final aggregation strategy across all grounding combinations
 		switch (aggregationStrategy.toLowerCase()) {
 			case "min":
-				// Conservative: all predicates must be attended
+				// Return minimum weight across all possible groundings
 				double minWeight = Double.MAX_VALUE;
-				for (double w : weights) {
+				for (double w : allGroundingWeights) {
 					minWeight = Math.min(minWeight, w);
 				}
 				return minWeight;
 				
 			case "max":
-				// Optimistic: any predicate attended is good
+				// Return maximum weight across all possible groundings
 				double maxWeight = 0.0;
-				for (double w : weights) {
+				for (double w : allGroundingWeights) {
 					maxWeight = Math.max(maxWeight, w);
 				}
 				return maxWeight;
 				
 			case "avg":
-				// Average attention across all predicates
+				// Average weight across all possible groundings
 				double sum = 0.0;
-				for (double w : weights) {
+				for (double w : allGroundingWeights) {
 					sum += w;
 				}
-				return sum / weights.size();
+				return sum / allGroundingWeights.size();
 				
 			case "proportion":
-				// Proportion of predicates above threshold
+				// Proportion of groundings above threshold
 				int aboveThreshold = 0;
-				for (double w : weights) {
+				for (double w : allGroundingWeights) {
 					if (w >= groundingWeightThreshold) {
 						aboveThreshold++;
 					}
 				}
-				return (double) aboveThreshold / weights.size();
+				return (double) aboveThreshold / allGroundingWeights.size();
 				
 			default:
-				// Default to minimum (conservative)
 				Utils.println("% WARNING: Unknown aggregation strategy '" + aggregationStrategy + "', using 'min'");
 				double min = Double.MAX_VALUE;
-				for (double w : weights) {
+				for (double w : allGroundingWeights) {
 					min = Math.min(min, w);
 				}
 				return min;
 		}
+	}
+	
+	/**
+	 * Compute Cartesian product of all grounding weights.
+	 * For each anonymous variable, we have multiple predicates, each with multiple weights.
+	 * We need to compute all combinations where we pick one weight from each predicate,
+	 * aggregate them with MIN across predicates (for each anon var),
+	 * then combine all anon vars with MIN again.
+	 */
+	private void computeCartesianProduct(java.util.Map<String, java.util.List<java.util.List<Double>>> anonVarWeightsMap,
+	                                      java.util.List<Double> result) {
+		// Convert map to list for easier iteration
+		java.util.List<String> anonVars = new java.util.ArrayList<>(anonVarWeightsMap.keySet());
+		
+		// For each anon var, compute Cartesian product of its predicate weights
+		java.util.List<java.util.List<Double>> anonVarCombinedWeights = new java.util.ArrayList<>();
+		
+		for (String anonVar : anonVars) {
+			java.util.List<java.util.List<Double>> predicateWeightLists = anonVarWeightsMap.get(anonVar);
+			
+			// If multiple predicates reference this anon var, compute Cartesian product
+			// and take MIN across predicates for each combination
+			java.util.List<Double> combinedWeightsForAnon = new java.util.ArrayList<>();
+			computePredicateCartesianProduct(predicateWeightLists, 0, new java.util.ArrayList<>(), combinedWeightsForAnon);
+			
+			anonVarCombinedWeights.add(combinedWeightsForAnon);
+		}
+		
+		// Now compute Cartesian product across all anon vars, taking MIN
+		computeFinalCartesianProduct(anonVarCombinedWeights, 0, new java.util.ArrayList<>(), result);
+	}
+	
+	/**
+	 * Recursive helper to compute Cartesian product of predicates for a single anon var.
+	 * Takes MIN across predicates for each combination.
+	 */
+	private void computePredicateCartesianProduct(java.util.List<java.util.List<Double>> predicateWeightLists,
+	                                               int predicateIndex,
+	                                               java.util.List<Double> current,
+	                                               java.util.List<Double> result) {
+		if (predicateIndex == predicateWeightLists.size()) {
+			// Base case: we have one weight from each predicate, take MIN
+			double minWeight = Double.MAX_VALUE;
+			for (double w : current) {
+				minWeight = Math.min(minWeight, w);
+			}
+			result.add(minWeight);
+			return;
+		}
+		
+		// Recursive case: try each weight from current predicate
+		java.util.List<Double> weights = predicateWeightLists.get(predicateIndex);
+		for (double weight : weights) {
+			current.add(weight);
+			computePredicateCartesianProduct(predicateWeightLists, predicateIndex + 1, current, result);
+			current.remove(current.size() - 1);
+		}
+	}
+	
+	/**
+	 * Recursive helper to compute Cartesian product across all anon vars.
+	 * Takes MIN across anon vars for each combination.
+	 */
+	private void computeFinalCartesianProduct(java.util.List<java.util.List<Double>> anonVarCombinedWeights,
+	                                           int anonIndex,
+	                                           java.util.List<Double> current,
+	                                           java.util.List<Double> result) {
+		if (anonIndex == anonVarCombinedWeights.size()) {
+			// Base case: we have one weight from each anon var, take MIN
+			double minWeight = Double.MAX_VALUE;
+			for (double w : current) {
+				minWeight = Math.min(minWeight, w);
+			}
+			result.add(minWeight);
+			return;
+		}
+		
+		// Recursive case: try each combined weight from current anon var
+		java.util.List<Double> weights = anonVarCombinedWeights.get(anonIndex);
+		for (double weight : weights) {
+			current.add(weight);
+			computeFinalCartesianProduct(anonVarCombinedWeights, anonIndex + 1, current, result);
+			current.remove(current.size() - 1);
+		}
+	}
+	
+	/**
+	 * Helper method to infer object type from predicate name
+	 */
+	private String inferObjectTypeFromPredicate(String predicate) {
+		if (predicate.contains("diver")) return "diver";
+		if (predicate.contains("submarine")) return "enemysubmarine";
+		if (predicate.contains("enemy")) return "enemy";
+		if (predicate.contains("missile")) return "missile";
+		if (predicate.contains("oxygen")) return "oxygen";
+		return null;
 	}
 }
