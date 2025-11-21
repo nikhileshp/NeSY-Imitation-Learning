@@ -312,8 +312,7 @@ for action in primitive_actions:
   train_dict[action].facts = train_facts
   test_dict[action].facts = test_facts
 
-  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=20,number_of_cycles=20, node_size=int(args.node_size), 
-                               max_tree_depth=int(args.max_tree_depth))
+  bk_dict[action] = Background(modes=mode, bridgers=bridgers, number_of_clauses=20,number_of_cycles=20)
   with open(f"{base_dir}/"+action+"/train/"+f"train_bk.txt", "w") as f:
     f.write(str(bk_dict[action]))
   with open(f"{base_dir}/"+action+"/test/"+f"test_bk.txt", "w") as f:
