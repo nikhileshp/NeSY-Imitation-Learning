@@ -205,6 +205,13 @@ public class CommandLineArguments {
 	
 	public static final String testNegsToPosRatio = "testNegPosRatio";
 	private double testNegsToPosRatioVal = -1;
+	
+	public static final String seedFlag = "seed";
+	private long seedVal = 1729; // Default to 1729 for backward compatibility
+	
+	public long getSeedVal() {
+		return seedVal;
+	}
 	public static final String testPosString      = "testPosString"; // Allow overriding of the default.
 	private String stringForTestsetPos = "pos";
 	public static final String testNegString      = "testNegString"; // Allow overriding of the default.
@@ -795,6 +802,10 @@ public class CommandLineArguments {
 			}
 			if (argMatches(args[i], stepLen)) {
 				stepLenVal=Double.parseDouble(args[++i]);
+				continue;
+			}
+			if (argMatches(args[i], seedFlag)) {
+				seedVal=Long.parseLong(args[++i]);
 				continue;
 			}
 			if (argMatches(args[i], treelearner)) {	

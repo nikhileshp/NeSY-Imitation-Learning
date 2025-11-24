@@ -267,7 +267,7 @@ public class InferBoostedRDN {
 
 				// Rather than randomly sampling, we sample deterministically so that all runs get the same testset examples
 				// Since the seed is fixed,the random number generator would return the same values.
-				Random rand = new Random(1729);
+				Random rand = new Random(cmdArgs.getSeedVal());
 
 				// Reverse order so that we can delete it.
 				neg=0;
