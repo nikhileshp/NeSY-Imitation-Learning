@@ -9,12 +9,12 @@ modes=["aboveOfDiver(+state, +diver).",
 "aboveOfEnemy(+state, +enemy).",
 "aboveOfMissile(+state, +missile). ",
 "aboveOfSubmarine(+state, +submarine).",
-"aboveWater_surface(+state).",
+"aboveWatersurface(+state).",
 "belowOfDiver(+state, +diver).",
 "belowOfEnemy(+state, +enemy).",
 "belowOfMissile(+state, +missile).",
 "belowOfSubmarine(+state, +submarine).",
-"belowWater_surface(+state).",
+"belowWatersurface(+state).",
 "diversEmpty(+state).",
 "diversNotfull(+state).",
 "diversfull(+state).",
@@ -64,7 +64,7 @@ parser.add_argument("--file", type=str, default="", help="Relationship file")
 parser.add_argument("--node_size", type=str, default=2, help="Node size for background")
 parser.add_argument("--max_tree_depth", type=str, default=3, help="Max tree depth for background")
 parser.add_argument("--remove_0_weights", action="store_true", help="Remove facts with 0.00 weights from train_facts.txt using fact_weights.tsv")
-parser.add_argument("--all", type=bool, default=False, help="Process all actions together")
+parser.add_argument("--all", type=bool, default=False, help="Process all trajectories together")
 
 
 args = parser.parse_args()
@@ -211,13 +211,16 @@ for pa in primitive_actions:
                 if "(" not in rel:
                   rel = rel+"()"
                 rel = rel.replace("(","(" + s_id + ",")
+                rel = rel.replace("_","")
                 rel = rel.replace(",)", ")")
                 if not rel.endswith("."):
                   rel += "."
                 rel = rel.lower()
                 rel = rel.replace("_", "")
                 f.write(rel + "\n")
-                f2.write(rel + " " + w + "\n")
+                # If relationship contains aboveWater belowWater facingRight facingLeft visible do not write
+                if "oxygen" not in rel and "divers" not in rel and "abovewater" not in rel and "belowwater" not in rel and "facingright" not in rel and "facingleft" not in rel and "visible" not in rel:
+                  f2.write(rel + " " + w + "\n")
 
          
   
@@ -232,6 +235,7 @@ for pa in primitive_actions:
             if "(" not in rel:
               rel = rel+"()"
             rel = rel.replace("(","(" + s_id + ",")
+            rel = rel.replace("_","")
             rel = rel.replace(",)", ")")
             if not rel.endswith("."):
               rel += "."
