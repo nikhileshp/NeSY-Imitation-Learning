@@ -16,7 +16,7 @@ for action in os.listdir(base_dir):
     if os.path.isdir(action_dir):
         # Check for train/bk.pl
         train_dir = os.path.join(action_dir, "train")
-        bk_file_path = os.path.join(train_dir, "bk.pl")
+        bk_file_path = os.path.join(train_dir, "train_bk.txt")
         
         if os.path.exists(bk_file_path):
             # Read the existing bk.pl file
@@ -27,7 +27,7 @@ for action in os.listdir(base_dir):
             with open(bk_file_path, "w") as file:
                 for line in lines:
                     if line.startswith("setParam: max"):
-                        file.write(f"setParam: maxTreeDepth={args.max_depth}).\n")
+                        file.write(f"setParam: maxTreeDepth={args.max_depth}.\n")
                     else:
                         file.write(line)
             
@@ -37,7 +37,7 @@ for action in os.listdir(base_dir):
 
         # Also check for test/bk.pl
         test_dir = os.path.join(action_dir, "test")
-        bk_file_path = os.path.join(test_dir, "bk.pl")
+        bk_file_path = os.path.join(test_dir, "test_bk.txt")
 
         if os.path.exists(bk_file_path):
             # Read the existing bk.pl file
@@ -48,7 +48,7 @@ for action in os.listdir(base_dir):
             with open(bk_file_path, "w") as file:
                 for line in lines:
                     if line.startswith("setParam: max"):
-                        file.write(f"setParam: maxTreeDepth={args.max_depth}).\n")
+                        file.write(f"setParam: maxTreeDepth={args.max_depth}.\n")
                     else:
                         file.write(line)
             

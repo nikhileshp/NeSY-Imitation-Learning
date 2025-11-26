@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e  # stop if any command fails
 
+# Check for correct conda environment
+if [ "$CONDA_DEFAULT_ENV" != "nesy-il" ]; then
+    echo "Error: Conda environment 'nesy-il' is not active."
+    echo "Current environment: $CONDA_DEFAULT_ENV"
+    echo "Please run: conda activate nesy-il"
+    exit 1
+fi
 # Parse command line arguments
 MAX_DEPTH=$1
 NUM_TREES=$2
@@ -48,13 +55,12 @@ SEEDS=(1729 42 123 456 789)
 GROUNDING_THRESHOLD=0.7
 GROUNDING_ALPHA=0.1
 GROUNDING_BETA=0
-GROUNDING_STRATEGY="max"
+GROUNDING_STRATEGY="min"
 
 
 # Base model directory (will be extended with seed info)
 MODEL_BASE_PREFIX="rdn_models/seaquest/all/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}_grounding_penalty_${GROUNDING_ALPHA}"
-
-# Debug flag for Java
+# MODEL_BASE_PREFIX="rdn_models/seaquest/new_runs/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}_new_all"
 if [ "$DEBUG_MODE" == "true" ]; then
     DEBUG_FLAG="-debugScoring"
     echo "Debug scoring enabled - verbose output will be generated"
@@ -63,7 +69,7 @@ else
 fi
 
 # Actions to train/test
-ACTIONS=("fire" "up" "down" "left" "right" "noop")
+ACTIONS=("noop")
 
 if [ "$TEST_ONLY" == "true" ]; then
     echo "=========================================="
@@ -126,7 +132,7 @@ MODEL_DIRS=("${MODEL_BASE_PREFIX}")
 
 echo "Testing configuration: $(basename $MODEL_BASE_PREFIX)"
 echo ""
-
+ACTIONS=("fire" "up" "down" "left" "right" "noop")
 # Loop through each model directory
 for MODEL_BASE in "${MODEL_DIRS[@]}"; do
     echo "=========================================="
@@ -136,12 +142,12 @@ for MODEL_BASE in "${MODEL_DIRS[@]}"; do
     # Loop through each seed
     for SEED in "${SEEDS[@]}"; do
         echo ""
-        echo "--- Testing with seed: $SEED ---"
+        echo "--- Testing with Negpos Ratio $NEG_POS_RATIO and seed $SEED ---"
         
         for action in "${ACTIONS[@]}"; do
             TEST_DIR="$DATA_BASE/$action/test"
             MODEL_DIR="$MODEL_BASE/$action"
-            LOG_FILE="${MODEL_DIR}/action_test_infer_seed_${SEED}.log"
+            LOG_FILE="${MODEL_DIR}/action_test_infer_seed_${SEED}_negpos_${NEG_POS_RATIO}.log"
             
             # Check if model exists
             if [ ! -d "$MODEL_DIR/bRDNs" ]; then
@@ -177,6 +183,68 @@ for MODEL_BASE in "${MODEL_DIRS[@]}"; do
     done
     echo ""
 done
+
+# Use the same directory as training
+echo "Testing model: $MODEL_BASE_PREFIX"
+MODEL_DIRS=("${MODEL_BASE_PREFIX}")
+
+echo "Testing configuration: $(basename $MODEL_BASE_PREFIX)"
+echo ""
+
+NEG_POS_RATIO=1
+# Loop through each model directory
+for MODEL_BASE in "${MODEL_DIRS[@]}"; do
+    echo "=========================================="
+    echo "Testing model: $(basename $MODEL_BASE)"
+    echo "=========================================="
+    
+    # Loop through each seed
+    for SEED in "${SEEDS[@]}"; do
+        echo ""
+        echo "--- Testing with negpos ratio $NEG_POS_RATIO and seed: $SEED ---"
+        
+        for action in "${ACTIONS[@]}"; do
+            TEST_DIR="$DATA_BASE/$action/test"
+            MODEL_DIR="$MODEL_BASE/$action"
+            LOG_FILE="${MODEL_DIR}/action_test_infer_seed_${SEED}_negpos_${NEG_POS_RATIO}.log"
+            
+            # Check if model exists
+            if [ ! -d "$MODEL_DIR/bRDNs" ]; then
+                echo "⚠️  Skipping $action - model not found at $MODEL_DIR"
+                continue
+            fi
+            
+            mkdir -p "$MODEL_DIR"
+            > "$LOG_FILE"
+            
+            echo "Testing $action with seed $SEED..."
+            
+            {
+                echo "[START] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
+                java -Dgrounding.penalty.threshold=$GROUNDING_THRESHOLD \
+                     -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
+                     -Dgrounding.penalty.beta=$GROUNDING_BETA \
+                     -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                     -jar "$JAR" \
+                     -i \
+                     -model "$MODEL_DIR" \
+                     -test "$TEST_DIR" \
+                     -target "action" \
+                     -trees "$NUM_TREES" \
+                     -testNegPosRatio "$NEG_POS_RATIO" \
+                     -seed "$SEED" \
+                     -aucJarPath "$AUC_JAR"
+                echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
+            } >> "$LOG_FILE" 2>&1
+            
+            echo "✅ Completed test inference for $action (seed $SEED)"
+        done
+    done
+    echo ""
+done
+
+
+NEG_POS_RATIO=2
 
 # ============================================================================
 # STEP 3: TRAINING INFERENCE (for calibration)

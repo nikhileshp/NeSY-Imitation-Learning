@@ -1,0 +1,195 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 98,066
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 17:33:01 11/25/25.  [Using 2,838,331,288 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, C), visiblediver(A, D) )
+%   | then return 0.07300910691487095;  // std dev = 85.927, 43,768.000 (wgt'ed) examples reached here.  /* #neg=34,364 #pos=9,404 */
+%   | else return 0.11876498785829248;  // std dev = 69.224, 24,868.000 (wgt'ed) examples reached here.  /* #neg=18,387 #pos=6,481 */
+%   else if ( visibleenemysubmarine(A, E), belowofsubmarine(A, E) )
+%   | then return -0.01984524443933268;  // std dev = 30.936, 8,934.000 (wgt'ed) examples reached here.  /* #neg=7,844 #pos=1,090 */
+%   | else return 0.6203464181588031;  // std dev = 61.194, 20,660.000 (wgt'ed) examples reached here.  /* #neg=4,913 #pos=15,747 */
+
+
+% Clauses:
+
+action(A, B, 0.07300910691487095) :- 
+     diversnotfull(A), 
+     visiblediver(A, C), 
+     visiblediver(A, D), 
+     !. // Clause #1.
+
+action(A, B, 0.11876498785829248) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, -0.01984524443933268) :- 
+     visibleenemysubmarine(A, C), 
+     belowofsubmarine(A, C), 
+     !. // Clause #3.
+
+action(A, B, 0.6203464181588031) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.07300910691487095) :-  /* #neg=34,364 #pos=9,404 */ 
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.11876498785829248) :-  /* #neg=18,387 #pos=6,481 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.01984524443933268) :-  /* #neg=7,844 #pos=1,090 */ 
+   visibleenemysubmarine(a, uniqueVar1),
+   belowofsubmarine(a, uniqueVar1),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, 0.6203464181588031) :-  /* #neg=4,913 #pos=15,747 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   belowofsubmarine(a, uniqueVar1)
+%   visibleenemysubmarine(a, uniqueVar1)
+%   diversnotfull(a)
+%   visiblediver(a, underscore)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 4, [
+   belowofsubmarine(a, uniqueVar1),
+   visibleenemysubmarine(a, uniqueVar1),
+   diversnotfull(a),
+   visiblediver(a, underscore)]).
+
+%%%%%  WILL-Produced Tree #1 @ 17:33:07 11/25/25.  [Using 2,731,252,360 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, C), visiblediver(A, D) )
+%   | then return 0.07295021422273334;  // std dev = 85.930, 43,780.000 (wgt'ed) examples reached here.  /* #neg=34,376 #pos=9,404 */
+%   | else return 0.12060135269104653;  // std dev = 69.138, 24,694.000 (wgt'ed) examples reached here.  /* #neg=18,213 #pos=6,481 */
+%   else if ( visibleenemysubmarine(A, E), belowofsubmarine(A, E) )
+%   | then return -0.02096828792367074;  // std dev = 30.955, 9,017.000 (wgt'ed) examples reached here.  /* #neg=7,927 #pos=1,090 */
+%   | else return 0.6234952291459234;  // std dev = 60.787, 20,575.000 (wgt'ed) examples reached here.  /* #neg=4,828 #pos=15,747 */
+
+
+% Clauses:
+
+action(A, B, 0.07295021422273334) :- 
+     diversnotfull(A), 
+     visiblediver(A, C), 
+     visiblediver(A, D), 
+     !. // Clause #1.
+
+action(A, B, 0.12060135269104653) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, -0.02096828792367074) :- 
+     visibleenemysubmarine(A, C), 
+     belowofsubmarine(A, C), 
+     !. // Clause #3.
+
+action(A, B, 0.6234952291459234) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.07295021422273334) :-  /* #neg=34,376 #pos=9,404 */ 
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.12060135269104653) :-  /* #neg=18,213 #pos=6,481 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.02096828792367074) :-  /* #neg=7,927 #pos=1,090 */ 
+   visibleenemysubmarine(a, uniqueVar1),
+   belowofsubmarine(a, uniqueVar1),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, 0.6234952291459234) :-  /* #neg=4,828 #pos=15,747 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   belowofsubmarine(a, uniqueVar1)
+%   visiblediver(a, underscore)
+%   visibleenemysubmarine(a, uniqueVar1)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 4, [
+   diversnotfull(a),
+   belowofsubmarine(a, uniqueVar1),
+   visiblediver(a, underscore),
+   visibleenemysubmarine(a, uniqueVar1)]).
+
+//// Loaded checkpoint from rdn_models/seaquest/all/negpos_2_trees_1_depth_1_grounding_penalty_0.1/noop/bRDNs/action.model.ckpt at 17:47:50 11/25/25.
+//// Number of trees loaded:1
+
+//// Also loaded 4 flattened literals from rdn_models/seaquest/all/negpos_2_trees_1_depth_1_grounding_penalty_0.1/noop/bRDNs/action.model.ckptLits

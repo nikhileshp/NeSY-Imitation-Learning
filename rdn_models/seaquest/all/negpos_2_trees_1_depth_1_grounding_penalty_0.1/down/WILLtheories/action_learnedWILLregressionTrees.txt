@@ -1,0 +1,155 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 41,553
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 17:44:25 11/25/25.  [Using 1,686,051,472 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, C), visiblediver(A, D) )
+%   | then return 0.2559730414292308;  // std dev = 66.858, 18,659.000 (wgt'ed) examples reached here.  /* #neg=11,236 #pos=7,423 */
+%   | else return 0.18588573634174313;  // std dev = 47.647, 10,304.000 (wgt'ed) examples reached here.  /* #neg=6,927 #pos=3,377 */
+%   else if ( oxygenok(A) )
+%   | then return 0.1127658981638026;  // std dev = 47.114, 11,696.000 (wgt'ed) examples reached here.  /* #neg=8,718 #pos=2,978 */
+%   | else return -0.13402108727185438;  // std dev = 2.635, 894.000 (wgt'ed) examples reached here.  /* #neg=887 #pos=7 */
+
+
+% Clauses:
+
+action(A, B, 0.2559730414292308) :- 
+     diversnotfull(A), 
+     visiblediver(A, C), 
+     visiblediver(A, D), 
+     !. // Clause #1.
+
+action(A, B, 0.18588573634174313) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, 0.1127658981638026) :- 
+     oxygenok(A), 
+     !. // Clause #3.
+
+action(A, B, -0.13402108727185438) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.2559730414292308) :-  /* #neg=11,236 #pos=7,423 */ 
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.18588573634174313) :-  /* #neg=6,927 #pos=3,377 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.1127658981638026) :-  /* #neg=8,718 #pos=2,978 */ 
+   oxygenok(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.13402108727185438) :-  /* #neg=887 #pos=7 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visiblediver(a, underscore)
+%   oxygenok(a)
+%   diversnotfull(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 3, [
+   visiblediver(a, underscore),
+   oxygenok(a),
+   diversnotfull(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 17:45:13 11/25/25.  [Using 2,442,275,848 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visiblediver(A, C), visiblediver(A, D) )
+%   | then return 0.2559730414292308;  // std dev = 66.858, 18,659.000 (wgt'ed) examples reached here.  /* #neg=11,236 #pos=7,423 */
+%   | else return 0.18588573634174313;  // std dev = 47.647, 10,304.000 (wgt'ed) examples reached here.  /* #neg=6,927 #pos=3,377 */
+%   else if ( oxygenok(A) )
+%   | then return 0.1127658981638026;  // std dev = 47.114, 11,696.000 (wgt'ed) examples reached here.  /* #neg=8,718 #pos=2,978 */
+%   | else return -0.13402108727185438;  // std dev = 2.635, 894.000 (wgt'ed) examples reached here.  /* #neg=887 #pos=7 */
+
+
+% Clauses:
+
+action(A, B, 0.2559730414292308) :- 
+     diversnotfull(A), 
+     visiblediver(A, C), 
+     visiblediver(A, D), 
+     !. // Clause #1.
+
+action(A, B, 0.18588573634174313) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, 0.1127658981638026) :- 
+     oxygenok(A), 
+     !. // Clause #3.
+
+action(A, B, -0.13402108727185438) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.2559730414292308) :-  /* #neg=11,236 #pos=7,423 */ 
+   diversnotfull(a),
+   visiblediver(a, underscore),
+   visiblediver(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.18588573634174313) :-  /* #neg=6,927 #pos=3,377 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.1127658981638026) :-  /* #neg=8,718 #pos=2,978 */ 
+   oxygenok(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.13402108727185438) :-  /* #neg=887 #pos=7 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visiblediver(a, underscore)
+%   oxygenok(a)
+%   diversnotfull(a)
