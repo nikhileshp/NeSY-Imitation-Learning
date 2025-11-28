@@ -1,0 +1,166 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 26,479
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 3:06:20 11/28/25.  [Using 509,702,040 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( belowwatersurface(A), facingleft(A) )
+%   then if ( visiblediver(A, C), samelevelasdiver(A, C) )
+%   | then return 0.7020094707235598;  // std dev = 22.837, 3,958.000 (wgt'ed) examples reached here.  /* #neg=618 #pos=3,340 */
+%   | else return 0.3910080496551925;  // std dev = 48.421, 9,419.000 (wgt'ed) examples reached here.  /* #neg=4,400 #pos=5,019 */
+%   else if ( belowwatersurface(A) )
+%   | then return -0.07959836112840038;  // std dev = 21.038, 7,582.000 (wgt'ed) examples reached here.  /* #neg=7,110 #pos=472 */
+%   | else return -0.13840903591498507;  // std dev = 4.351, 5,520.000 (wgt'ed) examples reached here.  /* #neg=5,501 #pos=19 */
+
+
+% Clauses:
+
+action(A, B, 0.7020094707235598) :- 
+     belowwatersurface(A), 
+     facingleft(A), 
+     visiblediver(A, C), 
+     samelevelasdiver(A, C), 
+     !. // Clause #1.
+
+action(A, B, 0.3910080496551925) :- 
+     belowwatersurface(A), 
+     facingleft(A), 
+     !. // Clause #2.
+
+action(A, B, -0.07959836112840038) :- 
+     belowwatersurface(A), 
+     !. // Clause #3.
+
+action(A, B, -0.13840903591498507) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.7020094707235598) :-  /* #neg=618 #pos=3,340 */ 
+   belowwatersurface(a),
+   facingleft(a),
+   visiblediver(a, uniqueVar1),
+   samelevelasdiver(a, uniqueVar1),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.3910080496551925) :-  /* #neg=4,400 #pos=5,019 */ 
+   belowwatersurface(a),
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.07959836112840038) :-  /* #neg=7,110 #pos=472 */ 
+   belowwatersurface(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.13840903591498507) :-  /* #neg=5,501 #pos=19 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visiblediver(a, uniqueVar1)
+%   facingleft(a)
+%   belowwatersurface(a)
+%   samelevelasdiver(a, uniqueVar1)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 4, [
+   visiblediver(a, uniqueVar1),
+   facingleft(a),
+   belowwatersurface(a),
+   samelevelasdiver(a, uniqueVar1)]).
+
+%%%%%  WILL-Produced Tree Combined @ 3:06:30 11/28/25.  [Using 509,290,896 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( belowwatersurface(A), facingleft(A) )
+%   then if ( visiblediver(A, C), samelevelasdiver(A, C) )
+%   | then return 0.7020094707235598;  // std dev = 22.837, 3,958.000 (wgt'ed) examples reached here.  /* #neg=618 #pos=3,340 */
+%   | else return 0.3910080496551925;  // std dev = 48.421, 9,419.000 (wgt'ed) examples reached here.  /* #neg=4,400 #pos=5,019 */
+%   else if ( belowwatersurface(A) )
+%   | then return -0.07959836112840038;  // std dev = 21.038, 7,582.000 (wgt'ed) examples reached here.  /* #neg=7,110 #pos=472 */
+%   | else return -0.13840903591498507;  // std dev = 4.351, 5,520.000 (wgt'ed) examples reached here.  /* #neg=5,501 #pos=19 */
+
+
+% Clauses:
+
+action(A, B, 0.7020094707235598) :- 
+     belowwatersurface(A), 
+     facingleft(A), 
+     visiblediver(A, C), 
+     samelevelasdiver(A, C), 
+     !. // Clause #1.
+
+action(A, B, 0.3910080496551925) :- 
+     belowwatersurface(A), 
+     facingleft(A), 
+     !. // Clause #2.
+
+action(A, B, -0.07959836112840038) :- 
+     belowwatersurface(A), 
+     !. // Clause #3.
+
+action(A, B, -0.13840903591498507) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.7020094707235598) :-  /* #neg=618 #pos=3,340 */ 
+   belowwatersurface(a),
+   facingleft(a),
+   visiblediver(a, uniqueVar2),
+   samelevelasdiver(a, uniqueVar2),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.3910080496551925) :-  /* #neg=4,400 #pos=5,019 */ 
+   belowwatersurface(a),
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.07959836112840038) :-  /* #neg=7,110 #pos=472 */ 
+   belowwatersurface(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.13840903591498507) :-  /* #neg=5,501 #pos=19 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   facingleft(a)
+%   samelevelasdiver(a, uniqueVar2)
+%   belowwatersurface(a)
+%   visiblediver(a, uniqueVar2)

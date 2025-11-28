@@ -133,7 +133,7 @@ public final class WILLSetup {
 		Utils.Verbosity defaultVerbosity = (Utils.isDevelopmentRun() ? Utils.Verbosity.Developer : Utils.Verbosity.Medium);
 
 	//	Utils.seedRandom((long) 12345); // Use this if we want to repeat runs exactly.
-		Utils.seedRandom(System.currentTimeMillis() % 100000); // Only use the last few digits (though probably doesn't matter).  JWS
+		Utils.seedRandom(cmdArgs.getSeedVal());
 		Utils.setVerbosity(defaultVerbosity);
 
 		File dir = new CondorFile(directory);

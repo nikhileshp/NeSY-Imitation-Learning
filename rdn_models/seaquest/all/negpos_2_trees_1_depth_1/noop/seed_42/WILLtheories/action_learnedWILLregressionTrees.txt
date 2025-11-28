@@ -1,0 +1,165 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 98,300
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 3:07:54 11/28/25.  [Using 509,542,104 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( belowwatersurface(A) )
+%   then if ( visibleenemysubmarine(A, C), nearbysubmarine(A, C) )
+%   | then return 0.13033675759692714;  // std dev = 39.188, 7,752.000 (wgt'ed) examples reached here.  /* #neg=5,642 #pos=2,110 */
+%   | else return -0.01761766473529346;  // std dev = 85.907, 67,832.000 (wgt'ed) examples reached here.  /* #neg=59,405 #pos=8,427 */
+%   else if ( diversfull(A), visibleenemysubmarine(A, D) )
+%   | then return 0.7757995557474031;  // std dev = 15.799, 3,303.000 (wgt'ed) examples reached here.  /* #neg=272 #pos=3,031 */
+%   | else return 0.8448073598667378;  // std dev = 15.986, 19,413.000 (wgt'ed) examples reached here.  /* #neg=259 #pos=19,154 */
+
+
+% Clauses:
+
+action(A, B, 0.13033675759692714) :- 
+     belowwatersurface(A), 
+     visibleenemysubmarine(A, C), 
+     nearbysubmarine(A, C), 
+     !. // Clause #1.
+
+action(A, B, -0.01761766473529346) :- 
+     belowwatersurface(A), 
+     !. // Clause #2.
+
+action(A, B, 0.7757995557474031) :- 
+     diversfull(A), 
+     visibleenemysubmarine(A, C), 
+     !. // Clause #3.
+
+action(A, B, 0.8448073598667378) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.13033675759692714) :-  /* #neg=5,642 #pos=2,110 */ 
+   belowwatersurface(a),
+   visibleenemysubmarine(a, uniqueVar1),
+   nearbysubmarine(a, uniqueVar1),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, -0.01761766473529346) :-  /* #neg=59,405 #pos=8,427 */ 
+   belowwatersurface(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.7757995557474031) :-  /* #neg=272 #pos=3,031 */ 
+   diversfull(a),
+   visibleenemysubmarine(a, underscore),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, 0.8448073598667378) :-  /* #neg=259 #pos=19,154 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visibleenemysubmarine(a, uniqueVar1)
+%   nearbysubmarine(a, uniqueVar1)
+%   visibleenemysubmarine(a, underscore)
+%   belowwatersurface(a)
+%   diversfull(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 5, [
+   visibleenemysubmarine(a, uniqueVar1),
+   nearbysubmarine(a, uniqueVar1),
+   visibleenemysubmarine(a, underscore),
+   belowwatersurface(a),
+   diversfull(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 3:08:24 11/28/25.  [Using 508,982,000 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( belowwatersurface(A) )
+%   then if ( visibleenemysubmarine(A, C), nearbysubmarine(A, C) )
+%   | then return 0.13033675759692714;  // std dev = 39.188, 7,752.000 (wgt'ed) examples reached here.  /* #neg=5,642 #pos=2,110 */
+%   | else return -0.01761766473529346;  // std dev = 85.907, 67,832.000 (wgt'ed) examples reached here.  /* #neg=59,405 #pos=8,427 */
+%   else if ( diversfull(A), visibleenemysubmarine(A, D) )
+%   | then return 0.7757995557474031;  // std dev = 15.799, 3,303.000 (wgt'ed) examples reached here.  /* #neg=272 #pos=3,031 */
+%   | else return 0.8448073598667378;  // std dev = 15.986, 19,413.000 (wgt'ed) examples reached here.  /* #neg=259 #pos=19,154 */
+
+
+% Clauses:
+
+action(A, B, 0.13033675759692714) :- 
+     belowwatersurface(A), 
+     visibleenemysubmarine(A, C), 
+     nearbysubmarine(A, C), 
+     !. // Clause #1.
+
+action(A, B, -0.01761766473529346) :- 
+     belowwatersurface(A), 
+     !. // Clause #2.
+
+action(A, B, 0.7757995557474031) :- 
+     diversfull(A), 
+     visibleenemysubmarine(A, C), 
+     !. // Clause #3.
+
+action(A, B, 0.8448073598667378) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.13033675759692714) :-  /* #neg=5,642 #pos=2,110 */ 
+   belowwatersurface(a),
+   visibleenemysubmarine(a, uniqueVar2),
+   nearbysubmarine(a, uniqueVar2),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, -0.01761766473529346) :-  /* #neg=59,405 #pos=8,427 */ 
+   belowwatersurface(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.7757995557474031) :-  /* #neg=272 #pos=3,031 */ 
+   diversfull(a),
+   visibleenemysubmarine(a, underscore),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, 0.8448073598667378) :-  /* #neg=259 #pos=19,154 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visibleenemysubmarine(a, uniqueVar2)
+%   nearbysubmarine(a, uniqueVar2)
+%   visibleenemysubmarine(a, underscore)
+%   belowwatersurface(a)
+%   diversfull(a)
