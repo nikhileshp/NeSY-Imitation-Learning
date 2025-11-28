@@ -1804,7 +1804,7 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 	protected LocalRegressionInfoHolder cachedLocalRegressionInfoHolder  = null; // Waste a little space for non-regression problems, but only one pointer.
 	
 	// TODO(test)
-	public RegressionInfoHolder getRegressionInfoHolder() {
+	private RegressionInfoHolder getRegressionInfoHolder() {
 		if (cachedLocalRegressionInfoHolder == null) { 
 			cachedLocalRegressionInfoHolder = new LocalRegressionInfoHolder();
 		}
@@ -2045,10 +2045,6 @@ public class SingleClauseNode extends SearchNode implements Serializable{
 	 */
 	public void enableBindingListCaching() {
 		this.cacheBLs = true;
-	}
-	
-	public void disableBindingListCaching() {
-		this.cacheBLs = false;
 	}
 	
 	public void resetGroundingCache() {

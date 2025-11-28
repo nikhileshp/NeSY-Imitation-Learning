@@ -1,0 +1,651 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 3
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 169,756
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 16:49:30 11/27/25.  [Using 1,186,840,920 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( carabove(A, C), nearbycar(A, C) )
+%   then if ( cardirectlyabove(A, C) )
+%   | then if ( carabove(A, D), samelevelascar(A, D) )
+%   | | then if ( carfacingside(A, C, left) )
+%   | | | then return 0.2723335656738037;  // std dev = 38.399, 6,077.000 (wgt'ed) examples reached here.  /* #neg=3,560 #pos=2,517 */
+%   | | | else return 0.08330034229580213;  // std dev = 31.296, 5,614.000 (wgt'ed) examples reached here.  /* #neg=4,350 #pos=1,264 */
+%   | | else if ( rightofcar(A, C), carfacingside(A, C, left) )
+%   | | | then return 0.0988042868114663;  // std dev = 43.159, 10,193.000 (wgt'ed) examples reached here.  /* #neg=7,740 #pos=2,453 */
+%   | | | else return 0.002741272768417508;  // std dev = 69.913, 39,518.000 (wgt'ed) examples reached here.  /* #neg=33,804 #pos=5,714 */
+%   | else if ( rightofcar(A, C), carfacingside(A, C, right) )
+%   | | then if ( samelevelascar(A, E), carbelow(A, E) )
+%   | | | then return 0.25630925047401437;  // std dev = 33.078, 4,566.000 (wgt'ed) examples reached here.  /* #neg=2,748 #pos=1,818 */
+%   | | | else return 0.47837496783528266;  // std dev = 49.170, 10,264.000 (wgt'ed) examples reached here.  /* #neg=3,898 #pos=6,366 */
+%   | | else if ( leftofcar(A, C), carfacingside(A, C, left) )
+%   | | | then return 0.5764923869644273;  // std dev = 43.200, 9,224.000 (wgt'ed) examples reached here.  /* #neg=2,598 #pos=6,626 */
+%   | | | else return 0.8099977770339145;  // std dev = 30.039, 19,688.000 (wgt'ed) examples reached here.  /* #neg=948 #pos=18,740 */
+%   else if ( carbelow(A, F) )
+%   | then if ( samelevelascar(A, G), carfacingside(A, G, right) )
+%   | | then if ( nearbycar(A, F) )
+%   | | | then return 0.8529996045126588;  // std dev = 6.308, 7,768.000 (wgt'ed) examples reached here.  /* #neg=40 #pos=7,728 */
+%   | | | else return 0.8206925812747401;  // std dev = 18.459, 9,451.000 (wgt'ed) examples reached here.  /* #neg=354 #pos=9,097 */
+%   | | else if ( carabove(A, H), cardirectlyabove(A, H) )
+%   | | | then return 0.8401456617770852;  // std dev = 4.648, 1,222.000 (wgt'ed) examples reached here.  /* #neg=22 #pos=1,200 */
+%   | | | else return 0.8554121380076232;  // std dev = 7.989, 23,385.000 (wgt'ed) examples reached here.  /* #neg=64 #pos=23,321 */
+%   | else if ( carabove(A, I), carfacingside(A, I, right) )
+%   | | then if ( leftofcar(A, I) )
+%   | | | then return 0.8004915620644851;  // std dev = 26.228, 12,661.000 (wgt'ed) examples reached here.  /* #neg=730 #pos=11,931 */
+%   | | | else return 0.47028613826573457;  // std dev = 13.415, 758.000 (wgt'ed) examples reached here.  /* #neg=294 #pos=464 */
+%   | | else return 0.7204314161502197;  // std dev = 0.345, 9,367.000 (wgt'ed) examples reached here.  /* #neg=1,290 #pos=8,077 */
+
+
+% Clauses:
+
+action(A, B, 0.2723335656738037) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     carabove(A, D), 
+     samelevelascar(A, D), 
+     carfacingside(A, C, left), 
+     !. // Clause #1.
+
+action(A, B, 0.08330034229580213) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     carabove(A, D), 
+     samelevelascar(A, D), 
+     !. // Clause #2.
+
+action(A, B, 0.0988042868114663) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, left), 
+     !. // Clause #3.
+
+action(A, B, 0.002741272768417508) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     !. // Clause #4.
+
+action(A, B, 0.25630925047401437) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, right), 
+     samelevelascar(A, D), 
+     carbelow(A, D), 
+     !. // Clause #5.
+
+action(A, B, 0.47837496783528266) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, right), 
+     !. // Clause #6.
+
+action(A, B, 0.5764923869644273) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     leftofcar(A, C), 
+     carfacingside(A, C, left), 
+     !. // Clause #7.
+
+action(A, B, 0.8099977770339145) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     !. // Clause #8.
+
+action(A, B, 0.8529996045126588) :- 
+     carbelow(A, C), 
+     samelevelascar(A, D), 
+     carfacingside(A, D, right), 
+     nearbycar(A, C), 
+     !. // Clause #9.
+
+action(A, B, 0.8206925812747401) :- 
+     carbelow(A, C), 
+     samelevelascar(A, D), 
+     carfacingside(A, D, right), 
+     !. // Clause #10.
+
+action(A, B, 0.8401456617770852) :- 
+     carbelow(A, C), 
+     carabove(A, D), 
+     cardirectlyabove(A, D), 
+     !. // Clause #11.
+
+action(A, B, 0.8554121380076232) :- 
+     carbelow(A, C), 
+     !. // Clause #12.
+
+action(A, B, 0.8004915620644851) :- 
+     carabove(A, C), 
+     carfacingside(A, C, right), 
+     leftofcar(A, C), 
+     !. // Clause #13.
+
+action(A, B, 0.47028613826573457) :- 
+     carabove(A, C), 
+     carfacingside(A, C, right), 
+     !. // Clause #14.
+
+action(A, B, 0.7204314161502197) :- !. // Clause #15.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.2723335656738037) :-  /* #neg=3,560 #pos=2,517 */ 
+   carabove(a, uniqueVar1),
+   nearbycar(a, uniqueVar1),
+   cardirectlyabove(a, uniqueVar1),
+   carabove(a, uniqueVar2),
+   samelevelascar(a, uniqueVar2),
+   carfacingside(a, uniqueVar1, left),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.08330034229580213) :-  /* #neg=4,350 #pos=1,264 */ 
+   carabove(a, uniqueVar3),
+   nearbycar(a, uniqueVar3),
+   cardirectlyabove(a, uniqueVar3),
+   carabove(a, uniqueVar4),
+   samelevelascar(a, uniqueVar4),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.0988042868114663) :-  /* #neg=7,740 #pos=2,453 */ 
+   carabove(a, uniqueVar5),
+   nearbycar(a, uniqueVar5),
+   cardirectlyabove(a, uniqueVar5),
+   rightofcar(a, uniqueVar5),
+   carfacingside(a, uniqueVar5, left),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, 0.002741272768417508) :-  /* #neg=33,804 #pos=5,714 */ 
+   carabove(a, uniqueVar6),
+   nearbycar(a, uniqueVar6),
+   cardirectlyabove(a, uniqueVar6),
+   !. // Flattened version of clause #4.
+
+flattened_action(a, underscore, 0.25630925047401437) :-  /* #neg=2,748 #pos=1,818 */ 
+   carabove(a, uniqueVar7),
+   nearbycar(a, uniqueVar7),
+   rightofcar(a, uniqueVar7),
+   carfacingside(a, uniqueVar7, right),
+   samelevelascar(a, uniqueVar8),
+   carbelow(a, uniqueVar8),
+   !. // Flattened version of clause #5.
+
+flattened_action(a, underscore, 0.47837496783528266) :-  /* #neg=3,898 #pos=6,366 */ 
+   carabove(a, uniqueVar9),
+   nearbycar(a, uniqueVar9),
+   rightofcar(a, uniqueVar9),
+   carfacingside(a, uniqueVar9, right),
+   !. // Flattened version of clause #6.
+
+flattened_action(a, underscore, 0.5764923869644273) :-  /* #neg=2,598 #pos=6,626 */ 
+   carabove(a, uniqueVar10),
+   nearbycar(a, uniqueVar10),
+   leftofcar(a, uniqueVar10),
+   carfacingside(a, uniqueVar10, left),
+   !. // Flattened version of clause #7.
+
+flattened_action(a, underscore, 0.8099977770339145) :-  /* #neg=948 #pos=18,740 */ 
+   carabove(a, uniqueVar11),
+   nearbycar(a, uniqueVar11),
+   !. // Flattened version of clause #8.
+
+flattened_action(a, underscore, 0.8529996045126588) :-  /* #neg=40 #pos=7,728 */ 
+   carbelow(a, uniqueVar12),
+   samelevelascar(a, uniqueVar13),
+   carfacingside(a, uniqueVar13, right),
+   nearbycar(a, uniqueVar12),
+   !. // Flattened version of clause #9.
+
+flattened_action(a, underscore, 0.8206925812747401) :-  /* #neg=354 #pos=9,097 */ 
+   carbelow(a, underscore),
+   samelevelascar(a, uniqueVar14),
+   carfacingside(a, uniqueVar14, right),
+   !. // Flattened version of clause #10.
+
+flattened_action(a, underscore, 0.8401456617770852) :-  /* #neg=22 #pos=1,200 */ 
+   carbelow(a, underscore),
+   carabove(a, uniqueVar15),
+   cardirectlyabove(a, uniqueVar15),
+   !. // Flattened version of clause #11.
+
+flattened_action(a, underscore, 0.8554121380076232) :-  /* #neg=64 #pos=23,321 */ 
+   carbelow(a, underscore),
+   !. // Flattened version of clause #12.
+
+flattened_action(a, underscore, 0.8004915620644851) :-  /* #neg=730 #pos=11,931 */ 
+   carabove(a, uniqueVar16),
+   carfacingside(a, uniqueVar16, right),
+   leftofcar(a, uniqueVar16),
+   !. // Flattened version of clause #13.
+
+flattened_action(a, underscore, 0.47028613826573457) :-  /* #neg=294 #pos=464 */ 
+   carabove(a, uniqueVar17),
+   carfacingside(a, uniqueVar17, right),
+   !. // Flattened version of clause #14.
+
+flattened_action(underscore, underscore, 0.7204314161502197) :-  /* #neg=1,290 #pos=8,077 */ 
+   !. // Flattened version of clause #15.
+
+
+% The unique flattened literals:
+%   carbelow(a, uniqueVar12)
+%   samelevelascar(a, uniqueVar4)
+%   carabove(a, uniqueVar2)
+%   nearbycar(a, uniqueVar9)
+%   cardirectlyabove(a, uniqueVar6)
+%   nearbycar(a, uniqueVar6)
+%   carabove(a, uniqueVar17)
+%   carabove(a, uniqueVar15)
+%   nearbycar(a, uniqueVar5)
+%   carfacingside(a, uniqueVar17, right)
+%   carabove(a, uniqueVar11)
+%   nearbycar(a, uniqueVar11)
+%   carabove(a, uniqueVar3)
+%   carfacingside(a, uniqueVar5, left)
+%   carabove(a, uniqueVar4)
+%   carbelow(a, uniqueVar8)
+%   carabove(a, uniqueVar10)
+%   carbelow(a, underscore)
+%   carfacingside(a, uniqueVar16, right)
+%   carabove(a, uniqueVar7)
+%   nearbycar(a, uniqueVar12)
+%   leftofcar(a, uniqueVar16)
+%   samelevelascar(a, uniqueVar13)
+%   carabove(a, uniqueVar9)
+%   carfacingside(a, uniqueVar7, right)
+%   carabove(a, uniqueVar1)
+%   cardirectlyabove(a, uniqueVar15)
+%   carabove(a, uniqueVar5)
+%   carabove(a, uniqueVar6)
+%   rightofcar(a, uniqueVar7)
+%   cardirectlyabove(a, uniqueVar1)
+%   leftofcar(a, uniqueVar10)
+%   carfacingside(a, uniqueVar10, left)
+%   rightofcar(a, uniqueVar9)
+%   nearbycar(a, uniqueVar1)
+%   nearbycar(a, uniqueVar7)
+%   carfacingside(a, uniqueVar9, right)
+%   carfacingside(a, uniqueVar14, right)
+%   cardirectlyabove(a, uniqueVar3)
+%   samelevelascar(a, uniqueVar2)
+%   carabove(a, uniqueVar16)
+%   nearbycar(a, uniqueVar10)
+%   carfacingside(a, uniqueVar13, right)
+%   samelevelascar(a, uniqueVar14)
+%   cardirectlyabove(a, uniqueVar5)
+%   rightofcar(a, uniqueVar5)
+%   nearbycar(a, uniqueVar3)
+%   samelevelascar(a, uniqueVar8)
+%   carfacingside(a, uniqueVar1, left)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 49, [
+   carbelow(a, uniqueVar12),
+   samelevelascar(a, uniqueVar4),
+   carabove(a, uniqueVar2),
+   nearbycar(a, uniqueVar9),
+   cardirectlyabove(a, uniqueVar6),
+   nearbycar(a, uniqueVar6),
+   carabove(a, uniqueVar17),
+   carabove(a, uniqueVar15),
+   nearbycar(a, uniqueVar5),
+   carfacingside(a, uniqueVar17, right),
+   carabove(a, uniqueVar11),
+   nearbycar(a, uniqueVar11),
+   carabove(a, uniqueVar3),
+   carfacingside(a, uniqueVar5, left),
+   carabove(a, uniqueVar4),
+   carbelow(a, uniqueVar8),
+   carabove(a, uniqueVar10),
+   carbelow(a, underscore),
+   carfacingside(a, uniqueVar16, right),
+   carabove(a, uniqueVar7),
+   nearbycar(a, uniqueVar12),
+   leftofcar(a, uniqueVar16),
+   samelevelascar(a, uniqueVar13),
+   carabove(a, uniqueVar9),
+   carfacingside(a, uniqueVar7, right),
+   carabove(a, uniqueVar1),
+   cardirectlyabove(a, uniqueVar15),
+   carabove(a, uniqueVar5),
+   carabove(a, uniqueVar6),
+   rightofcar(a, uniqueVar7),
+   cardirectlyabove(a, uniqueVar1),
+   leftofcar(a, uniqueVar10),
+   carfacingside(a, uniqueVar10, left),
+   rightofcar(a, uniqueVar9),
+   nearbycar(a, uniqueVar1),
+   nearbycar(a, uniqueVar7),
+   carfacingside(a, uniqueVar9, right),
+   carfacingside(a, uniqueVar14, right),
+   cardirectlyabove(a, uniqueVar3),
+   samelevelascar(a, uniqueVar2),
+   carabove(a, uniqueVar16),
+   nearbycar(a, uniqueVar10),
+   carfacingside(a, uniqueVar13, right),
+   samelevelascar(a, uniqueVar14),
+   cardirectlyabove(a, uniqueVar5),
+   rightofcar(a, uniqueVar5),
+   nearbycar(a, uniqueVar3),
+   samelevelascar(a, uniqueVar8),
+   carfacingside(a, uniqueVar1, left)]).
+
+%%%%%  WILL-Produced Tree Combined @ 16:51:47 11/27/25.  [Using 1,187,669,264 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( carabove(A, C), nearbycar(A, C) )
+%   then if ( cardirectlyabove(A, C) )
+%   | then if ( carfacingside(A, C, left), samelevelascar(A, D) )
+%   | | then if ( carfacingside(A, D, left) )
+%   | | | then return 0.08939043841054523;  // std dev = 63.668, 22,803.000 (wgt'ed) examples reached here.  /* #neg=17,530 #pos=5,273 */
+%   | | | else return 0.5359732028819342;  // std dev = 17.696, 1,434.000 (wgt'ed) examples reached here.  /* #neg=462 #pos=972 */
+%   | | else if ( samelevelascar(A, E), carabove(A, E) )
+%   | | | then return 0.08330034229580213;  // std dev = 31.296, 5,614.000 (wgt'ed) examples reached here.  /* #neg=4,350 #pos=1,264 */
+%   | | | else return -0.0011582183980046994;  // std dev = 61.761, 31,551.000 (wgt'ed) examples reached here.  /* #neg=27,112 #pos=4,439 */
+%   | else if ( rightofcar(A, C), carfacingside(A, C, right) )
+%   | | then if ( samelevelascar(A, C) )
+%   | | | then return 0.6225883461980349;  // std dev = 21.841, 2,649.000 (wgt'ed) examples reached here.  /* #neg=624 #pos=2,025 */
+%   | | | else return 0.36377244712671086;  // std dev = 55.180, 12,181.000 (wgt'ed) examples reached here.  /* #neg=6,022 #pos=6,159 */
+%   | | else if ( leftofcar(A, C), carfacingside(A, C, left) )
+%   | | | then return 0.5764923869644273;  // std dev = 43.200, 9,224.000 (wgt'ed) examples reached here.  /* #neg=2,598 #pos=6,626 */
+%   | | | else return 0.8099977770339145;  // std dev = 30.039, 19,688.000 (wgt'ed) examples reached here.  /* #neg=948 #pos=18,740 */
+%   else if ( carbelow(A, F) )
+%   | then if ( samelevelascar(A, G), carfacingside(A, G, right) )
+%   | | then if ( nearbycar(A, F) )
+%   | | | then return 0.8529996045126588;  // std dev = 6.308, 7,768.000 (wgt'ed) examples reached here.  /* #neg=40 #pos=7,728 */
+%   | | | else return 0.8206925812747401;  // std dev = 18.459, 9,451.000 (wgt'ed) examples reached here.  /* #neg=354 #pos=9,097 */
+%   | | else if ( rightofcar(A, F), carfacingside(A, F, left) )
+%   | | | then return 0.857293320126545;  // std dev = 3.463, 14,025.000 (wgt'ed) examples reached here.  /* #neg=12 #pos=14,013 */
+%   | | | else return 0.8511559281066485;  // std dev = 8.572, 10,582.000 (wgt'ed) examples reached here.  /* #neg=74 #pos=10,508 */
+%   | else if ( carabove(A, H), carfacingside(A, H, right) )
+%   | | then if ( leftofcar(A, H) )
+%   | | | then return 0.8004915620644851;  // std dev = 26.228, 12,661.000 (wgt'ed) examples reached here.  /* #neg=730 #pos=11,931 */
+%   | | | else return 0.47028613826573457;  // std dev = 13.415, 758.000 (wgt'ed) examples reached here.  /* #neg=294 #pos=464 */
+%   | | else return 0.7204314161502197;  // std dev = 0.345, 9,367.000 (wgt'ed) examples reached here.  /* #neg=1,290 #pos=8,077 */
+
+
+% Clauses:
+
+action(A, B, 0.08939043841054523) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     carfacingside(A, C, left), 
+     samelevelascar(A, D), 
+     carfacingside(A, D, left), 
+     !. // Clause #1.
+
+action(A, B, 0.5359732028819342) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     carfacingside(A, C, left), 
+     samelevelascar(A, D), 
+     !. // Clause #2.
+
+action(A, B, 0.08330034229580213) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     samelevelascar(A, D), 
+     carabove(A, D), 
+     !. // Clause #3.
+
+action(A, B, -0.0011582183980046994) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     cardirectlyabove(A, C), 
+     !. // Clause #4.
+
+action(A, B, 0.6225883461980349) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, right), 
+     samelevelascar(A, C), 
+     !. // Clause #5.
+
+action(A, B, 0.36377244712671086) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, right), 
+     !. // Clause #6.
+
+action(A, B, 0.5764923869644273) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     leftofcar(A, C), 
+     carfacingside(A, C, left), 
+     !. // Clause #7.
+
+action(A, B, 0.8099977770339145) :- 
+     carabove(A, C), 
+     nearbycar(A, C), 
+     !. // Clause #8.
+
+action(A, B, 0.8529996045126588) :- 
+     carbelow(A, C), 
+     samelevelascar(A, D), 
+     carfacingside(A, D, right), 
+     nearbycar(A, C), 
+     !. // Clause #9.
+
+action(A, B, 0.8206925812747401) :- 
+     carbelow(A, C), 
+     samelevelascar(A, D), 
+     carfacingside(A, D, right), 
+     !. // Clause #10.
+
+action(A, B, 0.857293320126545) :- 
+     carbelow(A, C), 
+     rightofcar(A, C), 
+     carfacingside(A, C, left), 
+     !. // Clause #11.
+
+action(A, B, 0.8511559281066485) :- 
+     carbelow(A, C), 
+     !. // Clause #12.
+
+action(A, B, 0.8004915620644851) :- 
+     carabove(A, C), 
+     carfacingside(A, C, right), 
+     leftofcar(A, C), 
+     !. // Clause #13.
+
+action(A, B, 0.47028613826573457) :- 
+     carabove(A, C), 
+     carfacingside(A, C, right), 
+     !. // Clause #14.
+
+action(A, B, 0.7204314161502197) :- !. // Clause #15.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.08939043841054523) :-  /* #neg=17,530 #pos=5,273 */ 
+   carabove(a, uniqueVar18),
+   nearbycar(a, uniqueVar18),
+   cardirectlyabove(a, uniqueVar18),
+   carfacingside(a, uniqueVar18, left),
+   samelevelascar(a, uniqueVar19),
+   carfacingside(a, uniqueVar19, left),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.5359732028819342) :-  /* #neg=462 #pos=972 */ 
+   carabove(a, uniqueVar20),
+   nearbycar(a, uniqueVar20),
+   cardirectlyabove(a, uniqueVar20),
+   carfacingside(a, uniqueVar20, left),
+   samelevelascar(a, underscore),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.08330034229580213) :-  /* #neg=4,350 #pos=1,264 */ 
+   carabove(a, uniqueVar21),
+   nearbycar(a, uniqueVar21),
+   cardirectlyabove(a, uniqueVar21),
+   samelevelascar(a, uniqueVar22),
+   carabove(a, uniqueVar22),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, -0.0011582183980046994) :-  /* #neg=27,112 #pos=4,439 */ 
+   carabove(a, uniqueVar23),
+   nearbycar(a, uniqueVar23),
+   cardirectlyabove(a, uniqueVar23),
+   !. // Flattened version of clause #4.
+
+flattened_action(a, underscore, 0.6225883461980349) :-  /* #neg=624 #pos=2,025 */ 
+   carabove(a, uniqueVar24),
+   nearbycar(a, uniqueVar24),
+   rightofcar(a, uniqueVar24),
+   carfacingside(a, uniqueVar24, right),
+   samelevelascar(a, uniqueVar24),
+   !. // Flattened version of clause #5.
+
+flattened_action(a, underscore, 0.36377244712671086) :-  /* #neg=6,022 #pos=6,159 */ 
+   carabove(a, uniqueVar25),
+   nearbycar(a, uniqueVar25),
+   rightofcar(a, uniqueVar25),
+   carfacingside(a, uniqueVar25, right),
+   !. // Flattened version of clause #6.
+
+flattened_action(a, underscore, 0.5764923869644273) :-  /* #neg=2,598 #pos=6,626 */ 
+   carabove(a, uniqueVar26),
+   nearbycar(a, uniqueVar26),
+   leftofcar(a, uniqueVar26),
+   carfacingside(a, uniqueVar26, left),
+   !. // Flattened version of clause #7.
+
+flattened_action(a, underscore, 0.8099977770339145) :-  /* #neg=948 #pos=18,740 */ 
+   carabove(a, uniqueVar27),
+   nearbycar(a, uniqueVar27),
+   !. // Flattened version of clause #8.
+
+flattened_action(a, underscore, 0.8529996045126588) :-  /* #neg=40 #pos=7,728 */ 
+   carbelow(a, uniqueVar28),
+   samelevelascar(a, uniqueVar29),
+   carfacingside(a, uniqueVar29, right),
+   nearbycar(a, uniqueVar28),
+   !. // Flattened version of clause #9.
+
+flattened_action(a, underscore, 0.8206925812747401) :-  /* #neg=354 #pos=9,097 */ 
+   carbelow(a, underscore),
+   samelevelascar(a, uniqueVar30),
+   carfacingside(a, uniqueVar30, right),
+   !. // Flattened version of clause #10.
+
+flattened_action(a, underscore, 0.857293320126545) :-  /* #neg=12 #pos=14,013 */ 
+   carbelow(a, uniqueVar31),
+   rightofcar(a, uniqueVar31),
+   carfacingside(a, uniqueVar31, left),
+   !. // Flattened version of clause #11.
+
+flattened_action(a, underscore, 0.8511559281066485) :-  /* #neg=74 #pos=10,508 */ 
+   carbelow(a, underscore),
+   !. // Flattened version of clause #12.
+
+flattened_action(a, underscore, 0.8004915620644851) :-  /* #neg=730 #pos=11,931 */ 
+   carabove(a, uniqueVar32),
+   carfacingside(a, uniqueVar32, right),
+   leftofcar(a, uniqueVar32),
+   !. // Flattened version of clause #13.
+
+flattened_action(a, underscore, 0.47028613826573457) :-  /* #neg=294 #pos=464 */ 
+   carabove(a, uniqueVar33),
+   carfacingside(a, uniqueVar33, right),
+   !. // Flattened version of clause #14.
+
+flattened_action(underscore, underscore, 0.7204314161502197) :-  /* #neg=1,290 #pos=8,077 */ 
+   !. // Flattened version of clause #15.
+
+
+% The unique flattened literals:
+%   carabove(a, uniqueVar22)
+%   nearbycar(a, uniqueVar23)
+%   carfacingside(a, uniqueVar19, left)
+%   cardirectlyabove(a, uniqueVar23)
+%   carabove(a, uniqueVar32)
+%   rightofcar(a, uniqueVar31)
+%   nearbycar(a, uniqueVar20)
+%   carfacingside(a, uniqueVar20, left)
+%   carabove(a, uniqueVar26)
+%   samelevelascar(a, uniqueVar30)
+%   carabove(a, uniqueVar18)
+%   nearbycar(a, uniqueVar21)
+%   nearbycar(a, uniqueVar27)
+%   samelevelascar(a, uniqueVar22)
+%   carbelow(a, underscore)
+%   cardirectlyabove(a, uniqueVar21)
+%   nearbycar(a, uniqueVar24)
+%   carabove(a, uniqueVar21)
+%   nearbycar(a, uniqueVar18)
+%   carfacingside(a, uniqueVar30, right)
+%   carbelow(a, uniqueVar28)
+%   samelevelascar(a, uniqueVar19)
+%   carabove(a, uniqueVar23)
+%   nearbycar(a, uniqueVar28)
+%   carfacingside(a, uniqueVar33, right)
+%   cardirectlyabove(a, uniqueVar18)
+%   leftofcar(a, uniqueVar32)
+%   carfacingside(a, uniqueVar25, right)
+%   carfacingside(a, uniqueVar24, right)
+%   carfacingside(a, uniqueVar29, right)
+%   carfacingside(a, uniqueVar31, left)
+%   leftofcar(a, uniqueVar26)
+%   carabove(a, uniqueVar33)
+%   rightofcar(a, uniqueVar24)
+%   carabove(a, uniqueVar25)
+%   carabove(a, uniqueVar27)
+%   cardirectlyabove(a, uniqueVar20)
+%   carabove(a, uniqueVar24)
+%   carbelow(a, uniqueVar31)
+%   samelevelascar(a, uniqueVar29)
+%   nearbycar(a, uniqueVar25)
+%   rightofcar(a, uniqueVar25)
+%   nearbycar(a, uniqueVar26)
+%   carfacingside(a, uniqueVar26, left)
+%   carfacingside(a, uniqueVar18, left)
+%   carabove(a, uniqueVar20)
+%   samelevelascar(a, underscore)
+%   carfacingside(a, uniqueVar32, right)
+%   samelevelascar(a, uniqueVar24)

@@ -109,31 +109,7 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		if (debugLevel > -1) {
 			Utils.println("%     Score = " + Utils.truncate(-score, 6) + " (regressionFit = " + Utils.truncate(fit, 6) + 
 				", totalPenalty = " + Utils.truncate(totalPenalty, 6) + ")" );
-			
-			// Print branch coverage details
-			edu.wisc.cs.will.ILP.Regression.RegressionInfoHolder holder = node.getRegressionInfoHolder();
-			if (holder != null) {
-				double trueCov = holder.totalExampleWeightAtSuccess();
-				double falseCov = holder.totalExampleWeightAtFailure();
-				
-				double truePos = 0;
-				double trueNeg = 0;
-				if (holder.getTrueStats() != null) {
-					truePos = holder.getTrueStats().getNumPositiveOutputs();
-					trueNeg = holder.getTrueStats().getNumNegativeOutputs();
-				}
-				
-				double falsePos = 0;
-				double falseNeg = 0;
-				if (holder.getFalseStats() != null) {
-					falsePos = holder.getFalseStats().getNumPositiveOutputs();
-					falseNeg = holder.getFalseStats().getNumNegativeOutputs();
-				}
-				
-				Utils.println("%       True Branch:  " + Utils.truncate(trueCov, 2) + " coverage (Pos: " + Utils.truncate(truePos, 2) + ", Neg: " + Utils.truncate(trueNeg, 2) + ")");
-				Utils.println("%       False Branch: " + Utils.truncate(falseCov, 2) + " coverage (Pos: " + Utils.truncate(falsePos, 2) + ", Neg: " + Utils.truncate(falseNeg, 2) + ")");
-			}
-			if (debugLevel >= 0) {
+			if (debugLevel > 0) {
 				Utils.println("%       Penalty breakdown:");
 				Utils.println("%         Length/Singleton = " + Utils.truncate(lengthAndSingletonPenalty, 6));
 				if (useGroundingPenalty && weightLoader != null) {
@@ -141,7 +117,6 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 				}
 			}
 			Utils.println("%       for clause: " + node);
-			Utils.println("%\n");
 		}
 		
 		//if (node.posCoverage < Double.MIN_VALUE) { return Double.NaN; } // If a node cannot meet the minPosCoverage or theorem proving times out, score as NaN, which will prevent it from being added to OPEN.
@@ -182,9 +157,14 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		
 		int k_high = 0;  // Count of groundings with weight >= threshold
 		int k_low = 0;   // Count of groundings with weight < threshold
+		int examplesChecked = 0;
+		int examplesWithBindings = 0;
 		
 		// Enable binding list caching BEFORE computing anything
+		// This must be done before computeCoverage() or getNumberOfGroundingsForRegressionEx()
 		node.enableBindingListCaching();
+		
+		// Clear any existing cache to start fresh
 		node.cachedBindingLists.clear();
 		
 		// Ensure coverage is computed
@@ -198,84 +178,109 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 			return 0.0;  // No body to ground
 		}
 		
-		// Iterate through positive examples
-		for (Example ex : theILPtask.getPosExamples()) {
-			if (node.posExampleAlreadyExcluded(ex)) {
-				continue;  // Skip examples that don't satisfy the clause
-			}
+	// Iterate through positive examples
+	for (Example ex : theILPtask.getPosExamples()) {
+		examplesChecked++;
+		if (node.posExampleAlreadyExcluded(ex)) {
+			continue;  // Skip examples that don't satisfy the clause
+		}
+		
+		// Compute groundings for this example to populate cache
+		long numGroundings = node.getNumberOfGroundingsForRegressionEx(ex);
+		
+		// Get cached binding lists for this example
+		Set<BindingList> bindings = node.cachedBindingLists.get(ex);
+		
+		if (bindings == null || bindings.isEmpty()) {
+			// Bindings not cached (likely num > 1), skip this example
+			continue;
+		}
+			examplesWithBindings++;
 			
-			// Compute groundings for this example to populate cache
-			node.getNumberOfGroundingsForRegressionEx(ex);
+	// For each grounding (binding list)
+		int groundingDebugCount = 0;
+		for (BindingList bl : bindings) {
+			// Apply bindings to get grounded literals
+			List<Literal> groundedBody = bl.applyTheta(clauseBody);
 			
-			// Get cached binding lists for this example
-			Set<BindingList> bindings = node.cachedBindingLists.get(ex);
+			// Compute aggregated weight for this grounding, passing the binding list
+			double aggregatedWeight = computeAggregatedWeight(groundedBody, clauseBody, bl);
 			
-			if (bindings == null || bindings.isEmpty()) {
+			// Skip groundings with no multi-argument predicates (indicated by -1)
+			if (aggregatedWeight < 0) {
 				continue;
 			}
 			
-			for (BindingList bl : bindings) {
-				// Apply bindings to get grounded literals
-				List<Literal> groundedBody = bl.applyTheta(clauseBody);
-				
-				// Compute counts for this grounding
-				long[] counts = computeGroundingCounts(groundedBody, clauseBody, bl);
-				
-				long highCount = counts[0];
-				long totalCount = counts[1];
-				long lowCount = totalCount - highCount;
-				
-				// Accumulate counts
-				k_high += highCount;
-				k_low += lowCount;
+			// Debug first few groundings
+			if (groundingDebugCount < 2 && examplesWithBindings <= 2) {
+				Utils.println("%           Grounding " + groundingDebugCount + ": weight=" + aggregatedWeight + " threshold=" + groundingWeightThreshold + " -> " + (aggregatedWeight >= groundingWeightThreshold ? "HIGH" : "LOW"));
+				groundingDebugCount++;
+			}
+			
+			// Classify grounding based on threshold
+			if (aggregatedWeight >= groundingWeightThreshold) {
+				k_high++;
+			} else {
+				k_low++;
 			}
 		}
-
-		// Iterate through negative examples
-		for (Example ex : theILPtask.getNegExamples()) {
-			if (node.negExampleAlreadyExcluded(ex)) {
-				continue;  // Skip examples that don't satisfy the clause
-			}
-			
-			// Compute groundings for this example to populate cache
-			node.getNumberOfGroundingsForRegressionEx(ex);
-			
-			// Get cached binding lists for this example
-			Set<BindingList> bindings = node.cachedBindingLists.get(ex);
-			
+		}
+		
+	// Also check negative examples
+	for (Example ex : theILPtask.getNegExamples()) {
+		examplesChecked++;
+		if (node.negExampleAlreadyExcluded(ex)) {
+			continue;
+		}
+		
+		// Compute groundings for this example to populate cache
+		node.getNumberOfGroundingsForRegressionEx(ex);
+		
+		Set<BindingList> bindings = node.cachedBindingLists.get(ex);
 			if (bindings == null || bindings.isEmpty()) {
 				continue;
 			}
+			examplesWithBindings++;
 			
 			for (BindingList bl : bindings) {
-				// Apply bindings to get grounded literals
 				List<Literal> groundedBody = bl.applyTheta(clauseBody);
+				double aggregatedWeight = computeAggregatedWeight(groundedBody, clauseBody, bl);
 				
-				// Compute counts for this grounding
-				long[] counts = computeGroundingCounts(groundedBody, clauseBody, bl);
+				// Skip groundings with no multi-argument predicates (indicated by -1)
+				if (aggregatedWeight < 0) {
+					continue;
+				}
 				
-				long highCount = counts[0];
-				long totalCount = counts[1];
-				long lowCount = totalCount - highCount;
-				
-				// Accumulate counts
-				k_high += highCount;
-				k_low += lowCount;
+				if (aggregatedWeight >= groundingWeightThreshold) {
+					k_high++;
+				} else {
+					k_low++;
+				}
 			}
 		}
 		
 		// Compute penalty: negative reward for high attention, positive penalty for low attention
 		// (We return positive values to ADD to penalty, which makes score worse)
+		// Scale by scalingPenalties to match magnitude of other penalties
 		double rawPenalty = -alphaReward * k_high + betaPenalty * k_low;
 		double penalty = scalingPenalties * rawPenalty;
 		
-		if (debugLevel > 0) {
-			Utils.println("% Grounding Penalty: high=" + k_high + ", low=" + k_low + ", penalty=" + penalty);
-		}
-		
-		// CRITICAL: Clear cache and disable caching to prevent memory leak
-		node.cachedBindingLists.clear();
-		node.disableBindingListCaching();
+	// Temporarily always print to debug (debugLevel is static final = 0)
+	Utils.println("%       === Grounding Penalty Calculation ===");
+	Utils.println("%         Examples checked: " + examplesChecked);
+	Utils.println("%         Examples with cached bindings: " + examplesWithBindings);
+	Utils.println("%         Total groundings evaluated: " + (k_high + k_low));
+	Utils.println("%         High attention groundings (>= " + groundingWeightThreshold + "): " + k_high);
+	Utils.println("%         Low attention groundings (< " + groundingWeightThreshold + "): " + k_low);
+	Utils.println("%       ");
+	Utils.println("%         Raw penalty = -alpha * k_high + beta * k_low");
+	Utils.println("%                     = -" + alphaReward + " * " + k_high + " + " + betaPenalty + " * " + k_low);
+	Utils.println("%                     = " + (-alphaReward * k_high) + " + " + (betaPenalty * k_low));
+	Utils.println("%                     = " + Utils.truncate(rawPenalty, 6));
+	Utils.println("%       ");
+	Utils.println("%         Scaled penalty = scalingPenalties * rawPenalty");
+	Utils.println("%                        = " + scalingPenalties + " * " + Utils.truncate(rawPenalty, 6));
+	Utils.println("%                        = " + Utils.truncate(penalty, 6));
 		
 		return penalty;
 	}
@@ -291,18 +296,9 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	 * @param bindings The binding list used for grounding
 	 * @return Aggregated weight value
 	 */
-	/**
-	 * Compute counts of groundings that satisfy the threshold condition.
-	 * Uses product-of-counts logic to avoid Cartesian product.
-	 * 
-	 * @param groundedLiterals List of grounded literals in the clause body
-	 * @param originalLiterals List of original literals
-	 * @param bindings The binding list used for grounding
-	 * @return long array where [0] = high count, [1] = total count
-	 */
-	protected long[] computeGroundingCounts(List<Literal> groundedLiterals, List<Literal> originalLiterals, BindingList bindings) {
+	private double computeAggregatedWeight(List<Literal> groundedLiterals, List<Literal> originalLiterals, BindingList bindings) {
 		if (groundedLiterals == null || groundedLiterals.isEmpty()) {
-			return new long[]{1, 1}; // Default: 1 grounding, treated as high (no penalty)
+			return 1.0;  // Default: no penalty
 		}
 		
 		// Map: anonVar -> List of (predicate, weights) pairs
@@ -312,7 +308,7 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		for (int i = 0; i < groundedLiterals.size(); i++) {
 			Literal groundedLit = groundedLiterals.get(i);
 			
-			// Skip single-argument predicates
+			// Skip single-argument predicates (they don't reference game objects)
 			if (groundedLit.numberArgs() <= 1) {
 				continue;
 			}
@@ -333,12 +329,14 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 					// Infer object type from predicate name
 					String objectType = inferObjectTypeFromPredicate(predicate);
 					
-					if (objectType != null && weightLoader != null) {
-						// Get weights directly using state and object type
-						// No need to register anon variable anymore
-						java.util.List<Double> anonWeights = weightLoader.getWeights(state, objectType);
+					if (objectType != null) {
+						// Register this anon variable with its state and type
+						weightLoader.registerAnonVariable(anonVar, state, objectType + "0");
 						
-						if (anonWeights == null || anonWeights.isEmpty()) {
+						// Get cached weights for this anon variable
+						java.util.List<Double> anonWeights = weightLoader.getWeightsForAnonVar(anonVar);
+						
+						if (anonWeights.isEmpty()) {
 							anonWeights = new java.util.ArrayList<>();
 							anonWeights.add(1.0);
 						}
@@ -354,48 +352,92 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		}
 		
 		if (anonVarWeightsMap.isEmpty()) {
-			// No anonymous variables, treat as 1 high grounding
-			return new long[]{1, 1};
+			// No anonymous variables, skip this grounding
+			return -1.0;
 		}
 		
-		// Compute counts using product logic
-		long totalHighCount = 1;
-		long totalCount = 1;
+		// Compute Cartesian product of grounding weights
+		java.util.List<Double> allGroundingWeights = new java.util.ArrayList<>();
+		computeCartesianProduct(anonVarWeightsMap, allGroundingWeights);
 		
-		for (String anonVar : anonVarWeightsMap.keySet()) {
-			java.util.List<java.util.List<Double>> predicateWeightLists = anonVarWeightsMap.get(anonVar);
-			
-			// For this anonymous variable, we have multiple lists of weights (one per predicate).
-			// We assume these lists are aligned (same objects in same order).
-			// We iterate through the indices and check if ALL weights at index i are >= threshold.
-			
-			int listSize = predicateWeightLists.get(0).size();
-			int highCountForVar = 0;
-			
-			for (int i = 0; i < listSize; i++) {
-				boolean allHigh = true;
-				for (java.util.List<Double> weights : predicateWeightLists) {
-					if (i < weights.size()) {
-						if (weights.get(i) < groundingWeightThreshold) {
-							allHigh = false;
-							break;
-						}
-					} else {
-						// Should not happen if lists are aligned, but handle safely
-						allHigh = false; 
-						break;
+		if (allGroundingWeights.isEmpty()) {
+			return -1.0;
+		}
+		
+		// Apply final aggregation strategy across all grounding combinations
+		switch (aggregationStrategy.toLowerCase()) {
+			case "min":
+				// Return minimum weight across all possible groundings
+				double minWeight = Double.MAX_VALUE;
+				for (double w : allGroundingWeights) {
+					minWeight = Math.min(minWeight, w);
+				}
+				return minWeight;
+				
+			case "max":
+				// Return maximum weight across all possible groundings
+				double maxWeight = 0.0;
+				for (double w : allGroundingWeights) {
+					maxWeight = Math.max(maxWeight, w);
+				}
+				return maxWeight;
+				
+			case "avg":
+				// Average weight across all possible groundings
+				double sum = 0.0;
+				for (double w : allGroundingWeights) {
+					sum += w;
+				}
+				return sum / allGroundingWeights.size();
+				
+			case "proportion":
+				// Proportion of groundings above threshold
+				int aboveThreshold = 0;
+				for (double w : allGroundingWeights) {
+					if (w >= groundingWeightThreshold) {
+						aboveThreshold++;
 					}
 				}
-				if (allHigh) {
-					highCountForVar++;
+				return (double) aboveThreshold / allGroundingWeights.size();
+				
+			default:
+				Utils.println("% WARNING: Unknown aggregation strategy '" + aggregationStrategy + "', using 'min'");
+				double min = Double.MAX_VALUE;
+				for (double w : allGroundingWeights) {
+					min = Math.min(min, w);
 				}
-			}
+				return min;
+		}
+	}
+	
+	/**
+	 * Compute Cartesian product of all grounding weights.
+	 * For each anonymous variable, we have multiple predicates, each with multiple weights.
+	 * We need to compute all combinations where we pick one weight from each predicate,
+	 * aggregate them with MIN across predicates (for each anon var),
+	 * then combine all anon vars with MIN again.
+	 */
+	private void computeCartesianProduct(java.util.Map<String, java.util.List<java.util.List<Double>>> anonVarWeightsMap,
+	                                      java.util.List<Double> result) {
+		// Convert map to list for easier iteration
+		java.util.List<String> anonVars = new java.util.ArrayList<>(anonVarWeightsMap.keySet());
+		
+		// For each anon var, compute Cartesian product of its predicate weights
+		java.util.List<java.util.List<Double>> anonVarCombinedWeights = new java.util.ArrayList<>();
+		
+		for (String anonVar : anonVars) {
+			java.util.List<java.util.List<Double>> predicateWeightLists = anonVarWeightsMap.get(anonVar);
 			
-			totalHighCount *= highCountForVar;
-			totalCount *= listSize;
+			// If multiple predicates reference this anon var, compute Cartesian product
+			// and take MIN across predicates for each combination
+			java.util.List<Double> combinedWeightsForAnon = new java.util.ArrayList<>();
+			computePredicateCartesianProduct(predicateWeightLists, 0, new java.util.ArrayList<>(), combinedWeightsForAnon);
+			
+			anonVarCombinedWeights.add(combinedWeightsForAnon);
 		}
 		
-		return new long[]{totalHighCount, totalCount};
+		// Now compute Cartesian product across all anon vars, taking MIN
+		computeFinalCartesianProduct(anonVarCombinedWeights, 0, new java.util.ArrayList<>(), result);
 	}
 	
 	/**
@@ -455,7 +497,7 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	/**
 	 * Helper method to infer object type from predicate name
 	 */
-	protected String inferObjectTypeFromPredicate(String predicate) {
+	private String inferObjectTypeFromPredicate(String predicate) {
 		if (predicate.contains("diver")) return "diver";
 		if (predicate.contains("submarine")) return "enemysubmarine";
 		if (predicate.contains("enemy")) return "enemy";

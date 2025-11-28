@@ -3,7 +3,6 @@ import re
 import glob
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Configuration
 base_dir_new = "rdn_models/seaquest/new_runs"
@@ -206,51 +205,3 @@ else:
         print(f"\nAUC PR Winners:")
         print(f"  NEW_RUNS: {new_wins_auc} actions")
         print(f"  GP_0.1:   {gp_wins_auc} actions")
-
-    # Plotting
-    print("\n" + "="*80)
-    print("Generating Plots")
-    print("="*80)
-    
-    # 1. F1 Score Plot
-    pivot_f1_mean = df.pivot_table(index="Action", columns="Config", values="F1_Mean", aggfunc='first')
-    pivot_f1_std = df.pivot_table(index="Action", columns="Config", values="F1_Std", aggfunc='first')
-    
-    if not pivot_f1_mean.empty:
-        # Reorder columns to ensure consistent color/order if needed
-        cols = sorted(pivot_f1_mean.columns, reverse=True) # new_runs, grounding_penalty_0.1
-        pivot_f1_mean = pivot_f1_mean[cols]
-        pivot_f1_std = pivot_f1_std[cols]
-        
-        ax = pivot_f1_mean.plot(kind='bar', yerr=pivot_f1_std, capsize=4, figsize=(10, 6), rot=0, alpha=0.8)
-        plt.title('F1 Score Comparison: New Runs vs Grounding Penalty 0.1')
-        plt.ylabel('F1 Score')
-        plt.xlabel('Action')
-        plt.ylim(0, 1)
-        plt.legend(title='Configuration')
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig('f1_comparison_bar_plot.png')
-        print("Saved plot to f1_comparison_bar_plot.png")
-        plt.close()
-
-    # 2. AUC PR Plot
-    pivot_auc_mean = df.pivot_table(index="Action", columns="Config", values="AUC_PR_Mean", aggfunc='first')
-    pivot_auc_std = df.pivot_table(index="Action", columns="Config", values="AUC_PR_Std", aggfunc='first')
-    
-    if not pivot_auc_mean.empty and not pivot_auc_mean.isnull().all().all():
-        cols = sorted(pivot_auc_mean.columns, reverse=True)
-        pivot_auc_mean = pivot_auc_mean[cols]
-        pivot_auc_std = pivot_auc_std[cols]
-        
-        ax = pivot_auc_mean.plot(kind='bar', yerr=pivot_auc_std, capsize=4, figsize=(10, 6), rot=0, alpha=0.8)
-        plt.title('AUC PR Comparison: New Runs vs Grounding Penalty 0.1')
-        plt.ylabel('AUC PR')
-        plt.xlabel('Action')
-        plt.ylim(0, 1)
-        plt.legend(title='Configuration')
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig('auc_pr_comparison_bar_plot.png')
-        print("Saved plot to auc_pr_comparison_bar_plot.png")
-        plt.close()
