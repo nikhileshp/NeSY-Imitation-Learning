@@ -1,0 +1,158 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 16,130
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 22:44:40 11/28/25.  [Using 1,188,090,424 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visibleenemy(A, C), samelevelasenemy(A, C) )
+%   | then return 0.559554654925004;  // std dev = 29.396, 4,126.000 (wgt'ed) examples reached here.  /* #neg=1,232 #pos=2,894 */
+%   | else return 0.0840690603931642;  // std dev = 36.605, 7,662.000 (wgt'ed) examples reached here.  /* #neg=5,931 #pos=1,731 */
+%   else if ( oxygenok(A) )
+%   | then return 0.04028207046204121;  // std dev = 24.535, 4,041.000 (wgt'ed) examples reached here.  /* #neg=3,305 #pos=736 */
+%   | else return -0.11195073267457462;  // std dev = 2.955, 301.000 (wgt'ed) examples reached here.  /* #neg=292 #pos=9 */
+
+
+% Clauses:
+
+action(A, B, 0.559554654925004) :- 
+     diversnotfull(A), 
+     visibleenemy(A, C), 
+     samelevelasenemy(A, C), 
+     !. // Clause #1.
+
+action(A, B, 0.0840690603931642) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, 0.04028207046204121) :- 
+     oxygenok(A), 
+     !. // Clause #3.
+
+action(A, B, -0.11195073267457462) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.559554654925004) :-  /* #neg=1,232 #pos=2,894 */ 
+   diversnotfull(a),
+   visibleenemy(a, uniqueVar1),
+   samelevelasenemy(a, uniqueVar1),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.0840690603931642) :-  /* #neg=5,931 #pos=1,731 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.04028207046204121) :-  /* #neg=3,305 #pos=736 */ 
+   oxygenok(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.11195073267457462) :-  /* #neg=292 #pos=9 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   samelevelasenemy(a, uniqueVar1)
+%   visibleenemy(a, uniqueVar1)
+%   oxygenok(a)
+%   diversnotfull(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 4, [
+   samelevelasenemy(a, uniqueVar1),
+   visibleenemy(a, uniqueVar1),
+   oxygenok(a),
+   diversnotfull(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 22:45:01 11/28/25.  [Using 1,486,605,896 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( diversnotfull(A) )
+%   then if ( visibleenemy(A, C), samelevelasenemy(A, C) )
+%   | then return 0.559554654925004;  // std dev = 29.396, 4,126.000 (wgt'ed) examples reached here.  /* #neg=1,232 #pos=2,894 */
+%   | else return 0.0840690603931642;  // std dev = 36.605, 7,662.000 (wgt'ed) examples reached here.  /* #neg=5,931 #pos=1,731 */
+%   else if ( oxygenok(A) )
+%   | then return 0.04028207046204121;  // std dev = 24.535, 4,041.000 (wgt'ed) examples reached here.  /* #neg=3,305 #pos=736 */
+%   | else return -0.11195073267457462;  // std dev = 2.955, 301.000 (wgt'ed) examples reached here.  /* #neg=292 #pos=9 */
+
+
+% Clauses:
+
+action(A, B, 0.559554654925004) :- 
+     diversnotfull(A), 
+     visibleenemy(A, C), 
+     samelevelasenemy(A, C), 
+     !. // Clause #1.
+
+action(A, B, 0.0840690603931642) :- 
+     diversnotfull(A), 
+     !. // Clause #2.
+
+action(A, B, 0.04028207046204121) :- 
+     oxygenok(A), 
+     !. // Clause #3.
+
+action(A, B, -0.11195073267457462) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.559554654925004) :-  /* #neg=1,232 #pos=2,894 */ 
+   diversnotfull(a),
+   visibleenemy(a, uniqueVar2),
+   samelevelasenemy(a, uniqueVar2),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.0840690603931642) :-  /* #neg=5,931 #pos=1,731 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.04028207046204121) :-  /* #neg=3,305 #pos=736 */ 
+   oxygenok(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.11195073267457462) :-  /* #neg=292 #pos=9 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   visibleenemy(a, uniqueVar2)
+%   samelevelasenemy(a, uniqueVar2)
+%   oxygenok(a)
+%   diversnotfull(a)

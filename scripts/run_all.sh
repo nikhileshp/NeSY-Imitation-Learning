@@ -110,6 +110,7 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Xmx8G \
                  -jar "$JAR" \
                  -l \
                  -train "$TRAIN_DIR" \
@@ -157,6 +158,7 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Xmx8G \
                  -jar "$JAR" \
                  -i \
                  -model "$MODEL_DIR" \
@@ -219,6 +221,8 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Xmx8G \
                  -jar "$JAR" \
                  -i \
                  -model "$MODEL_DIR" \
@@ -264,6 +268,8 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Xmx8G \
                  -jar "$JAR" \
                  -i \
                  -model "$MODEL_DIR" \

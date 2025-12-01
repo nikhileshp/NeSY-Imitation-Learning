@@ -1,0 +1,148 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 1
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 26,472
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 22:36:29 11/28/25.  [Using 1,373,365,304 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( facingleft(A) )
+%   then if ( diversnotfull(A) )
+%   | then return 0.43569941565704057;  // std dev = 52.603, 11,341.000 (wgt'ed) examples reached here.  /* #neg=4,791 #pos=6,550 */
+%   | else return 0.26885518791102314;  // std dev = 32.803, 4,446.000 (wgt'ed) examples reached here.  /* #neg=2,620 #pos=1,826 */
+%   else if ( diversnotfull(A) )
+%   | then return -0.08626462799109803;  // std dev = 19.436, 7,196.000 (wgt'ed) examples reached here.  /* #neg=6,796 #pos=400 */
+%   | else return -0.12064154927996967;  // std dev = 8.511, 3,489.000 (wgt'ed) examples reached here.  /* #neg=3,415 #pos=74 */
+
+
+% Clauses:
+
+action(A, B, 0.43569941565704057) :- 
+     facingleft(A), 
+     diversnotfull(A), 
+     !. // Clause #1.
+
+action(A, B, 0.26885518791102314) :- 
+     facingleft(A), 
+     !. // Clause #2.
+
+action(A, B, -0.08626462799109803) :- 
+     diversnotfull(A), 
+     !. // Clause #3.
+
+action(A, B, -0.12064154927996967) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.43569941565704057) :-  /* #neg=4,791 #pos=6,550 */ 
+   facingleft(a),
+   diversnotfull(a),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.26885518791102314) :-  /* #neg=2,620 #pos=1,826 */ 
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.08626462799109803) :-  /* #neg=6,796 #pos=400 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.12064154927996967) :-  /* #neg=3,415 #pos=74 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   facingleft(a)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 2, [
+   diversnotfull(a),
+   facingleft(a)]).
+
+%%%%%  WILL-Produced Tree Combined @ 22:36:56 11/28/25.  [Using 1,872,900,280 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( facingleft(A) )
+%   then if ( diversnotfull(A) )
+%   | then return 0.43569941565704057;  // std dev = 52.603, 11,341.000 (wgt'ed) examples reached here.  /* #neg=4,791 #pos=6,550 */
+%   | else return 0.26885518791102314;  // std dev = 32.803, 4,446.000 (wgt'ed) examples reached here.  /* #neg=2,620 #pos=1,826 */
+%   else if ( diversnotfull(A) )
+%   | then return -0.08626462799109803;  // std dev = 19.436, 7,196.000 (wgt'ed) examples reached here.  /* #neg=6,796 #pos=400 */
+%   | else return -0.12064154927996967;  // std dev = 8.511, 3,489.000 (wgt'ed) examples reached here.  /* #neg=3,415 #pos=74 */
+
+
+% Clauses:
+
+action(A, B, 0.43569941565704057) :- 
+     facingleft(A), 
+     diversnotfull(A), 
+     !. // Clause #1.
+
+action(A, B, 0.26885518791102314) :- 
+     facingleft(A), 
+     !. // Clause #2.
+
+action(A, B, -0.08626462799109803) :- 
+     diversnotfull(A), 
+     !. // Clause #3.
+
+action(A, B, -0.12064154927996967) :- !. // Clause #4.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.43569941565704057) :-  /* #neg=4,791 #pos=6,550 */ 
+   facingleft(a),
+   diversnotfull(a),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.26885518791102314) :-  /* #neg=2,620 #pos=1,826 */ 
+   facingleft(a),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, -0.08626462799109803) :-  /* #neg=6,796 #pos=400 */ 
+   diversnotfull(a),
+   !. // Flattened version of clause #3.
+
+flattened_action(underscore, underscore, -0.12064154927996967) :-  /* #neg=3,415 #pos=74 */ 
+   !. // Flattened version of clause #4.
+
+
+% The unique flattened literals:
+%   diversnotfull(a)
+%   facingleft(a)
