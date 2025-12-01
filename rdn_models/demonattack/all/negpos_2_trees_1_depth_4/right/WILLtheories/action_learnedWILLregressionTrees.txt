@@ -1,0 +1,219 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 3
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 38
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 16:54:09 11/28/25.  [Using 299,473,952 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( visibleenemy(A, C), visibleenemymissile(A, D) )
+%   then return -0.1418510649004878;  // std dev = 0.000, 6.000 (wgt'ed) examples reached here.  /* #neg=6 */
+%   else if ( visibleenemy(A, E), enemydirectlyabove(A, E) )
+%   | then if ( visibleenemy(A, F), rightofenemy(A, F) )
+%   | | then return 0.8581489350995121;  // std dev = 2.11e-08, 3.000 (wgt'ed) examples reached here.  /* #pos=3 */
+%   | | else return 0.41370449065506787;  // std dev = 0.497, 9.000 (wgt'ed) examples reached here.  /* #neg=4 #pos=5 */
+%   | else if ( visibleenemy(A, G), leftofenemy(A, G) )
+%   | | then return -0.1418510649004878;  // std dev = 0.000, 6.000 (wgt'ed) examples reached here.  /* #neg=6 */
+%   | | else if ( visibleenemy(A, H) )
+%   | | | then return 0.5248156017661789;  // std dev = 1.155, 6.000 (wgt'ed) examples reached here.  /* #neg=2 #pos=4 */
+%   | | | else return 0.10814893509951218;  // std dev = 1.225, 8.000 (wgt'ed) examples reached here.  /* #neg=6 #pos=2 */
+
+
+% Clauses:
+
+action(A, B, -0.1418510649004878) :- 
+     visibleenemy(A, C), 
+     visibleenemymissile(A, D), 
+     !. // Clause #1.
+
+action(A, B, 0.8581489350995121) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     visibleenemy(A, D), 
+     rightofenemy(A, D), 
+     !. // Clause #2.
+
+action(A, B, 0.41370449065506787) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     !. // Clause #3.
+
+action(A, B, -0.1418510649004878) :- 
+     visibleenemy(A, C), 
+     leftofenemy(A, C), 
+     !. // Clause #4.
+
+action(A, B, 0.5248156017661789) :- 
+     visibleenemy(A, C), 
+     !. // Clause #5.
+
+action(A, B, 0.10814893509951218) :- !. // Clause #6.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, -0.1418510649004878) :-  /* #neg=6 */ 
+   visibleenemy(a, underscore),
+   visibleenemymissile(a, underscore),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.8581489350995121) :-  /* #pos=3 */ 
+   visibleenemy(a, uniqueVar1),
+   enemydirectlyabove(a, uniqueVar1),
+   visibleenemy(a, uniqueVar2),
+   rightofenemy(a, uniqueVar2),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.41370449065506787) :-  /* #neg=4 #pos=5 */ 
+   visibleenemy(a, uniqueVar3),
+   enemydirectlyabove(a, uniqueVar3),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, -0.1418510649004878) :-  /* #neg=6 */ 
+   visibleenemy(a, uniqueVar4),
+   leftofenemy(a, uniqueVar4),
+   !. // Flattened version of clause #4.
+
+flattened_action(a, underscore, 0.5248156017661789) :-  /* #neg=2 #pos=4 */ 
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #5.
+
+flattened_action(underscore, underscore, 0.10814893509951218) :-  /* #neg=6 #pos=2 */ 
+   !. // Flattened version of clause #6.
+
+
+% The unique flattened literals:
+%   enemydirectlyabove(a, uniqueVar1)
+%   enemydirectlyabove(a, uniqueVar3)
+%   visibleenemy(a, underscore)
+%   visibleenemy(a, uniqueVar3)
+%   visibleenemy(a, uniqueVar4)
+%   visibleenemy(a, uniqueVar1)
+%   visibleenemymissile(a, underscore)
+%   visibleenemy(a, uniqueVar2)
+%   rightofenemy(a, uniqueVar2)
+%   leftofenemy(a, uniqueVar4)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 10, [
+   enemydirectlyabove(a, uniqueVar1),
+   enemydirectlyabove(a, uniqueVar3),
+   visibleenemy(a, underscore),
+   visibleenemy(a, uniqueVar3),
+   visibleenemy(a, uniqueVar4),
+   visibleenemy(a, uniqueVar1),
+   visibleenemymissile(a, underscore),
+   visibleenemy(a, uniqueVar2),
+   rightofenemy(a, uniqueVar2),
+   leftofenemy(a, uniqueVar4)]).
+
+%%%%%  WILL-Produced Tree Combined @ 16:54:09 11/28/25.  [Using 299,554,272 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( visibleenemy(A, C), leftofenemy(A, C) )
+%   then return -0.1418510649004878;  // std dev = 0.000, 12.000 (wgt'ed) examples reached here.  /* #neg=12 */
+%   else if ( visibleenemy(A, D) )
+%   | then if ( rightofenemy(A, D), visibleenemy(A, E), enemydirectlyabove(A, E) )
+%   | | then return 0.6081489350995122;  // std dev = 0.866, 4.000 (wgt'ed) examples reached here.  /* #neg=1 #pos=3 */
+%   | | else if ( enemydirectlyabove(A, D) )
+%   | | | then return 0.4831489350995123;  // std dev = 1.369, 8.000 (wgt'ed) examples reached here.  /* #neg=3 #pos=5 */
+%   | | | else return 0.5248156017661789;  // std dev = 1.155, 6.000 (wgt'ed) examples reached here.  /* #neg=2 #pos=4 */
+%   | else return 0.10814893509951218;  // std dev = 0.433, 8.000 (wgt'ed) examples reached here.  /* #neg=6 #pos=2 */
+
+
+% Clauses:
+
+action(A, B, -0.1418510649004878) :- 
+     visibleenemy(A, C), 
+     leftofenemy(A, C), 
+     !. // Clause #1.
+
+action(A, B, 0.6081489350995122) :- 
+     visibleenemy(A, C), 
+     rightofenemy(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     !. // Clause #2.
+
+action(A, B, 0.4831489350995123) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     !. // Clause #3.
+
+action(A, B, 0.5248156017661789) :- 
+     visibleenemy(A, C), 
+     !. // Clause #4.
+
+action(A, B, 0.10814893509951218) :- !. // Clause #5.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, -0.1418510649004878) :-  /* #neg=12 */ 
+   visibleenemy(a, uniqueVar5),
+   leftofenemy(a, uniqueVar5),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.6081489350995122) :-  /* #neg=1 #pos=3 */ 
+   visibleenemy(a, uniqueVar6),
+   rightofenemy(a, uniqueVar6),
+   visibleenemy(a, uniqueVar7),
+   enemydirectlyabove(a, uniqueVar7),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.4831489350995123) :-  /* #neg=3 #pos=5 */ 
+   visibleenemy(a, uniqueVar8),
+   enemydirectlyabove(a, uniqueVar8),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, 0.5248156017661789) :-  /* #neg=2 #pos=4 */ 
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #4.
+
+flattened_action(underscore, underscore, 0.10814893509951218) :-  /* #neg=6 #pos=2 */ 
+   !. // Flattened version of clause #5.
+
+
+% The unique flattened literals:
+%   enemydirectlyabove(a, uniqueVar7)
+%   visibleenemy(a, uniqueVar5)
+%   rightofenemy(a, uniqueVar6)
+%   visibleenemy(a, uniqueVar8)
+%   visibleenemy(a, underscore)
+%   visibleenemy(a, uniqueVar6)
+%   enemydirectlyabove(a, uniqueVar8)
+%   visibleenemy(a, uniqueVar7)
+%   leftofenemy(a, uniqueVar5)

@@ -1,0 +1,714 @@
+usePrologVariables: true.
+
+% maxTreeDepthInNodes                 = 3
+% maxTreeDepthInLiterals              = 12
+% maxNumberOfLiteralsAtAnInteriorNode = 2
+% maxFreeBridgersInBody               = 1
+% maxNumberOfClauses                  = 20
+% maxNodesToConsider                  = 10
+% maxNodesToCreate                    = 10,000
+% maxAcceptableNodeScoreToStop        = 0.003
+% negPosRatio                         = 2.000
+% testNegPosRatio                     = -1.000
+% # of pos examples                   = 69,058
+% # of neg examples                   = 0
+
+
+
+%%%%%  WILL-Produced Tree #1 @ 14:22:53 11/29/25.  [Using 320,037,872 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( visibleplayermissile(A, C), fireready(A, C) )
+%   then if ( visibleenemy(A, D), enemydirectlyabove(A, D) )
+%   | then if ( visibleenemymissile(A, E), enemymissiledirectlyabove(A, E) )
+%   | | then if ( nearbymissile(A, E) )
+%   | | | then return 0.06457095344813561;  // std dev = 5.976, 218.000 (wgt'ed) examples reached here.  /* #neg=173 #pos=45 */
+%   | | | else return 0.2933648819433623;  // std dev = 8.602, 301.000 (wgt'ed) examples reached here.  /* #neg=170 #pos=131 */
+%   | | else if ( visibleenemymissile(A, F) )
+%   | | | then return 0.06087099813675652;  // std dev = 21.243, 2,792.000 (wgt'ed) examples reached here.  /* #neg=2,226 #pos=566 */
+%   | | | else return 0.11356605319268162;  // std dev = 26.498, 3,692.000 (wgt'ed) examples reached here.  /* #neg=2,749 #pos=943 */
+%   | else if ( visibleenemy(A, G), rightofenemy(A, G) )
+%   | | then if ( visibleenemymissile(A, H), visibleenemy(A, I), leftofenemy(A, I) )
+%   | | | then return -0.1150328830823089;  // std dev = 7.577, 2,200.000 (wgt'ed) examples reached here.  /* #neg=2,141 #pos=59 */
+%   | | | else return -0.07721228163052832;  // std dev = 15.950, 4,208.000 (wgt'ed) examples reached here.  /* #neg=3,936 #pos=272 */
+%   | | else if ( visibleenemy(A, J) )
+%   | | | then return -0.058425954768332775;  // std dev = 16.665, 3,632.000 (wgt'ed) examples reached here.  /* #neg=3,329 #pos=303 */
+%   | | | else return -0.039552732318247824;  // std dev = 24.725, 6,657.000 (wgt'ed) examples reached here.  /* #neg=5,976 #pos=681 */
+%   else if ( visibleplayermissile(A, K) )
+%   | then if ( visibleenemy(A, L), enemydirectlyabove(A, L) )
+%   | | then if ( visibleenemymissile(A, M), visibleenemy(A, N), leftofenemy(A, N) )
+%   | | | then return 0.3162808244826052;  // std dev = 35.829, 5,171.000 (wgt'ed) examples reached here.  /* #neg=2,802 #pos=2,369 */
+%   | | | else return 0.388326298886851;  // std dev = 62.484, 15,674.000 (wgt'ed) examples reached here.  /* #neg=7,364 #pos=8,310 */
+%   | | else if ( visibleenemymissile(A, P), visibleenemy(A, Q), nearbymissile(A, P) )
+%   | | | then return 0.1594718160402225;  // std dev = 29.315, 4,082.000 (wgt'ed) examples reached here.  /* #neg=2,852 #pos=1,230 */
+%   | | | else return 0.29450957643503334;  // std dev = 66.927, 18,212.000 (wgt'ed) examples reached here.  /* #neg=10,265 #pos=7,947 */
+%   | else if ( visibleenemy(A, R), enemydirectlyabove(A, R) )
+%   | | then if ( visibleenemymissile(A, S), enemymissiledirectlyabove(A, S) )
+%   | | | then return 0.24703782398840124;  // std dev = 2.068, 18.000 (wgt'ed) examples reached here.  /* #neg=11 #pos=7 */
+%   | | | else return 0.08439327899091428;  // std dev = 6.220, 221.000 (wgt'ed) examples reached here.  /* #neg=171 #pos=50 */
+%   | | else if ( visibleenemy(A, T) )
+%   | | | then return -0.0911084906430623;  // std dev = 6.239, 808.000 (wgt'ed) examples reached here.  /* #neg=767 #pos=41 */
+%   | | | else return -0.07444492155577821;  // std dev = 8.583, 1,172.000 (wgt'ed) examples reached here.  /* #neg=1,093 #pos=79 */
+
+
+% Clauses:
+
+action(A, B, 0.06457095344813561) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     enemymissiledirectlyabove(A, E), 
+     nearbymissile(A, E), 
+     !. // Clause #1.
+
+action(A, B, 0.2933648819433623) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     enemymissiledirectlyabove(A, E), 
+     !. // Clause #2.
+
+action(A, B, 0.06087099813675652) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     !. // Clause #3.
+
+action(A, B, 0.11356605319268162) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     !. // Clause #4.
+
+action(A, B, -0.1150328830823089) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     rightofenemy(A, D), 
+     visibleenemymissile(A, E), 
+     visibleenemy(A, F), 
+     leftofenemy(A, F), 
+     !. // Clause #5.
+
+action(A, B, -0.07721228163052832) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     rightofenemy(A, D), 
+     !. // Clause #6.
+
+action(A, B, -0.058425954768332775) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     !. // Clause #7.
+
+action(A, B, -0.039552732318247824) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     !. // Clause #8.
+
+action(A, B, 0.3162808244826052) :- 
+     visibleplayermissile(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     visibleenemy(A, F), 
+     leftofenemy(A, F), 
+     !. // Clause #9.
+
+action(A, B, 0.388326298886851) :- 
+     visibleplayermissile(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     !. // Clause #10.
+
+action(A, B, 0.1594718160402225) :- 
+     visibleplayermissile(A, C), 
+     visibleenemymissile(A, D), 
+     visibleenemy(A, E), 
+     nearbymissile(A, D), 
+     !. // Clause #11.
+
+action(A, B, 0.29450957643503334) :- 
+     visibleplayermissile(A, C), 
+     !. // Clause #12.
+
+action(A, B, 0.24703782398840124) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     visibleenemymissile(A, D), 
+     enemymissiledirectlyabove(A, D), 
+     !. // Clause #13.
+
+action(A, B, 0.08439327899091428) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     !. // Clause #14.
+
+action(A, B, -0.0911084906430623) :- 
+     visibleenemy(A, C), 
+     !. // Clause #15.
+
+action(A, B, -0.07444492155577821) :- !. // Clause #16.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.06457095344813561) :-  /* #neg=173 #pos=45 */ 
+   visibleplayermissile(a, uniqueVar1),
+   fireready(a, uniqueVar1),
+   visibleenemy(a, uniqueVar2),
+   enemydirectlyabove(a, uniqueVar2),
+   visibleenemymissile(a, uniqueVar3),
+   enemymissiledirectlyabove(a, uniqueVar3),
+   nearbymissile(a, uniqueVar3),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, 0.2933648819433623) :-  /* #neg=170 #pos=131 */ 
+   visibleplayermissile(a, uniqueVar4),
+   fireready(a, uniqueVar4),
+   visibleenemy(a, uniqueVar5),
+   enemydirectlyabove(a, uniqueVar5),
+   visibleenemymissile(a, uniqueVar6),
+   enemymissiledirectlyabove(a, uniqueVar6),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.06087099813675652) :-  /* #neg=2,226 #pos=566 */ 
+   visibleplayermissile(a, uniqueVar7),
+   fireready(a, uniqueVar7),
+   visibleenemy(a, uniqueVar8),
+   enemydirectlyabove(a, uniqueVar8),
+   visibleenemymissile(a, underscore),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, 0.11356605319268162) :-  /* #neg=2,749 #pos=943 */ 
+   visibleplayermissile(a, uniqueVar9),
+   fireready(a, uniqueVar9),
+   visibleenemy(a, uniqueVar10),
+   enemydirectlyabove(a, uniqueVar10),
+   !. // Flattened version of clause #4.
+
+flattened_action(a, underscore, -0.1150328830823089) :-  /* #neg=2,141 #pos=59 */ 
+   visibleplayermissile(a, uniqueVar11),
+   fireready(a, uniqueVar11),
+   visibleenemy(a, uniqueVar12),
+   rightofenemy(a, uniqueVar12),
+   visibleenemymissile(a, underscore),
+   visibleenemy(a, uniqueVar13),
+   leftofenemy(a, uniqueVar13),
+   !. // Flattened version of clause #5.
+
+flattened_action(a, underscore, -0.07721228163052832) :-  /* #neg=3,936 #pos=272 */ 
+   visibleplayermissile(a, uniqueVar14),
+   fireready(a, uniqueVar14),
+   visibleenemy(a, uniqueVar15),
+   rightofenemy(a, uniqueVar15),
+   !. // Flattened version of clause #6.
+
+flattened_action(a, underscore, -0.058425954768332775) :-  /* #neg=3,329 #pos=303 */ 
+   visibleplayermissile(a, uniqueVar16),
+   fireready(a, uniqueVar16),
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #7.
+
+flattened_action(a, underscore, -0.039552732318247824) :-  /* #neg=5,976 #pos=681 */ 
+   visibleplayermissile(a, uniqueVar17),
+   fireready(a, uniqueVar17),
+   !. // Flattened version of clause #8.
+
+flattened_action(a, underscore, 0.3162808244826052) :-  /* #neg=2,802 #pos=2,369 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemy(a, uniqueVar18),
+   enemydirectlyabove(a, uniqueVar18),
+   visibleenemymissile(a, underscore),
+   visibleenemy(a, uniqueVar19),
+   leftofenemy(a, uniqueVar19),
+   !. // Flattened version of clause #9.
+
+flattened_action(a, underscore, 0.388326298886851) :-  /* #neg=7,364 #pos=8,310 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemy(a, uniqueVar20),
+   enemydirectlyabove(a, uniqueVar20),
+   !. // Flattened version of clause #10.
+
+flattened_action(a, underscore, 0.1594718160402225) :-  /* #neg=2,852 #pos=1,230 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemymissile(a, uniqueVar21),
+   visibleenemy(a, underscore),
+   nearbymissile(a, uniqueVar21),
+   !. // Flattened version of clause #11.
+
+flattened_action(a, underscore, 0.29450957643503334) :-  /* #neg=10,265 #pos=7,947 */ 
+   visibleplayermissile(a, underscore),
+   !. // Flattened version of clause #12.
+
+flattened_action(a, underscore, 0.24703782398840124) :-  /* #neg=11 #pos=7 */ 
+   visibleenemy(a, uniqueVar22),
+   enemydirectlyabove(a, uniqueVar22),
+   visibleenemymissile(a, uniqueVar23),
+   enemymissiledirectlyabove(a, uniqueVar23),
+   !. // Flattened version of clause #13.
+
+flattened_action(a, underscore, 0.08439327899091428) :-  /* #neg=171 #pos=50 */ 
+   visibleenemy(a, uniqueVar24),
+   enemydirectlyabove(a, uniqueVar24),
+   !. // Flattened version of clause #14.
+
+flattened_action(a, underscore, -0.0911084906430623) :-  /* #neg=767 #pos=41 */ 
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #15.
+
+flattened_action(underscore, underscore, -0.07444492155577821) :-  /* #neg=1,093 #pos=79 */ 
+   !. // Flattened version of clause #16.
+
+
+% The unique flattened literals:
+%   visibleplayermissile(a, uniqueVar1)
+%   fireready(a, uniqueVar14)
+%   enemydirectlyabove(a, uniqueVar2)
+%   visibleenemy(a, uniqueVar5)
+%   visibleenemy(a, uniqueVar10)
+%   enemydirectlyabove(a, uniqueVar24)
+%   fireready(a, uniqueVar1)
+%   visibleenemy(a, uniqueVar24)
+%   visibleenemy(a, underscore)
+%   enemydirectlyabove(a, uniqueVar5)
+%   enemydirectlyabove(a, uniqueVar10)
+%   visibleplayermissile(a, uniqueVar17)
+%   visibleenemy(a, uniqueVar2)
+%   visibleenemy(a, uniqueVar22)
+%   visibleplayermissile(a, uniqueVar9)
+%   fireready(a, uniqueVar16)
+%   visibleplayermissile(a, uniqueVar14)
+%   visibleenemy(a, uniqueVar18)
+%   visibleenemymissile(a, uniqueVar23)
+%   enemymissiledirectlyabove(a, uniqueVar23)
+%   fireready(a, uniqueVar7)
+%   fireready(a, uniqueVar4)
+%   fireready(a, uniqueVar11)
+%   visibleenemymissile(a, uniqueVar6)
+%   visibleenemy(a, uniqueVar8)
+%   rightofenemy(a, uniqueVar15)
+%   rightofenemy(a, uniqueVar12)
+%   visibleplayermissile(a, underscore)
+%   enemydirectlyabove(a, uniqueVar20)
+%   nearbymissile(a, uniqueVar21)
+%   enemymissiledirectlyabove(a, uniqueVar6)
+%   leftofenemy(a, uniqueVar13)
+%   visibleenemy(a, uniqueVar20)
+%   visibleenemy(a, uniqueVar12)
+%   visibleenemymissile(a, uniqueVar3)
+%   fireready(a, uniqueVar9)
+%   visibleenemy(a, uniqueVar15)
+%   leftofenemy(a, uniqueVar19)
+%   fireready(a, uniqueVar17)
+%   visibleplayermissile(a, uniqueVar4)
+%   enemymissiledirectlyabove(a, uniqueVar3)
+%   visibleenemymissile(a, underscore)
+%   nearbymissile(a, uniqueVar3)
+%   visibleplayermissile(a, uniqueVar16)
+%   enemydirectlyabove(a, uniqueVar8)
+%   visibleenemymissile(a, uniqueVar21)
+%   enemydirectlyabove(a, uniqueVar18)
+%   visibleenemy(a, uniqueVar13)
+%   enemydirectlyabove(a, uniqueVar22)
+%   visibleplayermissile(a, uniqueVar7)
+%   visibleplayermissile(a, uniqueVar11)
+%   visibleenemy(a, uniqueVar19)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%  Final call for computing score for action.  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+stepLength_tree1(1.0).
+
+logPrior(-1.8).
+action(D, E, Total) :- // A general accessor. 
+   action(D, E, 1000000, Total), !.
+action(D, E, Total) :- waitHere("This should not fail", action(D, E, Total)).
+
+action(D, E, TreesToUse, Total) :- // A tree-limited accessor (e.g., for tuning the number of trees to use).
+   logPrior(LogPrior),
+   getScore_action_tree1(D, E, TreesToUse, Total1),
+   Total is LogPrior + Total1,
+   !.
+action(D, E, TreesToUse, Total) :- waitHere("This should not fail", action(D, E, TreesToUse, Total)).
+
+getScore_action_tree1(D, E, TreesToUse, 0.0) :- 1 > TreesToUse, !.
+getScore_action_tree1(D, E, TreesToUse, Total1) :- action_tree1(D, E, Total), stepLength_tree1(StepLen), Total1 is Total * StepLen.
+
+flattenedLiteralsInThisSetOfTrees(action, 52, [
+   visibleplayermissile(a, uniqueVar1),
+   fireready(a, uniqueVar14),
+   enemydirectlyabove(a, uniqueVar2),
+   visibleenemy(a, uniqueVar5),
+   visibleenemy(a, uniqueVar10),
+   enemydirectlyabove(a, uniqueVar24),
+   fireready(a, uniqueVar1),
+   visibleenemy(a, uniqueVar24),
+   visibleenemy(a, underscore),
+   enemydirectlyabove(a, uniqueVar5),
+   enemydirectlyabove(a, uniqueVar10),
+   visibleplayermissile(a, uniqueVar17),
+   visibleenemy(a, uniqueVar2),
+   visibleenemy(a, uniqueVar22),
+   visibleplayermissile(a, uniqueVar9),
+   fireready(a, uniqueVar16),
+   visibleplayermissile(a, uniqueVar14),
+   visibleenemy(a, uniqueVar18),
+   visibleenemymissile(a, uniqueVar23),
+   enemymissiledirectlyabove(a, uniqueVar23),
+   fireready(a, uniqueVar7),
+   fireready(a, uniqueVar4),
+   fireready(a, uniqueVar11),
+   visibleenemymissile(a, uniqueVar6),
+   visibleenemy(a, uniqueVar8),
+   rightofenemy(a, uniqueVar15),
+   rightofenemy(a, uniqueVar12),
+   visibleplayermissile(a, underscore),
+   enemydirectlyabove(a, uniqueVar20),
+   nearbymissile(a, uniqueVar21),
+   enemymissiledirectlyabove(a, uniqueVar6),
+   leftofenemy(a, uniqueVar13),
+   visibleenemy(a, uniqueVar20),
+   visibleenemy(a, uniqueVar12),
+   visibleenemymissile(a, uniqueVar3),
+   fireready(a, uniqueVar9),
+   visibleenemy(a, uniqueVar15),
+   leftofenemy(a, uniqueVar19),
+   fireready(a, uniqueVar17),
+   visibleplayermissile(a, uniqueVar4),
+   enemymissiledirectlyabove(a, uniqueVar3),
+   visibleenemymissile(a, underscore),
+   nearbymissile(a, uniqueVar3),
+   visibleplayermissile(a, uniqueVar16),
+   enemydirectlyabove(a, uniqueVar8),
+   visibleenemymissile(a, uniqueVar21),
+   enemydirectlyabove(a, uniqueVar18),
+   visibleenemy(a, uniqueVar13),
+   enemydirectlyabove(a, uniqueVar22),
+   visibleplayermissile(a, uniqueVar7),
+   visibleplayermissile(a, uniqueVar11),
+   visibleenemy(a, uniqueVar19)]).
+
+%%%%%  WILL-Produced Tree Combined @ 14:23:07 11/29/25.  [Using 320,308,784 memory cells.]  %%%%%
+
+% FOR action(A, B):
+%   if ( visibleplayermissile(A, C), fireready(A, C) )
+%   then if ( visibleenemy(A, D), enemydirectlyabove(A, D) )
+%   | then if ( visibleenemymissile(A, E), rightofmissile(A, E) )
+%   | | then if ( nearbymissile(A, E) )
+%   | | | then return 0.08672036367093618;  // std dev = 11.914, 805.000 (wgt'ed) examples reached here.  /* #neg=621 #pos=184 */
+%   | | | else return -0.0031524347635013207;  // std dev = 8.353, 584.000 (wgt'ed) examples reached here.  /* #neg=503 #pos=81 */
+%   | | else if ( visibleenemymissile(A, F), enemymissiledirectlyabove(A, F) )
+%   | | | then return 0.19726261525365046;  // std dev = 10.785, 519.000 (wgt'ed) examples reached here.  /* #neg=343 #pos=176 */
+%   | | | else return 0.10230987719960538;  // std dev = 30.664, 5,095.000 (wgt'ed) examples reached here.  /* #neg=3,851 #pos=1,244 */
+%   | else if ( visibleenemy(A, G), rightofenemy(A, G) )
+%   | | then if ( visibleenemymissile(A, H), visibleenemy(A, I), leftofenemy(A, I) )
+%   | | | then return -0.1150328830823089;  // std dev = 7.577, 2,200.000 (wgt'ed) examples reached here.  /* #neg=2,141 #pos=59 */
+%   | | | else return -0.07721228163052832;  // std dev = 15.950, 4,208.000 (wgt'ed) examples reached here.  /* #neg=3,936 #pos=272 */
+%   | | else if ( visibleenemy(A, J), visibleenemymissile(A, K), leftofmissile(A, K) )
+%   | | | then return -0.07900576103308572;  // std dev = 9.235, 1,448.000 (wgt'ed) examples reached here.  /* #neg=1,357 #pos=91 */
+%   | | | else return -0.040844391447262235;  // std dev = 28.334, 8,841.000 (wgt'ed) examples reached here.  /* #neg=7,948 #pos=893 */
+%   else if ( visibleplayermissile(A, L) )
+%   | then if ( visibleenemy(A, M), enemydirectlyabove(A, M) )
+%   | | then if ( visibleenemymissile(A, N), visibleenemy(A, P), leftofenemy(A, P) )
+%   | | | then return 0.3162808244826052;  // std dev = 35.829, 5,171.000 (wgt'ed) examples reached here.  /* #neg=2,802 #pos=2,369 */
+%   | | | else return 0.388326298886851;  // std dev = 62.484, 15,674.000 (wgt'ed) examples reached here.  /* #neg=7,364 #pos=8,310 */
+%   | | else if ( visibleenemymissile(A, Q), visibleenemy(A, R), nearbymissile(A, Q) )
+%   | | | then return 0.1594718160402225;  // std dev = 29.315, 4,082.000 (wgt'ed) examples reached here.  /* #neg=2,852 #pos=1,230 */
+%   | | | else return 0.29450957643503334;  // std dev = 66.927, 18,212.000 (wgt'ed) examples reached here.  /* #neg=10,265 #pos=7,947 */
+%   | else if ( visibleenemy(A, S) )
+%   | | then if ( enemydirectlyabove(A, S) )
+%   | | | then return 0.09664265894888521;  // std dev = 6.588, 239.000 (wgt'ed) examples reached here.  /* #neg=182 #pos=57 */
+%   | | | else return -0.0911084906430623;  // std dev = 6.239, 808.000 (wgt'ed) examples reached here.  /* #neg=767 #pos=41 */
+%   | | else if ( visibleenemymissile(A, T), rightofmissile(A, T) )
+%   | | | then return -0.1418510649004877;  // std dev = 3.33e-08, 34.000 (wgt'ed) examples reached here.  /* #neg=34 */
+%   | | | else return -0.07243102975110301;  // std dev = 8.574, 1,138.000 (wgt'ed) examples reached here.  /* #neg=1,059 #pos=79 */
+
+
+% Clauses:
+
+action(A, B, 0.08672036367093618) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     rightofmissile(A, E), 
+     nearbymissile(A, E), 
+     !. // Clause #1.
+
+action(A, B, -0.0031524347635013207) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     rightofmissile(A, E), 
+     !. // Clause #2.
+
+action(A, B, 0.19726261525365046) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     enemymissiledirectlyabove(A, E), 
+     !. // Clause #3.
+
+action(A, B, 0.10230987719960538) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     !. // Clause #4.
+
+action(A, B, -0.1150328830823089) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     rightofenemy(A, D), 
+     visibleenemymissile(A, E), 
+     visibleenemy(A, F), 
+     leftofenemy(A, F), 
+     !. // Clause #5.
+
+action(A, B, -0.07721228163052832) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     rightofenemy(A, D), 
+     !. // Clause #6.
+
+action(A, B, -0.07900576103308572) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     visibleenemy(A, D), 
+     visibleenemymissile(A, E), 
+     leftofmissile(A, E), 
+     !. // Clause #7.
+
+action(A, B, -0.040844391447262235) :- 
+     visibleplayermissile(A, C), 
+     fireready(A, C), 
+     !. // Clause #8.
+
+action(A, B, 0.3162808244826052) :- 
+     visibleplayermissile(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     visibleenemymissile(A, E), 
+     visibleenemy(A, F), 
+     leftofenemy(A, F), 
+     !. // Clause #9.
+
+action(A, B, 0.388326298886851) :- 
+     visibleplayermissile(A, C), 
+     visibleenemy(A, D), 
+     enemydirectlyabove(A, D), 
+     !. // Clause #10.
+
+action(A, B, 0.1594718160402225) :- 
+     visibleplayermissile(A, C), 
+     visibleenemymissile(A, D), 
+     visibleenemy(A, E), 
+     nearbymissile(A, D), 
+     !. // Clause #11.
+
+action(A, B, 0.29450957643503334) :- 
+     visibleplayermissile(A, C), 
+     !. // Clause #12.
+
+action(A, B, 0.09664265894888521) :- 
+     visibleenemy(A, C), 
+     enemydirectlyabove(A, C), 
+     !. // Clause #13.
+
+action(A, B, -0.0911084906430623) :- 
+     visibleenemy(A, C), 
+     !. // Clause #14.
+
+action(A, B, -0.1418510649004877) :- 
+     visibleenemymissile(A, C), 
+     rightofmissile(A, C), 
+     !. // Clause #15.
+
+action(A, B, -0.07243102975110301) :- !. // Clause #16.
+
+
+% The flattened versions of these clauses:
+
+flattened_action(a, underscore, 0.08672036367093618) :-  /* #neg=621 #pos=184 */ 
+   visibleplayermissile(a, uniqueVar25),
+   fireready(a, uniqueVar25),
+   visibleenemy(a, uniqueVar26),
+   enemydirectlyabove(a, uniqueVar26),
+   visibleenemymissile(a, uniqueVar27),
+   rightofmissile(a, uniqueVar27),
+   nearbymissile(a, uniqueVar27),
+   !. // Flattened version of clause #1.
+
+flattened_action(a, underscore, -0.0031524347635013207) :-  /* #neg=503 #pos=81 */ 
+   visibleplayermissile(a, uniqueVar28),
+   fireready(a, uniqueVar28),
+   visibleenemy(a, uniqueVar29),
+   enemydirectlyabove(a, uniqueVar29),
+   visibleenemymissile(a, uniqueVar30),
+   rightofmissile(a, uniqueVar30),
+   !. // Flattened version of clause #2.
+
+flattened_action(a, underscore, 0.19726261525365046) :-  /* #neg=343 #pos=176 */ 
+   visibleplayermissile(a, uniqueVar31),
+   fireready(a, uniqueVar31),
+   visibleenemy(a, uniqueVar32),
+   enemydirectlyabove(a, uniqueVar32),
+   visibleenemymissile(a, uniqueVar33),
+   enemymissiledirectlyabove(a, uniqueVar33),
+   !. // Flattened version of clause #3.
+
+flattened_action(a, underscore, 0.10230987719960538) :-  /* #neg=3,851 #pos=1,244 */ 
+   visibleplayermissile(a, uniqueVar34),
+   fireready(a, uniqueVar34),
+   visibleenemy(a, uniqueVar35),
+   enemydirectlyabove(a, uniqueVar35),
+   !. // Flattened version of clause #4.
+
+flattened_action(a, underscore, -0.1150328830823089) :-  /* #neg=2,141 #pos=59 */ 
+   visibleplayermissile(a, uniqueVar36),
+   fireready(a, uniqueVar36),
+   visibleenemy(a, uniqueVar37),
+   rightofenemy(a, uniqueVar37),
+   visibleenemymissile(a, underscore),
+   visibleenemy(a, uniqueVar38),
+   leftofenemy(a, uniqueVar38),
+   !. // Flattened version of clause #5.
+
+flattened_action(a, underscore, -0.07721228163052832) :-  /* #neg=3,936 #pos=272 */ 
+   visibleplayermissile(a, uniqueVar39),
+   fireready(a, uniqueVar39),
+   visibleenemy(a, uniqueVar40),
+   rightofenemy(a, uniqueVar40),
+   !. // Flattened version of clause #6.
+
+flattened_action(a, underscore, -0.07900576103308572) :-  /* #neg=1,357 #pos=91 */ 
+   visibleplayermissile(a, uniqueVar41),
+   fireready(a, uniqueVar41),
+   visibleenemy(a, underscore),
+   visibleenemymissile(a, uniqueVar42),
+   leftofmissile(a, uniqueVar42),
+   !. // Flattened version of clause #7.
+
+flattened_action(a, underscore, -0.040844391447262235) :-  /* #neg=7,948 #pos=893 */ 
+   visibleplayermissile(a, uniqueVar43),
+   fireready(a, uniqueVar43),
+   !. // Flattened version of clause #8.
+
+flattened_action(a, underscore, 0.3162808244826052) :-  /* #neg=2,802 #pos=2,369 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemy(a, uniqueVar44),
+   enemydirectlyabove(a, uniqueVar44),
+   visibleenemymissile(a, underscore),
+   visibleenemy(a, uniqueVar45),
+   leftofenemy(a, uniqueVar45),
+   !. // Flattened version of clause #9.
+
+flattened_action(a, underscore, 0.388326298886851) :-  /* #neg=7,364 #pos=8,310 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemy(a, uniqueVar46),
+   enemydirectlyabove(a, uniqueVar46),
+   !. // Flattened version of clause #10.
+
+flattened_action(a, underscore, 0.1594718160402225) :-  /* #neg=2,852 #pos=1,230 */ 
+   visibleplayermissile(a, underscore),
+   visibleenemymissile(a, uniqueVar47),
+   visibleenemy(a, underscore),
+   nearbymissile(a, uniqueVar47),
+   !. // Flattened version of clause #11.
+
+flattened_action(a, underscore, 0.29450957643503334) :-  /* #neg=10,265 #pos=7,947 */ 
+   visibleplayermissile(a, underscore),
+   !. // Flattened version of clause #12.
+
+flattened_action(a, underscore, 0.09664265894888521) :-  /* #neg=182 #pos=57 */ 
+   visibleenemy(a, uniqueVar48),
+   enemydirectlyabove(a, uniqueVar48),
+   !. // Flattened version of clause #13.
+
+flattened_action(a, underscore, -0.0911084906430623) :-  /* #neg=767 #pos=41 */ 
+   visibleenemy(a, underscore),
+   !. // Flattened version of clause #14.
+
+flattened_action(a, underscore, -0.1418510649004877) :-  /* #neg=34 */ 
+   visibleenemymissile(a, uniqueVar49),
+   rightofmissile(a, uniqueVar49),
+   !. // Flattened version of clause #15.
+
+flattened_action(underscore, underscore, -0.07243102975110301) :-  /* #neg=1,059 #pos=79 */ 
+   !. // Flattened version of clause #16.
+
+
+% The unique flattened literals:
+%   leftofenemy(a, uniqueVar38)
+%   enemydirectlyabove(a, uniqueVar26)
+%   rightofmissile(a, uniqueVar30)
+%   enemydirectlyabove(a, uniqueVar48)
+%   visibleenemy(a, uniqueVar44)
+%   enemymissiledirectlyabove(a, uniqueVar33)
+%   visibleplayermissile(a, uniqueVar31)
+%   visibleenemy(a, underscore)
+%   fireready(a, uniqueVar31)
+%   visibleenemy(a, uniqueVar48)
+%   leftofmissile(a, uniqueVar42)
+%   enemydirectlyabove(a, uniqueVar35)
+%   visibleenemymissile(a, uniqueVar47)
+%   visibleenemy(a, uniqueVar35)
+%   rightofenemy(a, uniqueVar37)
+%   visibleenemy(a, uniqueVar32)
+%   fireready(a, uniqueVar34)
+%   visibleenemymissile(a, uniqueVar30)
+%   visibleenemymissile(a, uniqueVar33)
+%   fireready(a, uniqueVar25)
+%   rightofmissile(a, uniqueVar27)
+%   visibleplayermissile(a, uniqueVar36)
+%   enemydirectlyabove(a, uniqueVar46)
+%   fireready(a, uniqueVar28)
+%   visibleenemy(a, uniqueVar37)
+%   visibleenemymissile(a, uniqueVar27)
+%   nearbymissile(a, uniqueVar27)
+%   enemydirectlyabove(a, uniqueVar44)
+%   visibleplayermissile(a, uniqueVar28)
+%   enemydirectlyabove(a, uniqueVar32)
+%   visibleplayermissile(a, uniqueVar43)
+%   visibleplayermissile(a, uniqueVar25)
+%   fireready(a, uniqueVar41)
+%   visibleenemy(a, uniqueVar38)
+%   visibleplayermissile(a, underscore)
+%   visibleplayermissile(a, uniqueVar41)
+%   fireready(a, uniqueVar43)
+%   leftofenemy(a, uniqueVar45)
+%   visibleenemy(a, uniqueVar29)
+%   nearbymissile(a, uniqueVar47)
+%   fireready(a, uniqueVar39)
+%   enemydirectlyabove(a, uniqueVar29)
+%   visibleplayermissile(a, uniqueVar39)
+%   visibleenemymissile(a, uniqueVar49)
+%   visibleenemy(a, uniqueVar26)
+%   visibleenemymissile(a, underscore)
+%   visibleplayermissile(a, uniqueVar34)
+%   rightofenemy(a, uniqueVar40)
+%   visibleenemymissile(a, uniqueVar42)
+%   visibleenemy(a, uniqueVar40)
+%   rightofmissile(a, uniqueVar49)
+%   fireready(a, uniqueVar36)
+%   visibleenemy(a, uniqueVar46)
+%   visibleenemy(a, uniqueVar45)
