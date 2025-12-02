@@ -578,24 +578,32 @@ public final class WILLSetup {
 					regScorer.setWeightLoader(factWeightLoader);
 					
 					// Read grounding penalty parameters from system properties
+					// Read grounding penalty parameters from system properties
 					double threshold = 0.5;
 					double alpha = 0.1;
 					double beta = 0.5;
 					String aggStrategy = "min";
+					boolean useSampling = false;
+					int sampleSize = 100;
 					
 					String thresholdStr = System.getProperty("grounding.penalty.threshold");
 					String alphaStr = System.getProperty("grounding.penalty.alpha");
 					String betaStr = System.getProperty("grounding.penalty.beta");
 					String strategyStr = System.getProperty("grounding.penalty.strategy");
+					String sampleStr = System.getProperty("grounding.penalty.sample");
+					String sampleSizeStr = System.getProperty("grounding.penalty.sampleSize");
 					
 					if (thresholdStr != null) threshold = Double.parseDouble(thresholdStr);
 					if (alphaStr != null) alpha = Double.parseDouble(alphaStr);
 					if (betaStr != null) beta = Double.parseDouble(betaStr);
 					if (strategyStr != null) aggStrategy = strategyStr;
+					if (sampleStr != null) useSampling = Boolean.parseBoolean(sampleStr);
+					if (sampleSizeStr != null) sampleSize = Integer.parseInt(sampleSizeStr);
 					
-					regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy);
+					regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy, useSampling, sampleSize);
 					Utils.println("% Grounding penalty configured: threshold=" + threshold + 
-						" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy);
+						" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy + 
+						" sampling=" + useSampling + " size=" + sampleSize);
 				}
 			} else {
 				Utils.println("% Distance weights flag set but weights not loaded. Using default weight 1.0.");
@@ -1652,21 +1660,28 @@ public final class WILLSetup {
 			double alpha = 0.1;      // Default reward per high-attention grounding
 			double beta = 0.5;       // Default penalty per low-attention grounding
 			String aggStrategy = "min"; // Default aggregation strategy
+			boolean useSampling = false;
+			int sampleSize = 100;
 			
 			// Read from system properties if set
 			String thresholdStr = System.getProperty("grounding.penalty.threshold");
 			String alphaStr = System.getProperty("grounding.penalty.alpha");
 			String betaStr = System.getProperty("grounding.penalty.beta");
 			String strategyStr = System.getProperty("grounding.penalty.strategy");
+			String sampleStr = System.getProperty("grounding.penalty.sample");
+			String sampleSizeStr = System.getProperty("grounding.penalty.sampleSize");
 			
 			if (thresholdStr != null) threshold = Double.parseDouble(thresholdStr);
 			if (alphaStr != null) alpha = Double.parseDouble(alphaStr);
 			if (betaStr != null) beta = Double.parseDouble(betaStr);
 			if (strategyStr != null) aggStrategy = strategyStr;
+			if (sampleStr != null) useSampling = Boolean.parseBoolean(sampleStr);
+			if (sampleSizeStr != null) sampleSize = Integer.parseInt(sampleSizeStr);
 			
-			regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy);
+			regScorer.setGroundingPenaltyParams(threshold, alpha, beta, aggStrategy, useSampling, sampleSize);
 			Utils.println("% Grounding penalty configured: threshold=" + threshold + 
-				" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy);
+				" alpha=" + alpha + " beta=" + beta + " strategy=" + aggStrategy + 
+				" sampling=" + useSampling + " size=" + sampleSize);
 			}
 			
 			// We're (sometimes) using A SMALL INDEX HERE, since the memory needs are already very large (i.e., trade off time for space).

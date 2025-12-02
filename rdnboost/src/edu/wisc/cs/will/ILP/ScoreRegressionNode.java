@@ -34,6 +34,8 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	private double betaPenalty = 0.5;  // Penalty per low-attention grounding
 	private boolean useGroundingPenalty = false;
 	private String aggregationStrategy = "min";  // Options: "min", "max", "avg", "proportion"
+	private boolean useSampling = false;
+	private int sampleSize = 100;
 	
 	public ScoreRegressionNode() {
 		this(false);
@@ -58,16 +60,21 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	 * @param alpha Reward coefficient for high-attention groundings
 	 * @param beta Penalty coefficient for low-attention groundings
 	 * @param strategy Aggregation strategy: "min", "max", "avg", "proportion"
+	 * @param useSampling Whether to subsample examples for penalty calculation
+	 * @param sampleSize Number of examples to sample if useSampling is true
 	 */
-	public void setGroundingPenaltyParams(double threshold, double alpha, double beta, String strategy) {
+	public void setGroundingPenaltyParams(double threshold, double alpha, double beta, String strategy, boolean useSampling, int sampleSize) {
 		this.groundingWeightThreshold = threshold;
 		this.alphaReward = alpha;
 		this.betaPenalty = beta;
 		this.aggregationStrategy = strategy;
+		this.useSampling = useSampling;
+		this.sampleSize = sampleSize;
 		this.useGroundingPenalty = true;
 		if (debugLevel > 0) {
 			Utils.println("% Grounding penalty enabled: threshold=" + threshold + 
-				" alpha=" + alpha + " beta=" + beta + " strategy=" + strategy);
+				" alpha=" + alpha + " beta=" + beta + " strategy=" + strategy + 
+				" sampling=" + useSampling + " size=" + sampleSize);
 		}
 	}
 	
@@ -153,7 +160,7 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 	 * - Count k_high (groundings above threshold) and k_low (groundings below threshold)
 	 * - Return: -k_high * alpha + k_low * beta (negative because we ADD penalties)
 	 */
-	private static final int MAX_EXAMPLES_FOR_PENALTY = 100;
+	// private static final int MAX_EXAMPLES_FOR_PENALTY = 100; // Replaced by instance variable sampleSize
 
 	private double computeGroundingPenalty(SingleClauseNode node) throws SearchInterrupted {
 		LearnOneClause theILPtask = (LearnOneClause) node.task;
@@ -183,8 +190,8 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		}
 		
 		List<Example> subsetPos = validPos;
-		if (validPos.size() > MAX_EXAMPLES_FOR_PENALTY) {
-			subsetPos = Utils.chooseRandomNfromThisList(MAX_EXAMPLES_FOR_PENALTY, validPos, false);
+		if (useSampling && validPos.size() > sampleSize) {
+			subsetPos = Utils.chooseRandomNfromThisList(sampleSize, validPos, false);
 		}
 		
 		double k_high_pos = 0;
@@ -237,8 +244,8 @@ public class ScoreRegressionNode extends ScoreSingleClauseByAccuracy {
 		}
 		
 		List<Example> subsetNeg = validNeg;
-		if (validNeg.size() > MAX_EXAMPLES_FOR_PENALTY) {
-			subsetNeg = Utils.chooseRandomNfromThisList(MAX_EXAMPLES_FOR_PENALTY, validNeg, false);
+		if (useSampling && validNeg.size() > sampleSize) {
+			subsetNeg = Utils.chooseRandomNfromThisList(sampleSize, validNeg, false);
 		}
 		
 		double k_high_neg = 0;

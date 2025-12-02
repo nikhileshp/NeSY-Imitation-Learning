@@ -13,12 +13,14 @@ MAX_DEPTH=$1
 NUM_TREES=$2
 DEBUG_MODE=$3  # "true" or "false" (optional, default: false)
 TEST_ONLY=$4   # "true" or "false" (optional, default: false)
+USE_SAMPLING=$5 # "true" or "false" (optional, default: false)
 
 if [ -z "$MAX_DEPTH" ] || [ -z "$NUM_TREES" ]; then
-    echo "Usage: $0 <max_depth> <num_trees> [debug_mode] [test_only]"
+    echo "Usage: $0 <max_depth> <num_trees> [debug_mode] [test_only] [use_sampling]"
     echo "Example: $0 3 10"
     echo "Example: $0 3 10 true          # Enable debug mode"
     echo "Example: $0 3 10 false true    # Test only (skip training)"
+    echo "Example: $0 3 10 false false true # Enable sampling"
     exit 1
 fi
 
@@ -30,6 +32,11 @@ fi
 # Default test_only to false if not specified
 if [ -z "$TEST_ONLY" ]; then
     TEST_ONLY="false"
+fi
+
+# Default use_sampling to false if not specified
+if [ -z "$USE_SAMPLING" ]; then
+    USE_SAMPLING="false"
 fi
 
 echo "=================================================="
@@ -53,7 +60,7 @@ SEEDS=(42 123 456 789 1729)
 
 # Grounding penalty parameters
 GROUNDING_THRESHOLD=0.7
-GROUNDING_ALPHA=0.1
+GROUNDING_ALPHA=0.01
 GROUNDING_BETA=0
 GROUNDING_STRATEGY="min"
 
@@ -110,6 +117,8 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Dgrounding.penalty.sample=$USE_SAMPLING \
+                 -Dgrounding.penalty.sampleSize=100 \
                  -Xmx8G \
                  -jar "$JAR" \
                  -l \
@@ -158,6 +167,8 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Dgrounding.penalty.sample=$USE_SAMPLING \
+                 -Dgrounding.penalty.sampleSize=100 \
                  -Xmx8G \
                  -jar "$JAR" \
                  -i \
@@ -221,6 +232,8 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+                 -Dgrounding.penalty.sample=$USE_SAMPLING \
+                 -Dgrounding.penalty.sampleSize=100 \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
                  -Xmx8G \
                  -jar "$JAR" \
@@ -268,7 +281,9 @@ for SEED in "${SEEDS[@]}"; do
                  -Dgrounding.penalty.alpha=$GROUNDING_ALPHA \
                  -Dgrounding.penalty.beta=$GROUNDING_BETA \
                  -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
-                 -Dgrounding.penalty.strategy=$GROUNDING_STRATEGY \
+
+                 -Dgrounding.penalty.sample=$USE_SAMPLING \
+                 -Dgrounding.penalty.sampleSize=100 \
                  -Xmx8G \
                  -jar "$JAR" \
                  -i \
