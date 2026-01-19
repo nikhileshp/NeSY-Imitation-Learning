@@ -1,0 +1,74 @@
+Evaluating seeds: [42]
+Model Base Directory: rdn_models/seaquest/all/negpos_2_trees_1_depth_1
+Data Base Directory: data/seaquest/all
+Loading training data from: train.csv
+Loading test data from: test.csv
+
+Loading Training Predictions...
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/noop/seed_42/train_infer/query_action.db
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/noop/seed_42/train_infer/query_action.db.gz
+  Action noop: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/noop/seed_42/train_infer/query_action.db.gz
+    Found 32722 pos and 65430 neg examples.
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/fire/seed_42/train_infer/query_action.db
+  Action fire: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/fire/seed_42/train_infer/query_action.db
+    Found 5370 pos and 10733 neg examples.
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/up/seed_42/train_infer/query_action.db
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/up/seed_42/train_infer/query_action.db.gz
+  Action up: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/up/seed_42/train_infer/query_action.db.gz
+    Found 12274 pos and 24431 neg examples.
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/right/seed_42/train_infer/query_action.db
+  Action right: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/right/seed_42/train_infer/query_action.db
+    Found 8798 pos and 17563 neg examples.
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/left/seed_42/train_infer/query_action.db
+  Action left: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/left/seed_42/train_infer/query_action.db
+    Found 8850 pos and 17661 neg examples.
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/down/seed_42/train_infer/query_action.db
+Checking: rdn_models/seaquest/all/negpos_2_trees_1_depth_1/down/seed_42/train_infer/query_action.db.gz
+  Action down: Loading IDs from rdn_models/seaquest/all/negpos_2_trees_1_depth_1/down/seed_42/train_infer/query_action.db.gz
+    Found 13785 pos and 27483 neg examples.
+
+Loading Test Predictions...
+  Action noop: Loading IDs from data/seaquest/all/noop/test/query_action.db
+    Found 8281 pos and 12169 neg examples.
+  Action fire: Loading IDs from data/seaquest/all/fire/test/query_action.db
+    Found 1300 pos and 19150 neg examples.
+  Action up: Loading IDs from data/seaquest/all/up/test/query_action.db
+    Found 3047 pos and 17403 neg examples.
+  Action right: Loading IDs from data/seaquest/all/right/test/query_action.db
+    Found 2189 pos and 18261 neg examples.
+  Action left: Loading IDs from data/seaquest/all/left/test/query_action.db
+    Found 2147 pos and 18303 neg examples.
+  Action down: Loading IDs from data/seaquest/all/down/test/query_action.db
+    Found 3486 pos and 16964 neg examples.
+
+Averaging Predictions...
+
+Preparing Calibration Dataset...
+Training calibration model on 0 samples...
+Traceback (most recent call last):
+  File "/home/nikhilesh/Projects/NeSY-Imitation-Learning/experiments/eval_calibrated.py", line 295, in <module>
+    X_train_scaled = scaler.fit_transform(X_train)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/utils/_set_output.py", line 316, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/base.py", line 894, in fit_transform
+    return self.fit(X, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/preprocessing/_data.py", line 907, in fit
+    return self.partial_fit(X, y, sample_weight)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/base.py", line 1365, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/preprocessing/_data.py", line 943, in partial_fit
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/utils/validation.py", line 2954, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nikhilesh/software/miniconda3/envs/nesy-il/lib/python3.11/site-packages/sklearn/utils/validation.py", line 1091, in check_array
+    raise ValueError(msg)
+ValueError: Expected 2D array, got 1D array instead:
+array=[].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.

@@ -44,7 +44,7 @@ echo "Training/Testing pipeline for 54_RZ_2461867"
 echo "=================================================="
 echo "Max tree depth: $MAX_DEPTH"
 echo "Number of trees: $NUM_TREES"
-echo "Debug mode: $DEBUG_MODE"
+echo "Debug mode: $DEBUG_MODE"x 
 echo "Test only: $TEST_ONLY"
 echo "Grounding penalty: threshold=0.7, alpha=0.1, beta=0.5, strategy=min"
 echo ""
@@ -76,7 +76,7 @@ else
 fi
 
 # Actions to train/test
-ACTIONS=("fire" "up" "down" "left" "right" "noop")
+ACTIONS=("noop")
 
 # Update background knowledge with max_depth (only if not test only)
 if [ "$TEST_ONLY" != "true" ]; then
@@ -136,7 +136,7 @@ for SEED in "${SEEDS[@]}"; do
         done
     fi
     echo ""
-
+    ACTIONS=("fire" "up" "down" "left" "right" "noop")
     # ============================================================================
     # STEP 2: TESTING (Unified Test Set, All Examples)
     # ============================================================================

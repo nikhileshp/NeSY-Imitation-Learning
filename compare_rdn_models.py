@@ -339,24 +339,20 @@ def get_metrics(model_dir, action, seed="seed_42"):
     auc_pr = 0.0
     auc_roc = 0.0
     
-    # F1
-    eval_path = os.path.join(model_dir, f"eval_report_{seed}.txt")
-    if os.path.exists(eval_path):
-        with open(eval_path, 'r') as f:
-            content = f.read()
-            match = re.search(rf"^\s*{action}\s+\S+\s+\S+\s+(\S+)", content, re.MULTILINE)
-            if match:
-                f1 = float(match.group(1))
+    log_path = os.path.join(model_dir, action, seed, f"test_infer_{seed}.log")
     
-    # AUC
-    auc_path = os.path.join(model_dir, action, seed, "test_AUC", "outputFromAUC_FILTERED.txt")
-    if os.path.exists(auc_path):
-        with open(auc_path, 'r') as f:
+    if os.path.exists(log_path):
+        with open(log_path, 'r') as f:
             content = f.read()
-            pr_match = re.search(r"Area Under the Curve for Precision - Recall is ([\d\.]+)", content)
-            roc_match = re.search(r"Area Under the Curve for ROC is ([\d\.]+)", content)
-            if pr_match: auc_pr = float(pr_match.group(1))
+            
+            # Extract metrics using regex
+            roc_match = re.search(r"%\s+AUC ROC\s+=\s+([\d\.]+)", content)
+            pr_match = re.search(r"%\s+AUC PR\s+=\s+([\d\.]+)", content)
+            f1_match = re.search(r"%\s+F1\s+=\s+([\d\.]+)", content)
+            
             if roc_match: auc_roc = float(roc_match.group(1))
+            if pr_match: auc_pr = float(pr_match.group(1))
+            if f1_match: f1 = float(f1_match.group(1))
             
     return f1, auc_pr, auc_roc
 

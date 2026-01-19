@@ -46,6 +46,27 @@ modes=["aboveOfDiver(+state, +diver).",
 "action(+state, #name)."
 ]
 
+privileged_modes = ["inradiusEnemy(+state, -enemy)",
+                    "inradiusMissile(+state, -missile)",
+                    "inradiusSubmarine(+state, -submarine)",
+                    "inradiusDiver(+state, -diver)"]
+
+priviledged_modes_removed = ["visibleEnemy(+state, -enemy)",
+                            "visibleMissile(+state, -missile)",
+                            "visibleSubmarine(+state, -submarine)",
+                            "visibleDiver(+state, -diver)"]
+
+
+all_privileged_modes = modes + privileged_modes 
+#remove priviledged modes_removed from all_privileged_modes
+all_privileged_modes = [mode for mode in all_privileged_modes if mode not in priviledged_modes_removed]
+
+
+privileged_bridgers = ["inRadiusEnemy/2",
+                    "inRadiusMissile/2",
+                    "inRadiusSubmarine/2",
+                    "inRadiusDiver/2"]
+
 bridgers = ["vissibleMissile/2",
 "vissibleEnemy/2",
 "vissibleEnemySubmarine/2",
@@ -56,7 +77,7 @@ primitive_actions = ["noop","fire","up","right","left","down"]
 bridgers = [bridger.lower() for bridger in bridgers]
 modes = [mode.lower() for mode in modes]
 
-
+THRESHOLD = 0.70
 
 
 parser = argparse.ArgumentParser(description="Process relationship file")
@@ -188,39 +209,84 @@ for pa in primitive_actions:
     f.write("\n".join(test_action_files[pa][1]))
 
 # Script for writing facts
+
+# Privileged facts contain inRadius if fact_weights for that fact is greater than THRESHOLD
+
 # Fact weights file should be formatted as ground_fact(state, args). weight \n for each fact. Facts are the r
 for pa in primitive_actions:
+  
   with open(f"{base_dir}/"+pa+"/train/"+'train_facts.txt', 'w') as f:
     with open(f"{base_dir}/"+pa+"/train/"+'fact_weights.txt', 'w') as f2:
+      with open(f"{base_dir}/" + pa + "/train/" + "train_facts_pi.txt", "w") as f3:
       
+        prev_state = ""
+        prev_objnum = ""
+        for _, row in train.iterrows():
+          rels = str(row["relationships"])
+          weights = str(row["predicate_weights"])
+          weights_list = []
+          if weights != "nan":
+            weights_list = weights.split(" ")
+          
+          if weights_list:
+            if rels != "nan":
+              s_id = "s" + str(row["frameid"].replace("_",""))
+              rels = rels.split(" , ")
+              for (rel, w) in zip(rels, weights_list):
+                rel = rel.strip()
+                if rel:
+                  if "(" not in rel:
+                    rel = rel+"()"
+                  rel = rel.replace("(","(" + s_id + ",")
+                  rel = rel.replace(",)", ")")
+                  if not rel.endswith("."):
+                    rel += "."
+                  rel = rel.lower()
+                  rel = rel.replace("_", "")
+                  f.write(rel + "\n")
+                  f2.write(rel + " " + w + "\n")
+                  
+                  # If visible in rel ignore
+                  if "visible" in rel:
+                    continue
 
-      for _, row in train.iterrows():
-        rels = str(row["relationships"])
-        weights = str(row["predicate_weights"])
-        weights_list = []
-        if weights != "nan":
-          weights_list = weights.split(" ")
-  
-        if weights_list:
-          if rels != "nan":
-            s_id = "s" + str(row["frameid"].replace("_",""))
-            rels = rels.split(" , ")
-            for (rel, w) in zip(rels, weights_list):
-              rel = rel.strip()
-              if rel:
-                if "(" not in rel:
-                  rel = rel+"()"
-                rel = rel.replace("(","(" + s_id + ",")
-                rel = rel.replace(",)", ")")
-                if not rel.endswith("."):
-                  rel += "."
-                rel = rel.lower()
-                rel = rel.replace("_", "")
-                f.write(rel + "\n")
-                f2.write(rel + " " + w + "\n")
+                  # If visible not in rel and rel has a state and a object arg in the paranthesis, store it and create a rel inradiusobjtype(state, objnum)
+                  if "visible" not in rel and rel.count(",") == 1:
+                    
+                    state, obj_num = rel.split("(")[1].split(",")
+                    obj_num = obj_num.split(")")[0]
+                    if prev_state == state and prev_objnum == obj_num:
+                      if float(w) > THRESHOLD:
+                        f3.write(rel + "\n")
+                    else:
+                      prev_state = state
+                      prev_objnum = obj_num
+                      objtype = obj_num.split(")")[0][:-1]
+                      if float(w) > THRESHOLD:
+                        f3.write("inradius" + objtype + "(" + state + "," + obj_num + ").\n")
+                        f3.write(rel + "\n")
 
-         
-  
+# For all actions open train_facts_pi.txt and remove duplicate inRadius lines with the same state number and objectnumber
+for pa in primitive_actions:
+  # Remove duplicate inradius lines from train_facts_pi.txt
+  pi_file_path = f"{base_dir}/{pa}/train/train_facts_pi.txt"
+  if os.path.exists(pi_file_path):
+    with open(pi_file_path, 'r') as f_pi:
+      lines = f_pi.readlines()
+    
+    seen_inradius = set()
+    new_lines = []
+    for line in lines:
+      if line.startswith("inradius"):
+        if line in seen_inradius:
+          continue
+        seen_inradius.add(line)
+      # print(line)
+      new_lines.append(line)
+    
+    with open(pi_file_path, 'w') as f_pi:
+      f_pi.writelines(new_lines)
+
   with open(f"{base_dir}/"+pa+"/test/"+'test_facts.txt', 'w') as f:
     for _, row in test.iterrows():
       rels = str(row["relationships"])
