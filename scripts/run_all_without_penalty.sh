@@ -38,7 +38,7 @@ echo ""
 # Configuration
 JAR="rdnboost/target/boostsrl-weights-2.0.0.jar"
 AUC_JAR="rdnboost/src/edu/wisc/cs/will/DataSetUtils/"
-NEG_POS_RATIO=1
+NEG_POS_RATIO=2
 DATA_BASE="data/seaquest/all"
 
 # Seeds to test with (can be modified to test different random samples)
@@ -46,7 +46,7 @@ SEEDS=(42 123 456 789 1729)
 
 
 # Base model directory (will be extended with seed info)
-MODEL_BASE_PREFIX="rdn_models/seaquest/all/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}"
+MODEL_BASE_PREFIX="rdn_models/seaquest/all/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}_new"
 
 # Debug flag for Java
 if [ "$DEBUG_MODE" == "true" ]; then
@@ -113,50 +113,50 @@ for SEED in "${SEEDS[@]}"; do
     # # ============================================================================
     # # STEP 2: TESTING (Unified Test Set, All Examples)
     # # ============================================================================
-    # echo "--- Step 2: Testing on Unified Test Set (All Examples) ---"
-    # # Use -1 for all examples (disable neg/pos ratio subsampling)
+    echo "--- Step 2: Testing on Unified Test Set (All Examples) ---"
+    # Use -1 for all examples (disable neg/pos ratio subsampling)
     
     
-    # for action in "${ACTIONS[@]}"; do
-    #     # Use unified test set
-    #     TEST_DIR="data/seaquest/all/$action/test"
-    #     MODEL_DIR="$MODEL_BASE_PREFIX/$action/seed_$SEED"
-    #     LOG_FILE="${MODEL_DIR}/test_infer_seed_${SEED}.log"
+    for action in "${ACTIONS[@]}"; do
+        # Use unified test set
+        TEST_DIR="data/seaquest/all/$action/test"
+        MODEL_DIR="$MODEL_BASE_PREFIX/$action/seed_$SEED"
+        LOG_FILE="${MODEL_DIR}/test_infer_seed_${SEED}.log"
         
-    #     # Check if model exists
-    #     if [ ! -d "$MODEL_DIR/bRDNs" ]; then
-    #         echo "⚠️  Skipping $action - model not found at $MODEL_DIR"
-    #         continue
-    #     fi
+        # Check if model exists
+        if [ ! -d "$MODEL_DIR/bRDNs" ]; then
+            echo "⚠️  Skipping $action - model not found at $MODEL_DIR"
+            continue
+        fi
         
-    #     mkdir -p "$MODEL_DIR"
-    #     > "$LOG_FILE"
+        mkdir -p "$MODEL_DIR"
+        > "$LOG_FILE"
         
-    #     echo "Testing $action (Seed: $SEED)..."
+        echo "Testing $action (Seed: $SEED)..."
         
-    #     {
-    #         echo "[START] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
-    #         java -jar "$JAR" \
-    #              -i \
-    #              -model "$MODEL_DIR" \
-    #              -test "$TEST_DIR" \
-    #              -target "action" \
-    #              -trees "$NUM_TREES" \
-    #              -testNegPosRatio "$NEG_POS_RATIO" \
-    #              -seed "$SEED" \
-    #              -aucJarPath "$AUC_JAR"
-    #         echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
-    #     } >> "$LOG_FILE" 2>&1
+        {
+            echo "[START] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
+            java -jar "$JAR" \
+                 -i \
+                 -model "$MODEL_DIR" \
+                 -test "$TEST_DIR" \
+                 -target "action" \
+                 -trees "$NUM_TREES" \
+                 -testNegPosRatio "$NEG_POS_RATIO" \
+                 -seed "$SEED" \
+                 -aucJarPath "$AUC_JAR"
+            echo "[END] $(date '+%Y-%m-%d %H:%M:%S') - Action: $action (Test, Seed: $SEED)"
+        } >> "$LOG_FILE" 2>&1
         
-    #     # Move AUC results to model directory to prevent overwriting
-    #     if [ -d "$TEST_DIR/AUC" ]; then
-    #         rm -rf "$MODEL_DIR/test_AUC"
-    #         mv "$TEST_DIR/AUC" "$MODEL_DIR/test_AUC"
-    #     fi
+        # Move AUC results to model directory to prevent overwriting
+        if [ -d "$TEST_DIR/AUC" ]; then
+            rm -rf "$MODEL_DIR/test_AUC"
+            mv "$TEST_DIR/AUC" "$MODEL_DIR/test_AUC"
+        fi
         
-    #     echo "✅ Completed test inference for $action (Seed: $SEED)"
-    # done
-    # echo ""
+        echo "✅ Completed test inference for $action (Seed: $SEED)"
+    done
+    echo ""
 
     # ============================================================================
     # STEP 3: TRAINING INFERENCE (for calibration)

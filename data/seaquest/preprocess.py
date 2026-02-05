@@ -14,7 +14,7 @@ modes=["aboveOfDiver(+state, +diver).",
 "belowOfEnemy(+state, +enemy).",
 "belowOfMissile(+state, +missile).",
 "belowOfSubmarine(+state, +submarine).",
-"belowWater_surface(+state).",
+"belowWatersurface(+state).",
 "diversEmpty(+state).",
 "diversNotfull(+state).",
 "diversfull(+state).",
@@ -246,7 +246,10 @@ for pa in primitive_actions:
                   f.write(rel + "\n")
                   f2.write(rel + " " + w + "\n")
                   
-                  # If visible in rel ignore
+                  # Write ALL facts to train_facts_pi.txt
+                  f3.write(rel + "\n")
+                  
+                  # If visible in rel ignore for inradius generation
                   if "visible" in rel:
                     continue
 
@@ -256,15 +259,14 @@ for pa in primitive_actions:
                     state, obj_num = rel.split("(")[1].split(",")
                     obj_num = obj_num.split(")")[0]
                     if prev_state == state and prev_objnum == obj_num:
-                      if float(w) > THRESHOLD:
-                        f3.write(rel + "\n")
+                      # Don't write rel again, already written above, just skip
+                      pass
                     else:
                       prev_state = state
                       prev_objnum = obj_num
                       objtype = obj_num.split(")")[0][:-1]
                       if float(w) > THRESHOLD:
                         f3.write("inradius" + objtype + "(" + state + "," + obj_num + ").\n")
-                        f3.write(rel + "\n")
 
 # For all actions open train_facts_pi.txt and remove duplicate inRadius lines with the same state number and objectnumber
 for pa in primitive_actions:

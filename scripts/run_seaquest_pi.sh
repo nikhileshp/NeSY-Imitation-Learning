@@ -15,10 +15,11 @@ NUM_TREES=$2
 DEBUG_MODE=$3  # "true" or "false" (optional, default: false)
 TEST_ONLY=$4   # "true" or "false" (optional, default: false)
 USE_SAMPLING=$5 # "true" or "false" (optional, default: false)
+LAMBDA=$6      # Lambda value for PI (optional, default: 1.0)
 
 if [ -z "$MAX_DEPTH" ] || [ -z "$NUM_TREES" ]; then
-    echo "Usage: $0 <max_depth> <num_trees> [debug_mode] [test_only] [use_sampling]"
-    echo "Example: $0 3 10"
+    echo "Usage: $0 <max_depth> <num_trees> [debug_mode] [test_only] [use_sampling] [lambda]"
+    echo "Example: $0 3 10 true false false 1.0"
     exit 1
 fi
 
@@ -37,6 +38,11 @@ if [ -z "$USE_SAMPLING" ]; then
     USE_SAMPLING="false"
 fi
 
+# Default lambda to 1.0 if not specified
+if [ -z "$LAMBDA" ]; then
+    LAMBDA=1.0
+fi
+
 echo "=================================================="
 echo "Training/Testing pipeline for Seaquest with PI"
 echo "=================================================="
@@ -44,6 +50,7 @@ echo "Max tree depth: $MAX_DEPTH"
 echo "Number of trees: $NUM_TREES"
 echo "Debug mode: $DEBUG_MODE"
 echo "Test only: $TEST_ONLY"
+echo "Lambda: $LAMBDA"
 echo ""
 
 # Configuration
@@ -62,7 +69,7 @@ GROUNDING_BETA=0
 GROUNDING_STRATEGY="min"
 
 # Base model directory
-MODEL_BASE_PREFIX="rdn_models/seaquest/all_pi/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}"
+MODEL_BASE_PREFIX="rdn_models/seaquest/all_pi/negpos_${NEG_POS_RATIO}_trees_${NUM_TREES}_depth_${MAX_DEPTH}_lambda_${LAMBDA}"
 
 if [ "$DEBUG_MODE" == "true" ]; then
     DEBUG_FLAG="-debugScoring"
@@ -75,10 +82,10 @@ fi
 ACTIONS=("fire" "up" "down" "left" "right" "noop")
 
 # Update background knowledge (skip for now or assume already done)
-# if [ "$TEST_ONLY" != "true" ]; then
-#     echo "Updating background knowledge files with max_depth=$MAX_DEPTH..."
-#     python src/change_bk.py --max_depth "$MAX_DEPTH" --base_dir "$DATA_BASE"
-# fi
+if [ "$TEST_ONLY" != "true" ]; then
+    echo "Updating background knowledge files with max_depth=$MAX_DEPTH..."
+    python src/change_bk.py --max_depth "$MAX_DEPTH" --base_dir "$DATA_BASE"
+fi
 
 echo "Testing model: $MODEL_BASE_PREFIX"
 echo ""
@@ -117,6 +124,7 @@ for SEED in "${SEEDS[@]}"; do
                  -negPosRatio "$NEG_POS_RATIO" \
                  -model "$MODEL_DIR" \
                  -pi \
+                 -piLambda "$LAMBDA" \
                  $DEBUG_FLAG
             
             echo "✅ Completed training for $action"
@@ -154,11 +162,12 @@ for SEED in "${SEEDS[@]}"; do
     
     # Evaluation
     echo "--- Step 3: Evaluation ---"
-    python experiments/eval_calibrated.py \
-        --model_dir "$MODEL_BASE_PREFIX" \
-        --data_base "$DATA_BASE" \
-        --seeds "$SEED" \
-        --output_file "eval_report_seed_$SEED.txt"
+    echo "--- Skipped --- "
+    # python experiments/eval_calibrated.py \
+    #     --model_dir "$MODEL_BASE_PREFIX" \
+    #     --data_base "$DATA_BASE" \
+    #     --seeds "$SEED" \
+    #     --output_file "eval_report_seed_$SEED.txt"
 
-    echo "Results saved to: $MODEL_BASE_PREFIX/eval_report_seed_$SEED.txt"
+    # echo "Results saved to: $MODEL_BASE_PREFIX/eval_report_seed_$SEED.txt"
 done
